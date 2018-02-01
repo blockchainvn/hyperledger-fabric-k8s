@@ -47,10 +47,10 @@ function printHelp () {
     echo "          ./fn.sh install --channel mychannel --chaincode mycc -v v1"
     echo    
     echo "      - 'instantiate' - instantiate chaincode"
-    echo "          ./fn.sh instantiate --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc -v v1 --arg='{\"Args\":[\"init\"]}' --policy='OR (Org1.member, Org2.member)'"
+    echo "          ./fn.sh instantiate --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --arg='{\"Args\":[\"init\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
     echo
     echo "      - 'upgrade' - upgrade chaincode"
-    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc -v v2 --arg='{\"Args\":[\"init\"]}' --policy='OR (Org1.member, Org2.member)'"
+    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --arg='{\"Args\":[\"init\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
     echo
     echo "      - 'query' - query chaincode"    
     echo "          ./fn.sh query --args='{\"Args\":[\"response\",\"{\\\"key\\\":\\\"key\\\",\\\"value\\\":\\\"value\\\"}\"]}'"
@@ -214,9 +214,8 @@ createChaincodeDeployment() {
         containers:
           - name: $CHAINCODE
             image: $docker_image
-            command:
-              - sleep
-              - "3600"
+            # inline is more readable            
+            command: [ "chaincode -peer.address=$PEER_ADDRESS" ]            
             env:
               - name: CORE_CHAINCODE_ID_NAME
                 value: ${CHAINCODE}:${VERSION}
@@ -328,9 +327,9 @@ upgradeChaincode() {
     untilPod
     # kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode upgrade -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME -P '$POLICY'
     # execute first pod is good enough, for api, we get from service
-    chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1)    
+    # chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1)    
     # we can use nohup maybe better
-    kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$PEER_ADDRESS > /dev/null 2>&1 &
+    # kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$PEER_ADDRESS > /dev/null 2>&1 &
     res=$?  
     verifyResult $res "Upgrade chaincode failed"
     echo "===================== Upgrade chaincode successfully ===================== "
@@ -354,9 +353,9 @@ instantiateChaincode() {
     createChaincodeDeployment create
     untilPod
     # execute first pod is good enough, for api, we get from service
-    chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1)
+    # chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1)
     # we can use nohup maybe better
-    kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$PEER_ADDRESS > /dev/null 2>&1 &
+    # kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$PEER_ADDRESS > /dev/null 2>&1 &
     res=$?  
     verifyResult $res "Instantiate chaincode failed"
     echo "===================== Instantiate chaincode successfully ===================== "
