@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress  
+spec:
+  rules:
+  - host: peer0.org1-f-1
+    http:
+      paths:
+        - backend:
+            serviceName: peer0
+            servicePort: 7051

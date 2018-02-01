@@ -1,0 +1,5 @@
+setupCluster/crypto-config/
+setupCluster/channel-artifacts/
+bin/
+node_modules
+**/*.pyc
