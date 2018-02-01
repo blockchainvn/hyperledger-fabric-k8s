@@ -1,5 +1,6 @@
 setupCluster/crypto-config/
 setupCluster/channel-artifacts/
 bin/
+admin/hfc-key-store/
 node_modules
 **/*.pyc

@@ -33,9 +33,9 @@ spec:
        org: $NAMESPACE
        name: admin
     spec:
-      nodeSelector:
-        # assume all org node can access to docker
-        org: $NAMESPACE
+      # nodeSelector:
+      #   # assume all org node can access to docker
+      #   org: $NAMESPACE
       containers:
        - name: admin
          image: $IMAGE_NAME

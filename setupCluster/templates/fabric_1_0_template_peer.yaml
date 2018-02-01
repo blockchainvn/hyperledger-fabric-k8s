@@ -15,9 +15,9 @@ spec:
        peer-id: $peerID
        org: $namespace
     spec:
-      nodeSelector:
-        # assume all org node can access to docker
-        org: $namespace
+      # nodeSelector:
+      #   # assume all org node can access to docker
+      #   org: $namespace
       containers:
       - name: couchdb
         image: hyperledger/fabric-couchdb:x86_64-$version
@@ -68,8 +68,8 @@ spec:
          # - containerPort: 7052
          - containerPort: 7053
         command: ["/bin/bash", "-c", "--"]
-        args: ["sleep 5; peer node start"]
-        # args: ["sleep 5; peer node start --peer-chaincodedev=true"] 
+        # args: ["sleep 5; peer node start"]
+        args: ["sleep 5; peer node start --peer-chaincodedev=true"] 
         volumeMounts:
          #- mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts 
          #  name: certificate

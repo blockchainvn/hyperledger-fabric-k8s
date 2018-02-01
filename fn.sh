@@ -10,6 +10,7 @@
 BASE_DIR=$PWD
 DOCKER_COMPOSE_FILE=docker-compose.yml
 SCRIPT_NAME=`basename "$0"`
+ENV=DEV
 # Print the usage message
 function printHelp () {
 
@@ -88,17 +89,17 @@ buildAdmin(){
 
 setupConfig() {
   local nfs_server=$(getArgument "nfs" ${args[0]})
-  local profile=$(getArgument "profile")
+  local profile=$(getArgument "profile" TwoOrgsOrdererGenesis)
   cd setupCluster
   echo "Creating genesis, profile [$profile]..."
   ./generateALL.sh $nfs_server $profile
   chmod -R 777 /opt/share
   # assign label
-  local master_node=$(kubectl get nodes | awk '$3~/master/{print $1}')
-  if [[ ! -z $master_node ]];then
-    echo "Assign label org=$NAMESPACE to master node $master_node"
-    kubectl label nodes $master_node org=$NAMESPACE --overwrite=true
-  fi
+  # local master_node=$(kubectl get nodes | awk '$3~/master/{print $1}')
+  # if [[ ! -z $master_node ]];then
+  #   echo "Assign label org=$NAMESPACE to master node $master_node"
+  #   kubectl label nodes $master_node org=$NAMESPACE --overwrite=true
+  # fi
 }
 
 scalePod() {
@@ -177,8 +178,93 @@ setupNetwork() {
   fi
 }
 
+# this one is for development phrase
+createChaincodeDeploymentDev() {
+  # DEV mode can instantiate until peer success 
+  # we copy the chaincode from mapping path to prevent re-create
+  # in the production mode, it is installed in product folder
+  # if [[ $METHOD == "apply" ]];then
+  kubectl delete deployment $CHAINCODE -n $NAMESPACE # --grace-period=0 --force
+  DEPLOYMENT_STATUS=$(kubectl get deployment $CHAINCODE -n $NAMESPACE | awk 'NR>1{print $1}' | head -1)
+  while [[ $DEPLOYMENT_STATUS == $CHAINCODE ]]; do
+    echo "Waiting for Pod $CHAINCODE to be deleted"      
+    DEPLOYMENT_STATUS=$(kubectl get deployment $CHAINCODE -n $NAMESPACE | awk 'NR>1{print $1}' | head -1)
+    sleep 1
+    ((start+=1))      
+    echo "Waiting after $start second."
+  done
+  # fi
+
+  local docker_image=hyperledger/fabric-ccenv:x86_64-1.0.2
+  local chaincode_shared_path=${CHAINCODE_PATH/github.com\/hyperledger\/fabric\/peer/\/opt\/share}
+  
+  cat <<EOF | kubectl create -f -
+  apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    name: $CHAINCODE
+    namespace: $NAMESPACE
+  spec:
+    replicas: 1
+    strategy: {}
+    template:
+      metadata:
+        labels:
+          app: chaincode
+      spec:
+        # nodeSelector:
+          # assume all org node can access to docker
+          # org: $NAMESPACE
+        containers:
+          - name: $CHAINCODE
+            image: $docker_image
+            # inline is more readable            
+            command: [ "/bin/bash", "-c", "--" ]            
+            args: [ "cp -r /home/$CHAINCODE/* ./ && go build -i && ./$CHAINCODE" ]
+            workingDir: /opt/gopath/src/$CHAINCODE
+            volumeMounts:
+              - mountPath: /host/var/run/
+                name: run
+              - mountPath: /home/$CHAINCODE
+                name: chaincode
+            env:
+              - name: CORE_PEER_ID
+                value: $CHAINCODE
+              - name: CORE_PEER_ADDRESS
+                value: $PEER_ADDRESS
+              - name: CORE_CHAINCODE_ID_NAME
+                value: ${CHAINCODE}:${VERSION}    
+              - name: GOPATH
+                value: /opt/gopath          
+              - name: CORE_VM_ENDPOINT
+                value: unix:///host/var/run/docker.sock
+            imagePullPolicy: Never
+        restartPolicy: Always
+        volumes:
+         - name: run
+           hostPath:
+             path: /var/run
+         - name: chaincode
+           hostPath:
+             path: $chaincode_shared_path
+EOF
+  
+  sleep 3
+  echo "$METHOD chaincode Deployment successfully"
+  # do we need to delete docker container ?
+
+}      
+
 createChaincodeDeployment() {
-  METHOD=${1:-create}
+
+  if [[ $ENV == "DEV" ]];then
+    createChaincodeDeploymentDev $1
+    return 0
+  fi
+
+  untilImage
+
+  local METHOD=${1:-create}
 
   if [[ $METHOD == "apply" ]];then
     kubectl delete deployment $CHAINCODE -n $NAMESPACE # --grace-period=0 --force
@@ -192,9 +278,9 @@ createChaincodeDeployment() {
     done
   fi
 
-  docker_image=$(docker images | grep "${CHAINCODE}-${VERSION}" | awk '{print $1}' | head -1)
+  local docker_image=$(docker images | grep "${CHAINCODE}-${VERSION}" | awk '{print $1}' | head -1)
 
-  cat <<EOF | kubectl $METHOD -f -
+  cat <<EOF | kubectl create -f -
   apiVersion: extensions/v1beta1
   kind: Deployment
   metadata:
@@ -213,6 +299,7 @@ createChaincodeDeployment() {
           org: $NAMESPACE
         containers:
           - name: $CHAINCODE
+            # tty: true
             image: $docker_image
             # inline is more readable            
             command: [ "chaincode -peer.address=$PEER_ADDRESS" ]            
@@ -230,10 +317,10 @@ EOF
 }
 
 untilImage() {
-  local TIMEOUT=${1:-$TIMEOUT}
+  local wait_timeout=${1:-$TIMEOUT}
   local start=0
   local IMAGE_STATUS=
-  while [[ -z $IMAGE_STATUS && $start -lt $TIMEOUT ]]; do
+  while [[ -z $IMAGE_STATUS && $start -lt $wait_timeout ]]; do
       echo "Waiting for docker image [${CHAINCODE}-${VERSION}] to be created"      
       IMAGE_STATUS=$(docker images | grep "${CHAINCODE}-${VERSION}" | awk '{print $1}')
       sleep 1
@@ -248,10 +335,10 @@ untilImage() {
 }
 
 untilPod() {
-  local TIMEOUT=${1:-$TIMEOUT}
+  local wait_timeout=${1:-$TIMEOUT}
   local start=0  
   local POD_STATUS=
-  while [[ -z $POD_STATUS && $start -lt $TIMEOUT ]]; do
+  while [[ -z $POD_STATUS && $start -lt $wait_timeout ]]; do
       echo "Waiting for pod [$CHAINCODE] to start completion. Status = ${POD_STATUS}"
       POD_STATUS=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1)
       sleep 1
@@ -314,52 +401,67 @@ installChaincode() {
   fi
 }
 
-upgradeChaincode() {
+untilInstalledChaincode(){  
+  local wait_timeout=${1:-$TIMEOUT}
+  local start=0  
+  local CHAINCODE_STATUS=
+  # do not use bash to get the result, it is very strange
+  while [[ $CHAINCODE_STATUS != "true" && $start -lt $wait_timeout ]]; do
+      local chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1) 
+      echo "Waiting for chaincode to be installed on $chaincode_name"
+      CHAINCODE_STATUS=$(kubectl exec -it $chaincode_name -n $NAMESPACE -- [ -f $CHAINCODE ] && echo "true")      
+      sleep 1
+      ((start+=1)) 
+      echo "Waiting after $start second, result got: $CHAINCODE_STATUS"
+  done
+
+  if [[ $CHAINCODE_STATUS != "true" ]];then
+    echo "Waiting for chaincode to be installed timeout"
+    exit 1
+  fi
+
+  echo "Done chaincode installed"  
+}
+
+updateChaincode(){
+  local chaincode_method=${1:-upgrade}
+  local METHOD=apply
+  if [[ $chaincode_method == "instantiate" ]];then
+    METHOD=create
+  elif [[ $chaincode_method != "upgrade" ]];then
+    echo "Don't know method $chaincode_method"
+    exit 1
+  fi  
+
   cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
   if [[ ! -z $cli_name ]];then   
     local POLICY_ARG=
     if [[ ! -z $POLICY ]];then
       POLICY_ARG="-P '$POLICY'"
     fi     
-    kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode upgrade instantiate -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME $POLICY_ARG &    
-    untilImage
-    createChaincodeDeployment apply
-    untilPod
+
+    # if dev, chaincde is created by user so we launch it first
+    if [[ $ENV == "DEV" ]];then
+      createChaincodeDeployment $METHOD
+      untilPod
+      untilInstalledChaincode
+      sleep 3
+      kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME $POLICY_ARG
+    else
+      kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME $POLICY_ARG &        
+      createChaincodeDeployment $METHOD
+      untilPod
+    fi
+    
     # kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode upgrade -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME -P '$POLICY'
     # execute first pod is good enough, for api, we get from service
     # chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1)    
     # we can use nohup maybe better
     # kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$PEER_ADDRESS > /dev/null 2>&1 &
     res=$?  
-    verifyResult $res "Upgrade chaincode failed"
-    echo "===================== Upgrade chaincode successfully ===================== "
-    echo "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode upgrade -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME $POLICY_ARG"
-    echo
-  else
-    echo "Cli pod not found" 1>&2
-  fi
-}
-
-instantiateChaincode() { 
-  cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
-  if [[ ! -z $cli_name ]];then    
-    local POLICY_ARG=
-    if [[ ! -z $POLICY ]];then
-      POLICY_ARG="-P '$POLICY'"
-    fi    
-    kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode instantiate -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME $POLICY_ARG &    
-    untilImage
-    # recreate it in development phrase
-    createChaincodeDeployment create
-    untilPod
-    # execute first pod is good enough, for api, we get from service
-    # chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1)
-    # we can use nohup maybe better
-    # kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$PEER_ADDRESS > /dev/null 2>&1 &
-    res=$?  
-    verifyResult $res "Instantiate chaincode failed"
-    echo "===================== Instantiate chaincode successfully ===================== "
-    echo "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode instantiate -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME $POLICY_ARG"
+    verifyResult $res "$chaincode_method chaincode failed"
+    echo "===================== $chaincode_method chaincode successfully ===================== "
+    echo "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME $POLICY_ARG"
     echo
   else
     echo "Cli pod not found" 1>&2
@@ -481,7 +583,7 @@ ARGS=$(getArgument "args" '{"Args":[]}')
 POLICY=$(getArgument "policy")
 VERSION=$(getArgument "version" v1})
 MODE=$(getArgument "mode" ${args[0]:-up})
-TIMEOUT=$(getArgument "timeout" 60)
+TIMEOUT=$(getArgument "timeout" 120)
 
 # for convenient
 # echo "args: "$(getArgument "query" "select * from")
@@ -514,10 +616,10 @@ case "${METHOD}" in
     setupNetwork
   ;;
   instantiate)
-    instantiateChaincode
+    updateChaincode instantiate
   ;;
   upgrade)
-    upgradeChaincode
+    updateChaincode upgrade
   ;;
   query)
     queryChaincode

@@ -14,6 +14,9 @@ spec:
        org: org1-f-1
        name: admin
     spec:
+      # nodeSelector:
+      #   # assume all org node can access to docker
+      #   org: org1-f-1
       containers:
        - name: admin
          image: hyperledger/admin-api
