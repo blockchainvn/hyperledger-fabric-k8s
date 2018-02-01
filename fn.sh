@@ -23,8 +23,10 @@ function printHelp () {
     echo "$res"    
   else      
     echo "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    echo "          ./fn.sh config"
-    echo
+    echo "          ./fn.sh config"    
+    echo 
+    echo "      - 'scale' - scale a deployment of a namespace for the network"
+    echo "          ./fn.sh scale orderer0-orgorderer-f-1"    
     echo 
     echo "      - 'tool' - re-build crypto tools with the current version of hyperledger"
     echo "          ./fn.sh tool"
@@ -95,6 +97,41 @@ setupConfig() {
     echo "Assign label org=$NAME_SPACE to master node $master_node"
     kubectl label nodes $master_node org=$NAME_SPACE
   fi
+}
+
+scalePod() {
+
+  local deployment=$(getArgument "deployment")
+  local min=$(getArgument "deployment" 2)
+  local max=$(getArgument "deployment" 10)
+  if [[ ! -z $deployment ]];then
+
+  cat <<EOF | kubectl apply -f -
+  apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: $deployment
+  namespace: $NAME_SPACE
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1beta1
+    kind: Deployment
+    name: $deployment
+  minReplicas: $min
+  maxReplicas: $max
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 50
+EOF
+  
+    echo "Scaling $deployment with replicas between $min-$max in namespace $NAME_SPACE"
+    echo
+  else
+    echo "Please enter deployment name"
+  fi
+
 }
 
 function buildCryptoTools() {
@@ -453,6 +490,9 @@ case "${METHOD}" in
   ;;
   install)
     installChaincode
+  ;;
+  scale)
+    scalePod
   ;;
   admin)
     buildAdmin
