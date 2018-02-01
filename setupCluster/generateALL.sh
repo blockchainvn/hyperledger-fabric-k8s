@@ -27,7 +27,7 @@ function generateChannelArtifacts() {
 	fi
 
 	CONFIGTXGEN=$TOOLS/configtxgen
- 	$CONFIGTXGEN -profile TwoOrgsOrdererGenesis -outputBlock ./channel-artifacts/genesis.block
+ 	$CONFIGTXGEN -profile $PROFILE -outputBlock ./channel-artifacts/genesis.block
 # 	$CONFIGTXGEN -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/channel.tx -channelID $CHANNEL_NAME
 #	$CONFIGTXGEN -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org1MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org1MSP
 # 	$CONFIGTXGEN -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org2MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org2MSP
@@ -61,6 +61,9 @@ function clean () {
 NSF_SERVER=$1
 NSF_DEFAULT_SERVER=$(ifconfig | awk '/inet /{print $2}' | grep -v 127.0.0.1 | tail -1)
 : ${NSF_SERVER:=$NSF_DEFAULT_SERVER}
+
+PROFILE=$2
+: ${PROFILE:=TwoOrgsOrdererGenesis}
 
 echo "NSF SERVER: $NSF_SERVER"
 echo

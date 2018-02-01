@@ -1,7 +1,8 @@
+MAINTAINER tupt
+
 FROM node
 
-LABEL vendor="Kasikorn Business Technology groups" \
-      com.origincert.admin.version="1.0.0" \
-      commit=""
+LABEL version="1.0"
+LABEL description="admin demo"
 
 EXPOSE 9000

@@ -44,6 +44,9 @@ spec:
       labels:
        app: cli
     spec:
+      nodeSelector:
+        # assume all org node can access to docker
+        org: $namespace
       containers:
         - name: $name
           image:  hyperledger/fabric-tools:x86_64-$version
