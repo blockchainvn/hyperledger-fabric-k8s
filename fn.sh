@@ -372,12 +372,17 @@ untilPod() {
 }
 
 bashContainer () {    
-  pod_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'${args[0]}'/{print $1}' | head -1)
+  local pod_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'${args[0]}'/{print $1}' | head -1)
   if [[ $pod_name ]]; then
+    local container=
+    if [[ ! -z ${args[1]} ]];then
+      container="-c ${args[1]}"
+    fi    
     if [[ ! -z $QUERY ]]; then      
-      kubectl exec -it $pod_name -n $NAMESPACE -- $QUERY
+      kubectl exec -it $pod_name -n $NAMESPACE $container -- $QUERY
+      printCommand "kubectl exec -it $pod_name -n $NAMESPACE $container -- $QUERY"
     else
-      kubectl exec -it $pod_name -n $NAMESPACE bash
+      kubectl exec -it $pod_name -n $NAMESPACE $container bash
     fi
   else
     echo "Can not find container matching '${args[0]}'"   
@@ -422,6 +427,7 @@ installChaincode() {
     fi
 
     kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode install -n $CHAINCODE -v $VERSION -p $CHAINCODE_PATH
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode install -n $CHAINCODE -v $VERSION -p $CHAINCODE_PATH"
     res=$?  
     verifyResult $res "Install chaincode failed"
     echo "===================== Install chaincode successfully ===================== "
@@ -577,9 +583,11 @@ fi
 args=()
 case "$METHOD" in
   bash|config)
-    args+=($1)
-    shift
-    QUERY="$@"
+    while [[ ! -z $2 ]];do
+      args+=($1)
+      shift
+    done
+    QUERY="$@"    
   ;;
   *) 
     # normal processing
