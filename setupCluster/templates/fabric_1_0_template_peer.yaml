@@ -23,7 +23,10 @@ spec:
         image: hyperledger/fabric-couchdb:x86_64-$version
         ports:
          - containerPort: 5984
-
+        
+        volumeMounts:
+         - mountPath: /opt/couchdb/data
+           name: db
 
       - name: $podName 
         image: hyperledger/fabric-peer:x86_64-$version
@@ -76,6 +79,9 @@ spec:
          #  subPath: channel-artifacts
          - mountPath: /etc/hyperledger/fabric/msp 
            name: certificate
+
+         - mountPath: /var/hyperledger/production/chaincodes
+           name: chaincode
            #subPath: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp
            # subPath: $mspPath
          # - mountPath: /etc/hyperledger/fabric/tls
@@ -93,6 +99,14 @@ spec:
        - name: run
          hostPath:
            path: /run
+
+       - name: chaincode
+         hostPath:
+           path: /opt/share/production/chaincodes/$namespace/$peerID
+
+       - name: db
+         hostPath:
+           path: /opt/share/couchdb/$namespace/$peerID
        
 
 ---

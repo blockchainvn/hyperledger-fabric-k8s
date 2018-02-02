@@ -7,6 +7,14 @@
 #
 # export so other script can access
 
+# colors
+BROWN='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+BOLD=$(tput bold)
+NORMAL=$(tput sgr0)
+
+# environment
 BASE_DIR=$PWD
 DOCKER_COMPOSE_FILE=docker-compose.yml
 SCRIPT_NAME=`basename "$0"`
@@ -48,13 +56,13 @@ function printHelp () {
     echo "          ./fn.sh install --channel mychannel --chaincode mycc -v v1"
     echo    
     echo "      - 'instantiate' - instantiate chaincode"
-    echo "          ./fn.sh instantiate --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --args='{\"Args\":[\"init\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
+    echo "          ./fn.sh instantiate --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
     echo
     echo "      - 'upgrade' - upgrade chaincode"
-    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --args='{\"Args\":[\"init\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
+    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
     echo
     echo "      - 'query' - query chaincode"    
-    echo "          ./fn.sh query --args='{\"Args\":[\"response\",\"{\\\"key\\\":\\\"key\\\",\\\"value\\\":\\\"value\\\"}\"]}'"
+    echo "          ./fn.sh query --args='{\"Args\":[\"query\",\"a\"]}'"
     echo
     echo "      - 'invoke' - invoke chaincode"    
     echo "          ./fn.sh invoke --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
@@ -75,6 +83,13 @@ verifyResult() {
     echo
       exit 1
   fi
+}
+
+printCommand(){
+  echo -e ""
+  echo -e "${BROWN}${BOLD}Command:${NC}"
+  echo -e "\t${BLUE}${BOLD}$1${NC}"
+  echo -e "${NORMAL}"
 }
 
 buildAdmin(){  
@@ -381,8 +396,11 @@ setupChannel() {
   if [[ ! -z $cli_name ]];then      
     # use fetch channel after that for sure, in case channel has been created
     kubectl exec -it $cli_name -n $NAMESPACE -- peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx 
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx"
     kubectl exec -it $cli_name -n $NAMESPACE -- peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME
+    printCommand "${GREEN}kubectl exec -it $cli_name -n $NAMESPACE -- peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME"
     kubectl exec -it $cli_name -n $NAMESPACE -- peer channel join -b ${CHANNEL_NAME}.block
+    printCommand "${GREEN}kubectl exec -it $cli_name -n $NAMESPACE -- peer channel join -b ${CHANNEL_NAME}.block"
     res=$?  
     verifyResult $res "Setup channel failed"
     echo "===================== Setup channel successfully ===================== "
@@ -474,7 +492,7 @@ updateChaincode(){
     # we can use nohup maybe better
     # kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$PEER_ADDRESS > /dev/null 2>&1 &
     res=$?  
-    echo "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c '$ARGS' -C $CHANNEL_NAME $POLICY_ARG"
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c '$ARGS' -C $CHANNEL_NAME $POLICY_ARG"
     verifyResult $res "$chaincode_method chaincode failed"
     echo "===================== $chaincode_method chaincode successfully ===================== "    
     echo
@@ -493,7 +511,7 @@ execChaincode() {
   if [[ ! -z $cli_name ]];then
     kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c "$ARGS" -C $CHANNEL_NAME
     res=$?  
-    echo "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c '$ARGS' -C $CHANNEL_NAME"  
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c '$ARGS' -C $CHANNEL_NAME"  
     verifyResult $res "$chaincode_method chaincode failed"
     echo "===================== $chaincode_method chaincode successfully ===================== "    
     echo
@@ -602,7 +620,7 @@ NAMESPACE=$(getArgument "namespace" org1-f-1)
 PEER_ADDRESS=$(getArgument "peer" peer0.${NAMESPACE}:7051) 
 ORDERER_ADDRESS=$(getArgument "orderer" orderer0.orgorderer-f-1:7050)
 CHAINCODE=$(getArgument "chaincode" mycc)
-CHAINCODE_PATH=$(getArgument "path" github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/crosschaincode)
+CHAINCODE_PATH=$(getArgument "path" github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/sacc)
 ARGS=$(getArgument "args" '{"Args":[]}')
 POLICY=$(getArgument "policy")
 VERSION=$(getArgument "version" v1)
