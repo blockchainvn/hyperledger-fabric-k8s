@@ -27,7 +27,7 @@ function printHelp () {
     echo "          ./fn.sh config --profile TwoOrgsOrdererGenesis"    
     echo 
     echo "      - 'scale' - scale a deployment of a namespace for the network"
-    echo "          ./fn.sh scale orderer0-orgorderer-f-1"    
+    echo "          ./fn.sh scale --deployment=orderer0-orgorderer-f-1 --min=2 --max=10"    
     echo 
     echo "      - 'tool' - re-build crypto tools with the current version of hyperledger"
     echo "          ./fn.sh tool"
@@ -105,12 +105,12 @@ setupConfig() {
 scalePod() {
 
   local deployment=$(getArgument "deployment")
-  local min=$(getArgument "deployment" 2)
-  local max=$(getArgument "deployment" 10)
+  local min=$(getArgument "min" 2)
+  local max=$(getArgument "max" 10)
   if [[ ! -z $deployment ]];then
 
   cat <<EOF | kubectl apply -f -
-  apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
   name: $deployment
