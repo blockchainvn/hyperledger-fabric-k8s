@@ -33,6 +33,26 @@ app.get("/query", function(req, res) {
     });
 });
 
+app.get("/invoke", function(req, res) {
+  const request = {
+    chaincodeId: req.query.chaincode,
+    fcn: req.query.method,
+    args: req.query.arguments,
+    eventAddress: req.query.eventHost || "peer0.org1-f-1:7053",
+    ordererAddress: req.query.ordererHost || "orderer0.orgorderer-f-1:7050"
+  };
+
+  // each method require different certificate of user
+  controller
+    .invoke(req.query.user, request)
+    .then(ret => {
+      res.send(ret.toString());
+    })
+    .catch(err => {
+      res.status(500).send(err);
+    });
+});
+
 // Save our port
 const port = process.env.PORT || 9000;
 

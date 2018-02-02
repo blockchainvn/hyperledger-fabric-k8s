@@ -10,6 +10,7 @@
 var x509 = require("x509");
 var Fabric_Client = require("fabric-client");
 var path = require("path");
+var util = require("util");
 
 module.exports = function(channelName, address) {
   var fabric_client = new Fabric_Client();
@@ -22,7 +23,7 @@ module.exports = function(channelName, address) {
   // );
 
   // setup the fabric network
-  var channel = fabric_client.newChannel(channelName);
+  // var channel = fabric_client.newChannel(channelName);
   // var peer = fabric_client.newPeer(
   //   "grpcs://localhost:" + (program.org == 1 ? 7051 : 8051),
   //   {
@@ -30,9 +31,6 @@ module.exports = function(channelName, address) {
   //     "ssl-target-name-override": "peer0.org" + program.org + ".example.com"
   //   }
   // );
-  var peer = fabric_client.newPeer("grpc://" + address);
-  channel.addPeer(peer);
-  console.log("Peer: " + "grpc://" + address);
   var store_path = path.join(__dirname, "hfc-key-store");
   console.log("Store path:" + store_path);
 
@@ -69,7 +67,57 @@ module.exports = function(channelName, address) {
         });
     },
 
+    getEventTxPromise(eventAdress, transaction_id_string) {
+      return new Promise((resolve, reject) => {
+        let event_hub = fabric_client.newEventHub();
+        event_hub.setPeerAddr("grpc://" + eventAdress);
+        console.log("eventhub: grpc://" + eventAdress);
+        event_hub.connect();
+
+        let handle = setTimeout(() => {
+          event_hub.disconnect();
+          resolve({ event_status: "TIMEOUT" }); //we could use reject(new Error('Trnasaction did not complete within 30 seconds'));
+        }, 3000);
+
+        event_hub.registerTxEvent(
+          transaction_id_string,
+          (tx, code) => {
+            // this is the callback for transaction event status
+            // first some clean up of event listener
+            clearTimeout(handle);
+            event_hub.unregisterTxEvent(transaction_id_string);
+            event_hub.disconnect();
+
+            // now let the application know what happened
+            var return_status = {
+              event_status: code,
+              tx_id: transaction_id_string
+            };
+            if (code !== "VALID") {
+              console.error("The transaction was invalid, code = " + code);
+              resolve(return_status); // we could use reject(new Error('Problem with the tranaction, event status ::'+code));
+            } else {
+              console.log(
+                "The transaction has been committed on peer " +
+                  event_hub._ep._endpoint.addr
+              );
+              resolve(return_status);
+            }
+          },
+          err => {
+            //this is the callback if something goes wrong with the event registration or processing
+            reject(new Error("There was a problem with the eventhub ::" + err));
+          }
+        );
+      });
+    },
+
     query(user, request) {
+      var channel = fabric_client.newChannel(channelName);
+      var peer = fabric_client.newPeer("grpc://" + address);
+      channel.addPeer(peer);
+      console.log("Peer: " + "grpc://" + address);
+
       return this.get_member_user(user)
         .then(user_from_store => {
           return channel.queryByChaincode(request);
@@ -93,9 +141,72 @@ module.exports = function(channelName, address) {
             console.log("No payloads were returned from query");
             return null;
           }
+        });
+    },
+
+    invoke(user, invokeRequest) {
+      var tx_id;
+      var channel = fabric_client.newChannel(channelName);
+      var peer = fabric_client.newPeer("grpc://" + address);
+      channel.addPeer(peer);
+      console.log("Peer: " + "grpc://" + address);
+      var orderer = fabric_client.newOrderer(
+        "grpc://" + invokeRequest.ordererAddress
+      );
+      channel.addOrderer(orderer);
+
+      return this.get_member_user(user)
+        .then(user_from_store => {
+          tx_id = fabric_client.newTransactionID();
+
+          return channel.sendTransactionProposal({
+            chaincodeId: invokeRequest.chaincodeId,
+            fcn: invokeRequest.fcn,
+            args: invokeRequest.args,
+            chainId: channelName,
+            txId: tx_id
+          });
         })
-        .catch(err => {
-          console.error("Failed to query successfully :: " + err);
+        .then(results => {
+          var proposalResponses = results[0];
+          var proposal = results[1];
+          let isProposalGood = false;
+          if (
+            proposalResponses &&
+            proposalResponses[0].response &&
+            proposalResponses[0].response.status === 200
+          ) {
+            isProposalGood = true;
+            console.log("Transaction proposal was good");
+          } else {
+            console.error("Transaction proposal was bad");
+          }
+
+          if (isProposalGood) {
+            console.log(
+              util.format(
+                'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s"',
+                proposalResponses[0].response.status,
+                proposalResponses[0].response.message
+              )
+            );
+
+            var txPromise = this.getEventTxPromise(
+              invokeRequest.eventAddress,
+              tx_id.getTransactionID()
+            );
+
+            var sendPromise = channel.sendTransaction({
+              proposalResponses: proposalResponses,
+              proposal: proposal
+            });
+
+            return Promise.all([sendPromise, txPromise]);
+          } else {
+            throw new Error(
+              "Failed to send Proposal or receive valid response. Response null or status is not 200. exiting..."
+            );
+          }
         });
     }
   };

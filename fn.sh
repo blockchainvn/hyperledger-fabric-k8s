@@ -48,13 +48,16 @@ function printHelp () {
     echo "          ./fn.sh install --channel mychannel --chaincode mycc -v v1"
     echo    
     echo "      - 'instantiate' - instantiate chaincode"
-    echo "          ./fn.sh instantiate --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --arg='{\"Args\":[\"init\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
+    echo "          ./fn.sh instantiate --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --args='{\"Args\":[\"init\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
     echo
     echo "      - 'upgrade' - upgrade chaincode"
-    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --arg='{\"Args\":[\"init\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
+    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --args='{\"Args\":[\"init\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
     echo
     echo "      - 'query' - query chaincode"    
     echo "          ./fn.sh query --args='{\"Args\":[\"response\",\"{\\\"key\\\":\\\"key\\\",\\\"value\\\":\\\"value\\\"}\"]}'"
+    echo
+    echo "      - 'invoke' - invoke chaincode"    
+    echo "          ./fn.sh invoke --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
   fi
 
   echo
@@ -211,6 +214,7 @@ createChaincodeDeploymentDev() {
       metadata:
         labels:
           app: chaincode
+          channel: $CHANNEL_NAME
       spec:
         # nodeSelector:
           # assume all org node can access to docker
@@ -257,10 +261,10 @@ EOF
 
 createChaincodeDeployment() {
 
-  if [[ $ENV == "DEV" ]];then
-    createChaincodeDeploymentDev $1
-    return 0
-  fi
+  # if [[ $ENV == "DEV" ]];then
+  #   createChaincodeDeploymentDev $1
+  #   return 0
+  # fi
 
   untilImage
 
@@ -391,6 +395,14 @@ setupChannel() {
 installChaincode() {
   cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
   if [[ ! -z $cli_name ]];then    
+
+    if [[ $ENV == 'DEV' ]];then
+      createChaincodeDeploymentDev
+      untilPod
+      untilInstalledChaincode
+      sleep 3
+    fi
+
     kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode install -n $CHAINCODE -v $VERSION -p $CHAINCODE_PATH
     res=$?  
     verifyResult $res "Install chaincode failed"
@@ -440,15 +452,18 @@ updateChaincode(){
       POLICY_ARG="-P '$POLICY'"
     fi     
 
-    # if dev, chaincde is created by user so we launch it first
+    # ARGS can contain spaces so please surround it by double quote
+    # with double quote, we will have it value exactly what we give
+    # but when echo it we may see different value
+    # if dev, chaincde is created by user so we launch it first at install phrase
     if [[ $ENV == "DEV" ]];then
-      createChaincodeDeployment $METHOD
-      untilPod
-      untilInstalledChaincode
-      sleep 3
-      kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME $POLICY_ARG
+      # createChaincodeDeploymentDev
+      # untilPod
+      # untilInstalledChaincode
+      # sleep 3
+      kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c "$ARGS" -C $CHANNEL_NAME $POLICY_ARG
     else
-      kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME $POLICY_ARG &        
+      kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c "$ARGS" -C $CHANNEL_NAME $POLICY_ARG &        
       createChaincodeDeployment $METHOD
       untilPod
     fi
@@ -459,28 +474,32 @@ updateChaincode(){
     # we can use nohup maybe better
     # kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$PEER_ADDRESS > /dev/null 2>&1 &
     res=$?  
+    echo "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c '$ARGS' -C $CHANNEL_NAME $POLICY_ARG"
     verifyResult $res "$chaincode_method chaincode failed"
-    echo "===================== $chaincode_method chaincode successfully ===================== "
-    echo "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME $POLICY_ARG"
+    echo "===================== $chaincode_method chaincode successfully ===================== "    
     echo
   else
     echo "Cli pod not found" 1>&2
   fi
 }
 
-queryChaincode() {
+execChaincode() {
+  local chaincode_method=${1:-query}  
+  if [[ ! $chaincode_method =~ ^query|invoke$ ]];then
+    echo "Don't know method $chaincode_method"
+    exit 1
+  fi  
   cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
   if [[ ! -z $cli_name ]];then
-    kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode query -n $CHAINCODE -c $ARGS -C $CHANNEL_NAME
+    kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c "$ARGS" -C $CHANNEL_NAME
     res=$?  
-    verifyResult $res "Query chaincode failed"
-    echo "===================== Query chaincode successfully ===================== "
-    echo "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode query -n $CHAINCODE -c '$ARGS' -C $CHANNEL_NAME"  
+    echo "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c '$ARGS' -C $CHANNEL_NAME"  
+    verifyResult $res "$chaincode_method chaincode failed"
+    echo "===================== $chaincode_method chaincode successfully ===================== "    
     echo
   else
     echo "Cli pod not found" 1>&2
-  fi
-  
+  fi  
 }
 
 getToken(){
@@ -515,6 +534,12 @@ EOF
   kubectl -n kube-system describe secret $token_check | awk '$1~/token/{print $2}'
   echo
 }
+
+# declare MYMAP 
+# val='{"Args":["a","10"]}'
+# MYMAP[foo]=$val
+# echo ${MYMAP[foo]}
+# exit
 
 # Get a value:
 getArgument() {   
@@ -571,7 +596,6 @@ case "$METHOD" in
   ;; 
 esac
 
-
 # process methods and arguments, by default first is channel and next is org_id
 CHANNEL_NAME=$(getArgument "channel" mychannel)
 NAMESPACE=$(getArgument "namespace" org1-f-1)
@@ -581,7 +605,7 @@ CHAINCODE=$(getArgument "chaincode" mycc)
 CHAINCODE_PATH=$(getArgument "path" github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/crosschaincode)
 ARGS=$(getArgument "args" '{"Args":[]}')
 POLICY=$(getArgument "policy")
-VERSION=$(getArgument "version" v1})
+VERSION=$(getArgument "version" v1)
 MODE=$(getArgument "mode" ${args[0]:-up})
 TIMEOUT=$(getArgument "timeout" 120)
 
@@ -622,8 +646,11 @@ case "${METHOD}" in
     updateChaincode upgrade
   ;;
   query)
-    queryChaincode
-  ;;  
+    execChaincode query
+  ;; 
+  invoke)
+    execChaincode invoke
+  ;;   
   *) 
     printHelp 1 ${args[0]}
   ;;

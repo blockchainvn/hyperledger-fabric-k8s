@@ -6,6 +6,8 @@ program
   .option("--name, --channel []", "A channel", "mychannel")
   .option("--chaincode, --chaincode []", "A chaincode", "origincert")
   .option("--host, --host []", "Host", "peer0.org1-f-1:7051")
+  .option("--ehost, --event-host []", "Host", "peer0.org1-f-1:7053")
+  .option("--ohost, --orderer-host []", "Host", "orderer0.orgorderer-f-1:7050")
   .option("-m, --method []", "A method", "getCreator")
   .option(
     "-a, --arguments [value]",
@@ -17,18 +19,23 @@ program
 
 var controller = require("./controller")(program.channel, program.host);
 
-const request = {
-  //targets : --- letting this default to the peers assigned to the channel
+var request = {
+  //targets: let default to the peer assigned to the client
   chaincodeId: program.chaincode,
   fcn: program.method,
-  args: program.arguments
+  args: program.arguments,
+  eventAddress: program.eventHost,
+  ordererAddress: program.ordererHost
 };
 
 // each method require different certificate of user
 controller
-  .query(program.user, request)
-  .then(ret => {
-    console.log(ret.toString());
+  .invoke(program.user, request)
+  .then(results => {
+    console.log(
+      "Send transaction promise and event listener promise have completed",
+      results
+    );
   })
   .catch(err => {
     console.error(err);

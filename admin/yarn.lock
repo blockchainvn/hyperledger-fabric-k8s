@@ -420,7 +420,7 @@ eyes@0.1.x:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/eyes/-/eyes-0.1.8.tgz#62cf120234c683785d902348a800ef3e0cc20bc0"
 
-fabric-ca-client@^1.0.0:
+fabric-ca-client@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/fabric-ca-client/-/fabric-ca-client-1.0.2.tgz#a965e263a0f679ad55087aef8a53a6e09ada2931"
   dependencies:
@@ -437,7 +437,7 @@ fabric-ca-client@^1.0.0:
     util "^0.10.3"
     winston "^2.2.0"
 
-fabric-client@^1.0.0:
+fabric-client@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/fabric-client/-/fabric-client-1.0.2.tgz#5ad575dc1f1ed4e33f287f1594e108b6c0fefde1"
   dependencies:
