@@ -13,7 +13,6 @@ var path = require("path");
 var util = require("util");
 
 module.exports = function(channelName, address) {
-  var fabric_client = new Fabric_Client();
   // const tlsCACertPEM = fs.readFileSync(
   //   "./crypto-config/peerOrganizations/org" +
   //     program.org +
@@ -35,7 +34,7 @@ module.exports = function(channelName, address) {
   console.log("Store path:" + store_path);
 
   return {
-    get_member_user(user) {
+    get_member_user(user, fabric_client) {
       // create the key value store as defined in the fabric-client/config/default.json 'key-value-store' setting
       return Fabric_Client.newDefaultKeyValueStore({
         path: store_path
@@ -67,7 +66,7 @@ module.exports = function(channelName, address) {
         });
     },
 
-    getEventTxPromise(eventAdress, transaction_id_string) {
+    getEventTxPromise(eventAdress, transaction_id_string, fabric_client) {
       return new Promise((resolve, reject) => {
         let event_hub = fabric_client.newEventHub();
         event_hub.setPeerAddr("grpc://" + eventAdress);
@@ -113,12 +112,13 @@ module.exports = function(channelName, address) {
     },
 
     query(user, request) {
+      var fabric_client = new Fabric_Client();
       var channel = fabric_client.newChannel(channelName);
       var peer = fabric_client.newPeer("grpc://" + address);
       channel.addPeer(peer);
       console.log("Peer: " + "grpc://" + address);
 
-      return this.get_member_user(user)
+      return this.get_member_user(user, fabric_client)
         .then(user_from_store => {
           return channel.queryByChaincode(request);
         })
@@ -146,6 +146,7 @@ module.exports = function(channelName, address) {
 
     invoke(user, invokeRequest) {
       var tx_id;
+      var fabric_client = new Fabric_Client();
       var channel = fabric_client.newChannel(channelName);
       var peer = fabric_client.newPeer("grpc://" + address);
       channel.addPeer(peer);
@@ -155,7 +156,7 @@ module.exports = function(channelName, address) {
       );
       channel.addOrderer(orderer);
 
-      return this.get_member_user(user)
+      return this.get_member_user(user, fabric_client)
         .then(user_from_store => {
           tx_id = fabric_client.newTransactionID();
 
@@ -193,7 +194,8 @@ module.exports = function(channelName, address) {
 
             var txPromise = this.getEventTxPromise(
               invokeRequest.eventAddress,
-              tx_id.getTransactionID()
+              tx_id.getTransactionID(),
+              fabric_client
             );
 
             var sendPromise = channel.sendTransaction({

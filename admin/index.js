@@ -26,7 +26,7 @@ app.get("/query", function(req, res) {
   controller
     .query(req.query.user, request)
     .then(ret => {
-      res.send(ret.toString());
+      res.json({ result: ret.toString() });
     })
     .catch(err => {
       res.status(500).send(err);
@@ -46,7 +46,7 @@ app.get("/invoke", function(req, res) {
   controller
     .invoke(req.query.user, request)
     .then(ret => {
-      res.send(ret.toString());
+      res.json(ret);
     })
     .catch(err => {
       res.status(500).send(err);

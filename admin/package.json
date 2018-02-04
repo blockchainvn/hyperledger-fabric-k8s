@@ -4,12 +4,13 @@
     "description": "Hyperledger Fabric Sample Application",
     "main": "index.js",
     "scripts": {
-        "start": "node index.js",
+        "start": "nodemon index.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
         "body-parser": "latest",
         "commander": "^2.11.0",
+        "nodemon": "^1.14.3",
         "express": "latest",
         "fabric-ca-client": "^1.0.0",
         "fabric-client": "^1.0.0",
