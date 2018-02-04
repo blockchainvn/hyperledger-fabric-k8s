@@ -58,12 +58,15 @@ function clean () {
 ##	CONFIGTXGEN=$TOOLS/configtxgen
 	
 #}
-NSF_SERVER=$1
+
+PROFILE=$1
+: ${PROFILE:=TwoOrgsOrdererGenesis}
+
+NSF_SERVER=$2
 NSF_DEFAULT_SERVER=$(ifconfig | awk '/inet /{print $2}' | grep -v 127.0.0.1 | tail -1)
 : ${NSF_SERVER:=$NSF_DEFAULT_SERVER}
 
-PROFILE=$2
-: ${PROFILE:=TwoOrgsOrdererGenesis}
+
 
 echo "NSF SERVER: $NSF_SERVER"
 echo

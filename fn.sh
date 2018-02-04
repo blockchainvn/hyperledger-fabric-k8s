@@ -110,7 +110,7 @@ setupConfig() {
   local profile=$(getArgument "profile" TwoOrgsOrdererGenesis)
   cd setupCluster
   echo "Creating genesis, profile [$profile]..."
-  ./generateALL.sh $nfs_server $profile
+  ./generateALL.sh $profile $nfs_server 
   chmod -R 777 /opt/share
   # assign label
   # local master_node=$(kubectl get nodes | awk '$3~/master/{print $1}')
