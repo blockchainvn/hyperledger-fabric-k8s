@@ -39,6 +39,9 @@ function printHelp () {
     echo 
     echo "      - 'tool' - re-build crypto tools with the current version of hyperledger"
     echo "          ./fn.sh tool"
+    echo 
+    echo "      - 'token' - get token of cluster user"
+    echo "          ./fn.sh token"
     echo
     echo "      - 'admin' - build admin with namespace and port"
     echo "          ./fn.sh admin --namespace=org1-f-1 --port=30009"
@@ -156,6 +159,33 @@ EOF
 }
 
 function buildCryptoTools() {
+
+  # install go and fabric library
+  if [[ -d $GOPATH ]];then
+    ARCH=`uname -s | grep Darwin`
+    if [ "$ARCH" == "Darwin" ]; then
+      if [ ! `command -v go` ]; then
+        brew install go
+      fi
+    else
+      if [ ! `command -v go` ]; then        
+        apt install golang-go -y
+      fi  
+      apt install libtool libltdl-dev -y
+    fi  
+
+    apt install libtool libltdl-dev
+    mkdir -p /opt/gopath/src
+    export GOPATH=/opt/gopath
+    cd $GOPATH/src
+    mkdir -p github.com/hyperledger
+    cd github.com/hyperledger
+    git clone https://github.com/hyperledger/fabric.git
+  fi
+
+  # install pyyaml for sure
+  pip install pyyaml
+
   cd ${GOPATH}/src/github.com/hyperledger/fabric/
   make configtxgen
   res=$?
@@ -257,7 +287,7 @@ createChaincodeDeploymentDev() {
                 value: /opt/gopath          
               - name: CORE_VM_ENDPOINT
                 value: unix:///host/var/run/docker.sock
-            imagePullPolicy: Never
+            imagePullPolicy: IfNotPresent
         restartPolicy: Always
         volumes:
          - name: run
@@ -531,13 +561,15 @@ getToken(){
   local token_check=$(kubectl -n kube-system get secret | grep ${token_name}-token | awk '{print $1}')
   if [[ -z $token_check ]];then
     echo "Creating new one..."
-    cat <<EOF | kubectl $METHOD -f -
+    cat <<EOF | kubectl create -f -
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: $token_name
   namespace: kube-system
+EOF
 
+    cat <<EOF | kubectl create -f -
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
@@ -553,10 +585,15 @@ subjects:
 EOF
     token_check=$(kubectl -n kube-system get secret | grep ${token_name}-token | awk '{print $1}')
   fi  
-  echo "Your token: $token_check"
-  echo
-  kubectl -n kube-system describe secret $token_check | awk '$1~/token/{print $2}'
-  echo
+  if [[ ! -z $token_check ]];then
+    echo "Your token: $token_check"
+    echo
+    kubectl -n kube-system describe secret $token_check | awk '$1~/token/{print $2}'
+    printCommand "kubectl -n kube-system describe secret $token_check | awk '$1~/token/{print $2}'"
+    echo
+  else
+    echo "Not found ${token_name}-token"
+  fi
 }
 
 # declare MYMAP 
