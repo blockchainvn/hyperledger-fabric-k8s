@@ -11,8 +11,9 @@ if [[ -z $IMAGE_CHECK ]];then
 fi
 
 : ${NAMESPACE:="default"}
-: ${PORT:="30900"}
+: ${PORT:="31999"}
 
+# each admin only deployed on a server
 # create template then you can run it normally
 # policy is IfNotPresent because we might create service while image being created
 # if set policy to never, we should wait for image ready

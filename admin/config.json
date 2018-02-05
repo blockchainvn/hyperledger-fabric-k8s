@@ -1,0 +1,6 @@
+{
+  "channel": "mychannel",
+  "eventHost": "peer0.idp1-v1:7053",
+  "peerHost": "peer0.idp1-v1:7051",
+  "ordererHost": "orderer0.orgorderer-v1:7050"
+}

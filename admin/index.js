@@ -5,7 +5,9 @@
 // call the packages we need
 const express = require("express"); // call express
 const bodyParser = require("body-parser");
-const controller = require("./controller")("mychannel", "peer0.org1-f-1:7051");
+const config = require("./config.json");
+
+const controller = require("./controller")(config.channel, config.peerHost);
 const app = express(); // define our app using express
 // Load all of our middleware
 // configure app to use bodyParser()
@@ -13,6 +15,11 @@ const app = express(); // define our app using express
 // app.use(express.static(__dirname + '/client'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+app.get("/viewca", function(req, res) {
+  const cert = controller.viewca(req.query.user);
+  res.json(cert);
+});
 
 app.get("/query", function(req, res) {
   const request = {
@@ -38,8 +45,8 @@ app.get("/invoke", function(req, res) {
     chaincodeId: req.query.chaincode,
     fcn: req.query.method,
     args: req.query.arguments,
-    eventAddress: req.query.eventHost || "peer0.org1-f-1:7053",
-    ordererAddress: req.query.ordererHost || "orderer0.orgorderer-f-1:7050"
+    eventAddress: req.query.eventHost || config.eventHost,
+    ordererAddress: req.query.ordererHost || config.ordererHost
   };
 
   // each method require different certificate of user

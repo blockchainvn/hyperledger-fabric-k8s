@@ -35,7 +35,7 @@ function printHelp () {
     echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml"    
     echo 
     echo "      - 'scale' - scale a deployment of a namespace for the network"
-    echo "          ./fn.sh scale --deployment=orderer0-orgorderer-f-1 --min=2 --max=10"    
+    echo "          ./fn.sh scale --deployment=orderer0-orgorderer-v1 --min=2 --max=10"    
     echo 
     echo "      - 'tool' - re-build crypto tools with the current version of hyperledger"
     echo "          ./fn.sh tool"
@@ -44,7 +44,7 @@ function printHelp () {
     echo "          ./fn.sh token"
     echo
     echo "      - 'admin' - build admin with namespace and port"
-    echo "          ./fn.sh admin --namespace=org1-f-1 --port=30009"
+    echo "          ./fn.sh admin --namespace=org1-v1 --port=30009"
     echo
     echo "      - 'network' - setup the network with kubernetes"
     echo "          ./fn.sh network [apply|down]"
@@ -53,16 +53,16 @@ function printHelp () {
     echo "          ./fn.sh bash cli 'peer channel list'"
     echo
     echo "      - 'channel' - setup channel"
-    echo "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-f-1 --orderer orderer0.orgorderer-f-1:7050"
+    echo "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050"
     echo
     echo "      - 'install' - install chaincode"
     echo "          ./fn.sh install --channel mychannel --chaincode mycc -v v1"
     echo    
     echo "      - 'instantiate' - instantiate chaincode"
-    echo "          ./fn.sh instantiate --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
+    echo "          ./fn.sh instantiate --channel mychannel --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
     echo
     echo "      - 'upgrade' - upgrade chaincode"
-    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-f-1:7050 --channel mychannel --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
+    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-v1:7050 --channel mychannel --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
     echo
     echo "      - 'query' - query chaincode"    
     echo "          ./fn.sh query --args='{\"Args\":[\"query\",\"a\"]}'"
@@ -99,7 +99,7 @@ buildAdmin(){
   local port=$(getArgument "port")
   cd admin
   echo "Enrolling PeerAdmin..."
-  ./peer-admin.sh
+  ./peer-admin.sh $NAMESPACE
   echo
   echo "Building admin image..."
   ./build.sh $NAMESPACE $port

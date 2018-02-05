@@ -4,11 +4,11 @@ import (
   "flag"
   "fmt"
   "gopkg.in/yaml.v2"
-  "path/filepath"
-  // "regexp"
   "io/ioutil"
   "log"
+  "path/filepath"
   "strconv"
+  "strings"
   "time"
 )
 
@@ -172,10 +172,12 @@ func GenOrg(peerOrg *PeerOrg, tenant string) (Organization, error) {
     anchors = append(anchors, &anchor)
   }
 
-  // set msp
+  // set msp, force Capitialize
+  mspID := strings.Title(strings.ToLower(peerOrg.Name)) + "MSP"
+  fmt.Println(mspID)
   org := Organization{
-    Name:        peerOrg.Name + "MSP",
-    ID:          peerOrg.Name + "MSP",
+    Name:        mspID,
+    ID:          mspID,
     MSPDir:      "crypto-config/peerOrganizations/" + domainName + "/msp",
     AnchorPeers: anchors,
   }

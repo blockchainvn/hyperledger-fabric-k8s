@@ -3,8 +3,8 @@ Profiles:
     Consortium: SampleConsortium
     Application:
       Organizations:
-      - Name: IDP1MSP
-        ID: IDP1MSP
+      - Name: Idp1MSP
+        ID: Idp1MSP
         MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
         AnchorPeers:
         - Host: peer0.idp1-v1
@@ -15,8 +15,8 @@ Profiles:
           Port: 7051
         - Host: peer3.idp1-v1
           Port: 7051
-      - Name: IDP2MSP
-        ID: IDP2MSP
+      - Name: Idp2MSP
+        ID: Idp2MSP
         MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
         AnchorPeers:
         - Host: peer0.idp2-v1
@@ -27,8 +27,8 @@ Profiles:
           Port: 7051
         - Host: peer3.idp2-v1
           Port: 7051
-      - Name: IDP3MSP
-        ID: IDP3MSP
+      - Name: Idp3MSP
+        ID: Idp3MSP
         MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
         AnchorPeers:
         - Host: peer0.idp3-v1
@@ -39,8 +39,8 @@ Profiles:
           Port: 7051
         - Host: peer3.idp3-v1
           Port: 7051
-      - Name: AS1MSP
-        ID: AS1MSP
+      - Name: As1MSP
+        ID: As1MSP
         MSPDir: crypto-config/peerOrganizations/as1-v1/msp
         AnchorPeers:
         - Host: peer0.as1-v1
@@ -51,8 +51,8 @@ Profiles:
           Port: 7051
         - Host: peer3.as1-v1
           Port: 7051
-      - Name: AS2MSP
-        ID: AS2MSP
+      - Name: As2MSP
+        ID: As2MSP
         MSPDir: crypto-config/peerOrganizations/as2-v1/msp
         AnchorPeers:
         - Host: peer0.as2-v1
@@ -63,8 +63,8 @@ Profiles:
           Port: 7051
         - Host: peer3.as2-v1
           Port: 7051
-      - Name: RP1MSP
-        ID: RP1MSP
+      - Name: Rp1MSP
+        ID: Rp1MSP
         MSPDir: crypto-config/peerOrganizations/rp1-v1/msp
         AnchorPeers:
         - Host: peer0.rp1-v1
@@ -92,8 +92,8 @@ Profiles:
     Consortiums:
       SampleConsortium:
         Organizations:
-        - Name: IDP1MSP
-          ID: IDP1MSP
+        - Name: Idp1MSP
+          ID: Idp1MSP
           MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
           AnchorPeers:
           - Host: peer0.idp1-v1
@@ -104,8 +104,8 @@ Profiles:
             Port: 7051
           - Host: peer3.idp1-v1
             Port: 7051
-        - Name: IDP2MSP
-          ID: IDP2MSP
+        - Name: Idp2MSP
+          ID: Idp2MSP
           MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
           AnchorPeers:
           - Host: peer0.idp2-v1
@@ -116,8 +116,8 @@ Profiles:
             Port: 7051
           - Host: peer3.idp2-v1
             Port: 7051
-        - Name: IDP3MSP
-          ID: IDP3MSP
+        - Name: Idp3MSP
+          ID: Idp3MSP
           MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
           AnchorPeers:
           - Host: peer0.idp3-v1
@@ -128,8 +128,8 @@ Profiles:
             Port: 7051
           - Host: peer3.idp3-v1
             Port: 7051
-        - Name: AS1MSP
-          ID: AS1MSP
+        - Name: As1MSP
+          ID: As1MSP
           MSPDir: crypto-config/peerOrganizations/as1-v1/msp
           AnchorPeers:
           - Host: peer0.as1-v1
@@ -140,8 +140,8 @@ Profiles:
             Port: 7051
           - Host: peer3.as1-v1
             Port: 7051
-        - Name: AS2MSP
-          ID: AS2MSP
+        - Name: As2MSP
+          ID: As2MSP
           MSPDir: crypto-config/peerOrganizations/as2-v1/msp
           AnchorPeers:
           - Host: peer0.as2-v1
@@ -152,8 +152,8 @@ Profiles:
             Port: 7051
           - Host: peer3.as2-v1
             Port: 7051
-        - Name: RP1MSP
-          ID: RP1MSP
+        - Name: Rp1MSP
+          ID: Rp1MSP
           MSPDir: crypto-config/peerOrganizations/rp1-v1/msp
           AnchorPeers:
           - Host: peer0.rp1-v1
@@ -168,8 +168,8 @@ Organizations:
 - Name: OrdererOrg
   ID: Orderer0MSP
   MSPDir: crypto-config/ordererOrganizations/orgordererv1/msp
-- Name: IDP1MSP
-  ID: IDP1MSP
+- Name: Idp1MSP
+  ID: Idp1MSP
   MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
   AnchorPeers:
   - Host: peer0.idp1-v1
@@ -180,8 +180,8 @@ Organizations:
     Port: 7051
   - Host: peer3.idp1-v1
     Port: 7051
-- Name: IDP2MSP
-  ID: IDP2MSP
+- Name: Idp2MSP
+  ID: Idp2MSP
   MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
   AnchorPeers:
   - Host: peer0.idp2-v1
@@ -192,8 +192,8 @@ Organizations:
     Port: 7051
   - Host: peer3.idp2-v1
     Port: 7051
-- Name: IDP3MSP
-  ID: IDP3MSP
+- Name: Idp3MSP
+  ID: Idp3MSP
   MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
   AnchorPeers:
   - Host: peer0.idp3-v1
@@ -204,8 +204,8 @@ Organizations:
     Port: 7051
   - Host: peer3.idp3-v1
     Port: 7051
-- Name: AS1MSP
-  ID: AS1MSP
+- Name: As1MSP
+  ID: As1MSP
   MSPDir: crypto-config/peerOrganizations/as1-v1/msp
   AnchorPeers:
   - Host: peer0.as1-v1
@@ -216,8 +216,8 @@ Organizations:
     Port: 7051
   - Host: peer3.as1-v1
     Port: 7051
-- Name: AS2MSP
-  ID: AS2MSP
+- Name: As2MSP
+  ID: As2MSP
   MSPDir: crypto-config/peerOrganizations/as2-v1/msp
   AnchorPeers:
   - Host: peer0.as2-v1
@@ -228,8 +228,8 @@ Organizations:
     Port: 7051
   - Host: peer3.as2-v1
     Port: 7051
-- Name: RP1MSP
-  ID: RP1MSP
+- Name: Rp1MSP
+  ID: Rp1MSP
   MSPDir: crypto-config/peerOrganizations/rp1-v1/msp
   AnchorPeers:
   - Host: peer0.rp1-v1

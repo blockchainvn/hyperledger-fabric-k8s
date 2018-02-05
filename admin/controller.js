@@ -11,6 +11,7 @@ var x509 = require("x509");
 var Fabric_Client = require("fabric-client");
 var path = require("path");
 var util = require("util");
+var fs = require("fs");
 
 module.exports = function(channelName, address) {
   // const tlsCACertPEM = fs.readFileSync(
@@ -34,6 +35,12 @@ module.exports = function(channelName, address) {
   console.log("Store path:" + store_path);
 
   return {
+    viewca(user) {
+      var obj = JSON.parse(fs.readFileSync(store_path + "/" + user, "utf8"));
+      var cert = x509.parseCert(obj.enrollment.identity.certificate);
+      return cert;
+    },
+
     get_member_user(user, fabric_client) {
       // create the key value store as defined in the fabric-client/config/default.json 'key-value-store' setting
       return Fabric_Client.newDefaultKeyValueStore({
