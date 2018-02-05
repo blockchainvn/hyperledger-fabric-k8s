@@ -16,8 +16,16 @@ echo "/opt/share -network <master_ip> -mask 255.255.255.0 -alldirs -maproot=root
 sudo nfsd restart
 ```
 
-Run 
 
+* Build admin api images: **optional**
+```sh
+# on master node
+docker save hyperledger/admin-api > /opt/share/docker/admin-api.tar
+# on slave node
+docker load < /opt/share/docker/admin-api.tar
+```
+
+Run 
 ```sh
 ./fn.sh help
 ```

@@ -31,7 +31,7 @@ module.exports = function(channelName, address) {
   //     "ssl-target-name-override": "peer0.org" + program.org + ".example.com"
   //   }
   // );
-  var store_path = path.join(__dirname, "hfc-key-store");
+  var store_path = process.env.KEY_STORE_PATH;
   console.log("Store path:" + store_path);
 
   return {

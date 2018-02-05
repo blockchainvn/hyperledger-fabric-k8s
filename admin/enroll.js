@@ -21,7 +21,7 @@ var fabric_client = new Fabric_Client();
 var fabric_ca_client = null;
 var admin_user = null;
 var member_user = null;
-var store_path = path.join(__dirname, "hfc-key-store");
+var store_path = process.env.KEY_STORE_PATH;
 console.log(" Store path:" + store_path);
 
 program

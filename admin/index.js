@@ -5,9 +5,14 @@
 // call the packages we need
 const express = require("express"); // call express
 const bodyParser = require("body-parser");
-const config = require("./config.json");
+const controller_API = require("./controller");
+const config = {
+  peerHost: process.env.PEER_HOST,
+  eventHost: process.env.EVENT_HOST,
+  ordererHost: process.env.ORDERER_HOST
+};
 
-const controller = require("./controller")(config.channel, config.peerHost);
+console.log("Config:", config);
 const app = express(); // define our app using express
 // Load all of our middleware
 // configure app to use bodyParser()
@@ -29,6 +34,7 @@ app.get("/query", function(req, res) {
     args: req.query.arguments
   };
 
+  const controller = controller_API(req.query.channel, config.peerHost);
   // each method require different certificate of user
   controller
     .query(req.query.user, request)
@@ -49,6 +55,7 @@ app.get("/invoke", function(req, res) {
     ordererAddress: req.query.ordererHost || config.ordererHost
   };
 
+  const controller = controller_API(req.query.channel, config.peerHost);
   // each method require different certificate of user
   controller
     .invoke(req.query.user, request)

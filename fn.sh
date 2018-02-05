@@ -44,7 +44,7 @@ function printHelp () {
     echo "          ./fn.sh token"
     echo
     echo "      - 'admin' - build admin with namespace and port"
-    echo "          ./fn.sh admin --namespace=org1-v1 --port=30009"
+    echo "          ./fn.sh admin --namespace org1-v1 --port 30009 [--mode=up|down]"
     echo
     echo "      - 'network' - setup the network with kubernetes"
     echo "          ./fn.sh network [apply|down]"
@@ -56,7 +56,7 @@ function printHelp () {
     echo "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050"
     echo
     echo "      - 'install' - install chaincode"
-    echo "          ./fn.sh install --channel mychannel --chaincode mycc -v v1"
+    echo "          ./fn.sh install --channel mychannel --chaincode mycc -v v1 [--no-pod true]"
     echo    
     echo "      - 'instantiate' - instantiate chaincode"
     echo "          ./fn.sh instantiate --channel mychannel --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
@@ -96,16 +96,25 @@ printCommand(){
 }
 
 buildAdmin(){  
-  local port=$(getArgument "port")
   cd admin
-  echo "Enrolling PeerAdmin..."
-  ./peer-admin.sh $NAMESPACE
-  echo
+  local port=$(getArgument "port" 31999)    
+  local method=create
+  if [[ $MODE == "up" ]];then
+    method=apply
+  elif [[ $MODE == "down" ]]; then
+    method=delete
+  else
+    echo "Unknown method $MODE"
+    exit 1
+  fi
+  #statements  
+  echo "Update admin source code"
+  rsync -av --progress ./ /opt/share/admin --exclude node_modules
+
   echo "Building admin image..."
-  ./build.sh $NAMESPACE $port
-  echo
-  echo "Starting admin..."
-  kubectl apply -f api-server.yaml
+  ./build.sh $NAMESPACE $port $method
+  printCommand "./build.sh $NAMESPACE $port $method"
+  echo  
 }
 
 setupConfig() {
@@ -131,8 +140,8 @@ setupConfig() {
   local master_node=$(kubectl get nodes | awk '$3~/master/{print $1}')
   if [[ ! -z $master_node ]];then
     echo "Assign label org=$NAMESPACE to master node $master_node"
-    kubectl label nodes $master_node org=$NAMESPACE --overwrite=true
-    printCommand "kubectl label nodes $master_node org=$NAMESPACE --overwrite=true"
+    kubectl label nodes $master_node admin=true --overwrite=true
+    printCommand "kubectl label nodes $master_node admin=true --overwrite=true"
   fi
 }
 
@@ -463,10 +472,13 @@ installChaincode() {
   if [[ ! -z $cli_name ]];then    
 
     if [[ $ENV == 'DEV' ]];then
-      createChaincodeDeploymentDev
-      untilPod
-      untilInstalledChaincode
-      sleep 3
+      local no_pod=$(getArgument "no_pod")
+      if [[ -z $no_pod ]];then
+        createChaincodeDeploymentDev
+        untilPod
+        untilInstalledChaincode
+        sleep 3
+      fi
     fi
 
     kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode install -n $CHAINCODE -v $VERSION -p $CHAINCODE_PATH
@@ -624,6 +636,7 @@ getArgument() {
   echo ${!key:-$2}  
 }
 
+
 # check first param is method
 if [[ $1 =~ ^[a-z] ]]; then 
   METHOD=$1
@@ -635,7 +648,17 @@ args=()
 case "$METHOD" in
   bash|config)
     while [[ ! -z $2 ]];do
-      args+=($1)
+      if [[ ${1:0:2} == '--' ]]; then
+        KEY=${1/--/}    
+        if [[ $KEY =~ ^([a-zA-Z_-]+)=(.+) ]]; then         
+            declare "args_${BASH_REMATCH[1]/-/_}=${BASH_REMATCH[2]}"
+        else
+            declare "args_${KEY/-/_}=$2"        
+            shift
+        fi    
+      else 
+        args+=($1)
+      fi
       shift
     done
     QUERY="$@"    
