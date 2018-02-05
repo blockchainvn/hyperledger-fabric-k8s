@@ -1,7 +1,7 @@
 Setup 
 ==============
 
-* Generate Hyperledger Fabric config  
+Generate Hyperledger Fabric config  
 ```sh
 cd setupCluster/genConfig
 glide install
@@ -17,7 +17,7 @@ sudo nfsd restart
 ```
 
 
-* Build admin api images: **optional**  
+Build admin api images: **optional**  
 ```sh
 # on master node
 docker save hyperledger/admin-api > /opt/share/docker/admin-api.tar
