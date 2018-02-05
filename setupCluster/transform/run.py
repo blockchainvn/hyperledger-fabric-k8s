@@ -49,6 +49,10 @@ def runPeers(path):
 
 def checkAndRun(f):
 	method = sys.argv[1] if len(sys.argv) > 1 else "create"
+	if method == "up":
+		method = "create"
+	
+
 	if os.path.isfile(f):
 		os.system("kubectl " + method + " -f " + f)
 

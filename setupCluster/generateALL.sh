@@ -28,10 +28,10 @@ function generateChannelArtifacts() {
 
 	CONFIGTXGEN=$TOOLS/configtxgen
  	$CONFIGTXGEN -profile $PROFILE -outputBlock ./channel-artifacts/genesis.block
-# 	$CONFIGTXGEN -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/channel.tx -channelID $CHANNEL_NAME
-#	$CONFIGTXGEN -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org1MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org1MSP
-# 	$CONFIGTXGEN -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org2MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org2MSP
-# 	$CONFIGTXGEN -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org3MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org3MSP
+# 	$CONFIGTXGEN -profile MultiOrgsChannel -outputCreateChannelTx ./channel-artifacts/channel.tx -channelID $CHANNEL_NAME
+#	$CONFIGTXGEN -profile MultiOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org1MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org1MSP
+# 	$CONFIGTXGEN -profile MultiOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org2MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org2MSP
+# 	$CONFIGTXGEN -profile MultiOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/Org3MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Org3MSP
 	
 	chmod -R 777 ./channel-artifacts && chmod -R 777 ./crypto-config
 
@@ -60,7 +60,7 @@ function clean () {
 #}
 
 PROFILE=$1
-: ${PROFILE:=TwoOrgsOrdererGenesis}
+: ${PROFILE:=MultiOrgsOrdererGenesis}
 
 NSF_SERVER=$2
 NSF_DEFAULT_SERVER=$(ifconfig | awk '/inet /{print $2}' | grep -v 127.0.0.1 | tail -1)

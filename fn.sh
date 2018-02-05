@@ -32,7 +32,7 @@ function printHelp () {
     echo "$res"    
   else      
     echo "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    echo "          ./fn.sh config --profile TwoOrgsOrdererGenesis"    
+    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis"    
     echo 
     echo "      - 'scale' - scale a deployment of a namespace for the network"
     echo "          ./fn.sh scale --deployment=orderer0-orgorderer-f-1 --min=2 --max=10"    
@@ -47,13 +47,13 @@ function printHelp () {
     echo "          ./fn.sh admin --namespace=org1-f-1 --port=30009"
     echo
     echo "      - 'network' - setup the network with kubernetes"
-    echo "          ./fn.sh network --mode=[up|down]"
+    echo "          ./fn.sh network [apply|down]"
     echo 
     echo "      - 'bash' - go inside bash environment of a container matching selector"
     echo "          ./fn.sh bash cli 'peer channel list'"
     echo
     echo "      - 'channel' - setup channel"
-    echo "          ./fn.sh channel --profile TwoOrgsChannel --channel mychannel --namespace org1-f-1 --orderer orderer0.orgorderer-f-1:7050"
+    echo "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-f-1 --orderer orderer0.orgorderer-f-1:7050"
     echo
     echo "      - 'install' - install chaincode"
     echo "          ./fn.sh install --channel mychannel --chaincode mycc -v v1"
@@ -109,9 +109,19 @@ buildAdmin(){
 }
 
 setupConfig() {
+
+  cd setupCluster/genConfig
+  if [ ! `command -v glide` ]; then        
+    curl https://glide.sh/get | sh    
+  fi  
+
+  glide install
+  go run genConfig.go -In ../cluster-config.yaml -Out ../configtx.yaml
+
   local nfs_server=$(getArgument "nfs" ${args[0]})
-  local profile=$(getArgument "profile" TwoOrgsOrdererGenesis)
-  cd setupCluster
+  local profile=$(getArgument "profile" MultiOrgsOrdererGenesis)
+  # back to setupCluster folder
+  cd ../
   echo "Creating genesis, profile [$profile]..."
   ./generateALL.sh $profile $nfs_server 
   chmod -R 777 /opt/share
@@ -222,7 +232,7 @@ setupNetwork() {
 
     echo 
   else
-    python transform/run.py
+    python transform/run.py $MODE
   fi
 }
 
@@ -421,7 +431,7 @@ bashContainer () {
 
 setupChannel() {
   cd setupCluster
-  local profile=$(getArgument "profile" TwoOrgsChannel)
+  local profile=$(getArgument "profile" MultiOrgsChannel)
   echo "Creating channel artifacts, profile [$profile]..."  
   ../bin/configtxgen -profile $profile -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME}
   echo
@@ -490,6 +500,7 @@ untilInstalledChaincode(){
 }
 
 updateChaincode(){
+  # in production mode, please scale cli and peer on the same node
   local chaincode_method=${1:-upgrade}
   local METHOD=apply
   if [[ $chaincode_method == "instantiate" ]];then

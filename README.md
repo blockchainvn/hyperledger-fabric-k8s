@@ -1,6 +1,14 @@
 Setup 
 ==============
 
+* Generate Hyperledger Fabric config
+```
+cd setupCluster/genConfig
+glide install
+go build
+./genConfig -Kafka 3 -Orderer 2 -Zookeeper 3 -Orgs "IDP1,IDP2,IDP3,AS1,AS2,RP1" -Peer 2
+```
+
 nfs server
 for cluster please run sudo mount /opt/share <master_ip>:/opt/share
 ```sh

@@ -98,7 +98,7 @@ spec:
          #     claimName: $pvName
        - name: run
          hostPath:
-           path: /run
+           path: /var/run
 
        # - name: chaincode
        #   hostPath:
