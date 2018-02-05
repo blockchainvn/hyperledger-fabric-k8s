@@ -1,7 +1,7 @@
 Setup 
 ==============
 
-* Generate Hyperledger Fabric config
+* Generate Hyperledger Fabric config  
 ```
 cd setupCluster/genConfig
 glide install
@@ -10,14 +10,14 @@ go build
 ```
 
 nfs server
-for cluster please run sudo mount /opt/share <master_ip>:/opt/share
+for cluster please run sudo mount /opt/share <master_ip>:/opt/share  
 ```sh
 echo "/opt/share -network <master_ip> -mask 255.255.255.0 -alldirs -maproot=root:wheel" | sudo tee -a /etc/exports
 sudo nfsd restart
 ```
 
 
-* Build admin api images: **optional**
+* Build admin api images: **optional**  
 ```sh
 # on master node
 docker save hyperledger/admin-api > /opt/share/docker/admin-api.tar
@@ -25,13 +25,12 @@ docker save hyperledger/admin-api > /opt/share/docker/admin-api.tar
 docker load < /opt/share/docker/admin-api.tar
 ```
 
-Run 
+Run  
 ```sh
 ./fn.sh help
 ```
 
-Copy chaincode
-
+Copy chaincode  
 ```sh
 cp -r chaincode /opt/share/channel-artifacts/
 ```
