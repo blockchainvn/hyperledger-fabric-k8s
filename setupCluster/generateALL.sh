@@ -12,7 +12,7 @@ export FABRIC_CFG_PATH=$PWD
 function generateCerts (){
 	CRYPTOGEN=$TOOLS/cryptogen
 
-	$PYTHON transform/assignTenant.py
+	$PYTHON transform/assignTenant.py $1
 
 	$CRYPTOGEN generate --config=./crypto-config.yaml	
 	
@@ -59,10 +59,12 @@ function clean () {
 	
 #}
 
-PROFILE=$1
+CONFIG_FILE=$1
+
+PROFILE=$2
 : ${PROFILE:=MultiOrgsOrdererGenesis}
 
-NSF_SERVER=$2
+NSF_SERVER=$3
 NSF_DEFAULT_SERVER=$(ifconfig | awk '/inet /{print $2}' | grep -v 127.0.0.1 | tail -1)
 : ${NSF_SERVER:=$NSF_DEFAULT_SERVER}
 
@@ -72,7 +74,7 @@ echo "NSF SERVER: $NSF_SERVER"
 echo
 
 clean
-generateCerts
+generateCerts $CONFIG_FILE
 sleep 1
 generateChannelArtifacts
 generateK8sYaml $NSF_SERVER

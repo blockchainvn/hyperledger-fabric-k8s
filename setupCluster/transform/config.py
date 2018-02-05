@@ -1,5 +1,6 @@
 from string import Template
 #from pathlib import Path
+import re
 import string
 import os
 
@@ -24,6 +25,11 @@ def getTemplate(templateName):
 	baseDir = os.path.dirname(__file__)
 	configTemplate = os.path.join(baseDir, "../templates/" + templateName)
 	return configTemplate
+
+def getAddressSegment(name):
+	pattern = re.compile('(\d+)$')
+	result = re.search(pattern, name.split("-")[0])
+	return (int(result.group(0)) -1 if result else 0) * GAP	
 
 
 # create org/namespace 
@@ -64,7 +70,9 @@ def configORGS(name, path): # name means if of org, path describe where is the n
 
 		###Need to expose pod's port to worker ! ####
 		##org format like this org1-f-1##
-		addressSegment = (int(name.split("-")[0].split("org")[-1]) - 1) * GAP	
+		# addressSegment = (int(name.split("-")[0].split("org")[-1]) - 1) * GAP			
+		addressSegment = getAddressSegment(name)	
+		# each oganization should have unique ip, so ip + port should be unique
 		exposedPort = PORTSTARTFROM + addressSegment
 
 		caTemplate = getTemplate("fabric_1_0_template_ca.yaml")
@@ -110,7 +118,8 @@ def configPEERS(name, path): # name means peerid.
 	peerName = nameSplit[0]
 	orgName = nameSplit[1]
 
-	addressSegment = (int(orgName.split("-")[0].split("org")[-1]) - 1) * GAP
+	# addressSegment = (int(orgName.split("-")[0].split("org")[-1]) - 1) * GAP
+	addressSegment = getAddressSegment(orgName)
 	##peer from like this peer 0##
 	peerOffset = int((peerName.split("peer")[-1])) * 4
 	exposedPort1 = PORTSTARTFROM + addressSegment + peerOffset + 1

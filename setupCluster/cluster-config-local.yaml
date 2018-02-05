@@ -1,0 +1,13 @@
+Tenant: f-1
+OrdererOrgs:
+  - Name: Orderer
+    Domain: orgorderer 
+    Template:
+      Count: 1
+PeerOrgs:
+  - Name: Org1
+    Domain: org1
+    Template:
+      Count: 1
+    Users:
+      Count: 0

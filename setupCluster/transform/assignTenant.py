@@ -1,6 +1,9 @@
 import yaml
+import sys
 
-stream = open("./cluster-config.yaml", "r")
+config_file = sys.argv[1] if len(sys.argv) > 1 else "cluster-config.yaml"
+
+stream = open(config_file, "r")
 YAML = yaml.load(stream)
 tenant = YAML["Tenant"]
 for k, v in YAML.items() : 

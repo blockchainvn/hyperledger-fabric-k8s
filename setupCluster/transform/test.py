@@ -1,10 +1,7 @@
 import yaml
+import re
 
-stream = open("./cluster-config.yaml", "r")
-YAML = yaml.load(stream)
-tenant = YAML["Tenant"]
-
-domain = "domain"
-domain = domain + ("-" + tenant if tenant else "")
-
-print (domain)
+name = "ips1-v1"
+pattern = re.compile('(\d+)$')
+result = re.search(pattern, name.split("-")[0])
+print result.group(0) if result else 1

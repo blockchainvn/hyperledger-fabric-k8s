@@ -32,7 +32,7 @@ function printHelp () {
     echo "$res"    
   else      
     echo "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis"    
+    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml"    
     echo 
     echo "      - 'scale' - scale a deployment of a namespace for the network"
     echo "          ./fn.sh scale --deployment=orderer0-orgorderer-f-1 --min=2 --max=10"    
@@ -109,6 +109,9 @@ buildAdmin(){
 }
 
 setupConfig() {
+  local nfs_server=$(getArgument "nfs" ${args[0]})
+  local profile=$(getArgument "profile" MultiOrgsOrdererGenesis)
+  local filePath=$(getArgument "file" cluster-config.yaml)
 
   cd setupCluster/genConfig
   if [ ! `command -v glide` ]; then        
@@ -116,21 +119,21 @@ setupConfig() {
   fi  
 
   glide install
-  go run genConfig.go -In ../cluster-config.yaml -Out ../configtx.yaml
-
-  local nfs_server=$(getArgument "nfs" ${args[0]})
-  local profile=$(getArgument "profile" MultiOrgsOrdererGenesis)
+  go run genConfig.go -In ../$filePath -Out ../configtx.yaml
+  printCommand "go run genConfig.go -In ../$filePath -Out ../configtx.yaml"
   # back to setupCluster folder
   cd ../
   echo "Creating genesis, profile [$profile]..."
-  ./generateALL.sh $profile $nfs_server 
+  ./generateALL.sh $filePath $profile $nfs_server 
+  printCommand "./generateALL.sh ./$filePath $profile $nfs_server"
   chmod -R 777 /opt/share
-  # assign label
-  # local master_node=$(kubectl get nodes | awk '$3~/master/{print $1}')
-  # if [[ ! -z $master_node ]];then
-  #   echo "Assign label org=$NAMESPACE to master node $master_node"
-  #   kubectl label nodes $master_node org=$NAMESPACE --overwrite=true
-  # fi
+  # assign label, so we can deploy peer to only this node
+  local master_node=$(kubectl get nodes | awk '$3~/master/{print $1}')
+  if [[ ! -z $master_node ]];then
+    echo "Assign label org=$NAMESPACE to master node $master_node"
+    kubectl label nodes $master_node org=$NAMESPACE --overwrite=true
+    printCommand "kubectl label nodes $master_node org=$NAMESPACE --overwrite=true"
+  fi
 }
 
 scalePod() {
@@ -672,9 +675,9 @@ esac
 
 # process methods and arguments, by default first is channel and next is org_id
 CHANNEL_NAME=$(getArgument "channel" mychannel)
-NAMESPACE=$(getArgument "namespace" org1-f-1)
+NAMESPACE=$(getArgument "namespace" idp1-v1)
 PEER_ADDRESS=$(getArgument "peer" peer0.${NAMESPACE}:7051) 
-ORDERER_ADDRESS=$(getArgument "orderer" orderer0.orgorderer-f-1:7050)
+ORDERER_ADDRESS=$(getArgument "orderer" orderer0.orgorderer-v1:7050)
 CHAINCODE=$(getArgument "chaincode" mycc)
 CHAINCODE_PATH=$(getArgument "path" github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/sacc)
 ARGS=$(getArgument "args" '{"Args":[]}')
