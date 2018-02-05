@@ -2,7 +2,7 @@ Setup
 ==============
 
 * Generate Hyperledger Fabric config  
-```
+```sh
 cd setupCluster/genConfig
 glide install
 go build
