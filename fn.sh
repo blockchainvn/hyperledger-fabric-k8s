@@ -50,25 +50,25 @@ function printHelp () {
     echo "          ./fn.sh network [apply|down]"
     echo 
     echo "      - 'bash' - go inside bash environment of a container matching selector"
-    echo "          ./fn.sh bash cli 'peer channel list'"
+    echo "          ./fn.sh bash cli 'peer channel list' --namespace org1-v1"
     echo
     echo "      - 'channel' - setup channel"
     echo "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050"
     echo
     echo "      - 'install' - install chaincode"
-    echo "          ./fn.sh install --channel mychannel --chaincode mycc -v v1 [--no-pod true]"
+    echo "          ./fn.sh install --channel mychannel --namespace org1-v1 --chaincode mycc -v v1 [--no-pod true]"
     echo    
     echo "      - 'instantiate' - instantiate chaincode"
-    echo "          ./fn.sh instantiate --channel mychannel --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
+    echo "          ./fn.sh instantiate --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
     echo
     echo "      - 'upgrade' - upgrade chaincode"
-    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-v1:7050 --channel mychannel --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
+    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-v1:7050 --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
     echo
     echo "      - 'query' - query chaincode"    
-    echo "          ./fn.sh query --args='{\"Args\":[\"query\",\"a\"]}'"
+    echo "          ./fn.sh query --namespace org1-v1 --args='{\"Args\":[\"query\",\"a\"]}'"
     echo
     echo "      - 'invoke' - invoke chaincode"    
-    echo "          ./fn.sh invoke --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
+    echo "          ./fn.sh invoke --namespace org1-v1 --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
   fi
 
   echo
