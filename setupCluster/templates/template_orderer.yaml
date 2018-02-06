@@ -35,13 +35,13 @@ spec:
         - name: ORDERER_GENERAL_LOCALMSPDIR
           value: /var/hyperledger/orderer/msp
         - name: ORDERER_GENERAL_TLS_ENABLED
-          value: "false"
-        # - name: ORDERER_GENERAL_TLS_PRIVATEKEY
-        #   value: /var/hyperledger/orderer/tls/server.key
-        # - name: ORDERER_GENERAL_TLS_CERTIFICATE
-        #   value: /var/hyperledger/orderer/tls/server.crt
-        # - name: ORDERER_GENERAL_TLS_ROOTCAS
-        #   value: '[/var/hyperledger/orderer/tls/ca.crt]'
+          value: "$tlsEnabled"
+        - name: ORDERER_GENERAL_TLS_PRIVATEKEY
+          value: /var/hyperledger/orderer/tls/server.key
+        - name: ORDERER_GENERAL_TLS_CERTIFICATE
+          value: /var/hyperledger/orderer/tls/server.crt
+        - name: ORDERER_GENERAL_TLS_ROOTCAS
+          value: '[/var/hyperledger/orderer/tls/ca.crt]'
         workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
         ports:
          - containerPort: 7050
@@ -51,20 +51,28 @@ spec:
            name: certificate
            #subPath: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp
            # subPath: $mspPath
-         # - mountPath: /var/hyperledger/orderer/tls
-           # name: certificate
+         - mountPath: /var/hyperledger/orderer/tls
+           name: tlscertificate
            #subPath: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/
            # subPath: $tlsPath
          - mountPath: /var/hyperledger/orderer/orderer.genesis.block
            name: genesis
            # subPath: genesis.block
+         - mountPath: /var/hyperledger/production/orderer
+           name: data
       volumes:
         - name: certificate
           hostPath:
             path: $path/msp
+        - name: tlscertificate
+          hostPath:
+            path: $path/tls
         - name: genesis
           hostPath:
             path: $genesis/genesis.block
+        - name: data
+          hostPath:
+            path: /opt/share/orderer/$namespace/$ordererID
          # persistentVolumeClaim:
              # claimName: $pvName
            #path: /opt/share

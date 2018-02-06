@@ -54,13 +54,13 @@ spec:
           # - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
           #   value: cbr0
           - name: CORE_PEER_TLS_ENABLED
-            value: "false"
-          # - name: CORE_PEER_TLS_CERT_FILE
-          #   value: "/etc/hyperledger/fabric/tls/server.crt"
-          # - name: CORE_PEER_TLS_KEY_FILE
-          #   value: "/etc/hyperledger/fabric/tls/server.key"
-          # - name: CORE_PEER_TLS_ROOTCERT_FILE
-          #   value: "/etc/hyperledger/fabric/tls/ca.crt"
+            value: "$tlsEnabled"
+          - name: CORE_PEER_TLS_CERT_FILE
+            value: "/etc/hyperledger/fabric/tls/server.crt"
+          - name: CORE_PEER_TLS_KEY_FILE
+            value: "/etc/hyperledger/fabric/tls/server.key"
+          - name: CORE_PEER_TLS_ROOTCERT_FILE
+            value: "/etc/hyperledger/fabric/tls/ca.crt"
           - name: CORE_VM_ENDPOINT
             value: unix:///host/var/run/docker.sock
           - name: GOPATH
@@ -84,20 +84,30 @@ spec:
           # - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/go
           #   name: certificate
           #   subPath: chaincode
-           # - mountPath: /etc/hyperledger/fabric/tls
-           #   name: certificate
-           #   subPath: $tlsPath
            - mountPath: /etc/hyperledger/fabric/msp
              name: certificate
+
+           - mountPath: /etc/hyperledger/fabric/tls
+             name: tlscertificate
              # subPath: $mspPath
-           # - mountPath: /etc/hyperledger/fabric/orderertls
-           #   name: orderercertificate
+           - mountPath: /etc/hyperledger/fabric/orderertls
+             name: orderercertificate
+
            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
              name: artifacts
       volumes:                
         - name: certificate
           hostPath:
             path: $path/$mspPath
+
+        - name: tlscertificate
+          hostPath:
+            path: $path/$tlsPath
+
+        - name: orderercertificate
+          hostPath:
+            path: /opt/share/crypto-config/ordererOrganizations/$orderer0/msp/tlscacerts
+
           # persistentVolumeClaim:
           #     claimName: $pvName
         - name: artifacts

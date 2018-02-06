@@ -32,7 +32,7 @@ function printHelp () {
     echo "$res"    
   else      
     echo "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml"    
+    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--tls-enabled false]"    
     echo 
     echo "      - 'scale' - scale a deployment of a namespace for the network"
     echo "          ./fn.sh scale --deployment=orderer0-orgorderer-v1 --min=2 --max=10"    
@@ -121,6 +121,7 @@ setupConfig() {
   local nfs_server=$(getArgument "nfs" ${args[0]})
   local profile=$(getArgument "profile" MultiOrgsOrdererGenesis)
   local filePath=$(getArgument "file" cluster-config.yaml)
+  local tlsEnabled=$(getArgument "tls_enabled" false)
 
   cd setupCluster/genConfig
   if [ ! `command -v glide` ]; then        
@@ -128,13 +129,13 @@ setupConfig() {
   fi  
 
   glide install
-  go run genConfig.go -In ../$filePath -Out ../configtx.yaml
-  printCommand "go run genConfig.go -In ../$filePath -Out ../configtx.yaml"
+  go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml
+  printCommand "go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml"
   # back to setupCluster folder
   cd ../
   echo "Creating genesis, profile [$profile]..."
-  ./generateALL.sh $filePath $profile $nfs_server 
-  printCommand "./generateALL.sh ./$filePath $profile $nfs_server"
+  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled
+  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled"
   chmod -R 777 /opt/share
   # assign label, so we can deploy peer to only this node
   local master_node=$(kubectl get nodes | awk '$3~/master/{print $1}')
@@ -241,6 +242,9 @@ setupNetwork() {
     if [ "$chaincodeImages" != "" ]; then     
       docker rmi $chaincodeImages > /dev/null
     fi  
+
+    echo "Cleaning persistent volumes"
+    rm -rf /opt/share/ca/* /opt/share/peer/* /opt/share/orderer/* /opt/share/couchdb/*
 
     echo 
   else
@@ -446,18 +450,23 @@ setupChannel() {
   local profile=$(getArgument "profile" MultiOrgsChannel)
   echo "Creating channel artifacts, profile [$profile]..."  
   ../bin/configtxgen -profile $profile -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME}
+  printCommand "../bin/configtxgen -profile $profile -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME}"
   echo
 
   cp -r ./channel-artifacts /opt/share/
   cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
   if [[ ! -z $cli_name ]];then      
     # use fetch channel after that for sure, in case channel has been created
-    kubectl exec -it $cli_name -n $NAMESPACE -- peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx 
-    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx"
-    kubectl exec -it $cli_name -n $NAMESPACE -- peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME
-    printCommand "${GREEN}kubectl exec -it $cli_name -n $NAMESPACE -- peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME"
-    kubectl exec -it $cli_name -n $NAMESPACE -- peer channel join -b ${CHANNEL_NAME}.block
-    printCommand "${GREEN}kubectl exec -it $cli_name -n $NAMESPACE -- peer channel join -b ${CHANNEL_NAME}.block"
+    # kubectl exec -it $cli_name -n $NAMESPACE -- peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx 
+    # printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx"
+    # kubectl exec -it $cli_name -n $NAMESPACE -- peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME
+    # printCommand "${GREEN}kubectl exec -it $cli_name -n $NAMESPACE -- peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME"
+    # kubectl exec -it $cli_name -n $NAMESPACE -- peer channel join -b ${CHANNEL_NAME}.block
+    # printCommand "${GREEN}kubectl exec -it $cli_name -n $NAMESPACE -- peer channel join -b ${CHANNEL_NAME}.block"
+
+    kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh channel -C $CHANNEL_NAME -o $ORDERER_ADDRESS
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh channel -C $CHANNEL_NAME -o $ORDERER_ADDRESS"
+
     res=$?  
     verifyResult $res "Setup channel failed"
     echo "===================== Setup channel successfully ===================== "
@@ -527,10 +536,17 @@ updateChaincode(){
 
   cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
   if [[ ! -z $cli_name ]];then   
-    local POLICY_ARG=
-    if [[ ! -z $POLICY ]];then
-      POLICY_ARG="-P '$POLICY'"
-    fi     
+    # local SUFFIX_ARG=
+
+    # local orderer_cert=$(echo $(kubectl exec -it $cli_name -n $NAMESPACE -- bash -c "ls /etc/hyperledger/fabric/orderertls/*.pem" 2>&1 | awk '$1~/.pem/{print $1}'))
+    # if [[ ! -z $orderer_cert ]];then
+    #   SUFFIX_ARG="--tls true --cafile $orderer_cert"
+    # fi
+     
+
+    # if [[ ! -z $POLICY ]];then
+    #   SUFFIX_ARG="$SUFFIX_ARG -P '$POLICY'"
+    # fi     
 
     # ARGS can contain spaces so please surround it by double quote
     # with double quote, we will have it value exactly what we give
@@ -541,9 +557,14 @@ updateChaincode(){
       # untilPod
       # untilInstalledChaincode
       # sleep 3
-      kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c "$ARGS" -C $CHANNEL_NAME $POLICY_ARG
+      # kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c "$ARGS" -C $CHANNEL_NAME $SUFFIX_ARG
+
+      kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P "$POLICY"
+      
+
     else
-      kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c "$ARGS" -C $CHANNEL_NAME $POLICY_ARG &        
+      # kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c "$ARGS" -C $CHANNEL_NAME $SUFFIX_ARG &        
+      kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P "$POLICY" &
       createChaincodeDeployment $METHOD
       untilPod
     fi
@@ -554,7 +575,7 @@ updateChaincode(){
     # we can use nohup maybe better
     # kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$PEER_ADDRESS > /dev/null 2>&1 &
     res=$?  
-    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c '$ARGS' -C $CHANNEL_NAME $POLICY_ARG"
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c '$ARGS' -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P '$POLICY'"
     verifyResult $res "$chaincode_method chaincode failed"
     echo "===================== $chaincode_method chaincode successfully ===================== "    
     echo
@@ -685,6 +706,10 @@ case "$METHOD" in
             declare "args_version=$2"
             shift
           ;;
+          -n)
+            declare "args_namespace=$2"
+            shift
+          ;;
           *)  
             args+=($1)
             # echo "Invalid OPTION $1"
@@ -700,7 +725,8 @@ esac
 CHANNEL_NAME=$(getArgument "channel" mychannel)
 NAMESPACE=$(getArgument "namespace" idp1-v1)
 PEER_ADDRESS=$(getArgument "peer" peer0.${NAMESPACE}:7051) 
-ORDERER_ADDRESS=$(getArgument "orderer" orderer0.orgorderer-v1:7050)
+# by default get ternant by deleting the leading string of namespace
+ORDERER_ADDRESS=$(getArgument "orderer" orderer0.orgorderer-${NAMESPACE#*-}:7050)
 CHAINCODE=$(getArgument "chaincode" mycc)
 CHAINCODE_PATH=$(getArgument "path" github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/sacc)
 ARGS=$(getArgument "args" '{"Args":[]}')

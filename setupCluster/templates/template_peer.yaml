@@ -1,3 +1,39 @@
+# apiVersion: extensions/v1beta1
+# kind: Deployment
+# metadata:
+#   namespace: $namespace
+#   name: $podName-couchdb
+# spec:
+#   replicas: 1
+#   strategy: {}
+#   template:
+#     metadata:
+#       creationTimestamp: null
+#       labels:
+#        app: hyperledger
+#        role: couchdb
+#        org: $namespace
+#     spec:
+#       # nodeSelector:
+#       #   # assume all org node can access to docker
+#       #   org: $namespace
+#       containers:
+#       - name: couchdb
+#         image: hyperledger/fabric-couchdb:x86_64-$version
+#         ports:
+#          - containerPort: 5984
+
+#         volumeMounts:
+#          - mountPath: /opt/couchdb/data
+#            name: db
+
+#       volumes:
+#        - name: db
+#          hostPath:
+#            path: /opt/share/couchdb/$namespace/$peerID
+
+# ---
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -19,14 +55,15 @@ spec:
       #   # assume all org node can access to docker
       #   org: $namespace
       containers:
+
       - name: couchdb
         image: hyperledger/fabric-couchdb:x86_64-$version
         ports:
          - containerPort: 5984
-        
-        # volumeMounts:
-        #  - mountPath: /opt/couchdb/data
-        #    name: db
+
+        volumeMounts:
+         - mountPath: /opt/couchdb/data
+           name: db
 
       - name: $podName 
         image: hyperledger/fabric-peer:x86_64-$version
@@ -37,12 +74,13 @@ spec:
           value: "CouchDB"
         - name: CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS
           value: "localhost:5984"
+          # value: "$peerID-couchdb.$namespace:5984"
         - name: CORE_VM_ENDPOINT
           value: "unix:///host/var/run/docker.sock"
         - name: CORE_LOGGING_LEVEL
           value: "DEBUG"
         - name: CORE_PEER_TLS_ENABLED
-          value: "false"
+          value: "$tlsEnabled"
         - name: CORE_PEER_GOSSIP_USELEADERELECTION
           value: "true"
         - name: CORE_PEER_GOSSIP_ORGLEADER
@@ -65,6 +103,9 @@ spec:
           value: $peerGossip
         - name: CORE_PEER_LOCALMSPID
           value: $localMSPID
+        - name: CORE_PEER_MSPCONFIGPATH
+          value: /etc/hyperledger/fabric/msp
+
         workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
         ports:
          - containerPort: 7051
@@ -80,12 +121,12 @@ spec:
          - mountPath: /etc/hyperledger/fabric/msp 
            name: certificate
 
-         # - mountPath: /var/hyperledger/production/chaincodes
-         #   name: chaincode
+         - mountPath: /var/hyperledger/production
+           name: data
            #subPath: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp
            # subPath: $mspPath
-         # - mountPath: /etc/hyperledger/fabric/tls
-         #   name: certificate
+         - mountPath: /etc/hyperledger/fabric/tls
+           name: tlscertificate
          #   #subPath: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/
          #   subPath: $tlsPath
          - mountPath: /host/var/run/
@@ -96,17 +137,21 @@ spec:
            path: $path/msp
          # persistentVolumeClaim:
          #     claimName: $pvName
+       - name: tlscertificate
+         hostPath:
+           path: $path/tls
+
+       - name: data
+         hostPath:
+           path: /opt/share/peer/$namespace/$peerID
+
        - name: run
          hostPath:
            path: /var/run
-
-       # - name: chaincode
-       #   hostPath:
-       #     path: /opt/share/production/chaincodes/$namespace/$peerID
-
-       # - name: db
-       #   hostPath:
-       #     path: /opt/share/couchdb/$namespace/$peerID
+       
+       - name: db
+         hostPath:
+           path: /opt/share/couchdb/$namespace/$peerID
        
 
 ---
@@ -143,4 +188,27 @@ spec:
      targetPort: 7053
      # nodePort: $nodePort3
 
----
+
+
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#    namespace: $namespace
+#    name: $peerID-couchdb
+# spec:
+#  selector:
+#    app: hyperledger
+#    role: couchdb
+#    org: $namespace
+#  # type: NodePort
+#  type: ClusterIP
+#  ports:
+
+#    - name: listen
+#      protocol: TCP
+#      port: 5984
+#      targetPort: 5984
+#      # nodePort: $nodePort3
+
+# ---

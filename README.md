@@ -34,3 +34,9 @@ Copy chaincode
 ```sh
 cp -r chaincode /opt/share/channel-artifacts/
 ```
+
+In persistent mode when sharing data folder for all pods, reset data using this
+```sh
+rm -rf /opt/share/ca/* /opt/share/peer/* /opt/share/orderer/* /opt/share/couchdb/*
+```
+

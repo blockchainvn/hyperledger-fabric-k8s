@@ -38,11 +38,13 @@ function generateChannelArtifacts() {
 	cp ./channel-artifacts/genesis.block ./crypto-config/ordererOrganizations/*
 	# echo "cp -r ./crypto-config /opt/share/ && cp -r ./channel-artifacts /opt/share/"
 	cp -r ./crypto-config /opt/share/ && cp -r ./channel-artifacts /opt/share/
+	# copy script for later use
+	cp -r ./scripts/ /opt/share/channel-artifacts/
 	#/opt/share mouts the remote /opt/share from nfs server
 }
 
 function generateK8sYaml (){
-	$PYTHON transform/generate.py $1
+	$PYTHON transform/generate.py --nfs-server $1 --tls-enabled $2
 }
 
 function clean () {
@@ -51,30 +53,40 @@ function clean () {
 }
 
 
-
-
 ## Genrates orderer genesis block, channel configuration transaction and anchor peer upddate transactions
 ##function generateChannelArtifacts () {
 ##	CONFIGTXGEN=$TOOLS/configtxgen
 	
 #}
 
-CONFIG_FILE=$1
+while getopts "c:p:s:t:" opt; do
+  case "$opt" in
+    c)  CONFIG_FILE=$OPTARG
+    ;;
+    p)  PROFILE=$OPTARG
+    ;;
+    s)  NSF_SERVER=$OPTARG
+    ;;
+    t)  TLS_ENABLED=$OPTARG
+    ;;
+  esac
+done
 
-PROFILE=$2
+# CONFIG_FILE=$1
+
+# PROFILE=$2
 : ${PROFILE:=MultiOrgsOrdererGenesis}
 
-NSF_SERVER=$3
+# NSF_SERVER=$3
 NSF_DEFAULT_SERVER=$(ifconfig | awk '/inet /{print $2}' | grep -v 127.0.0.1 | tail -1)
 : ${NSF_SERVER:=$NSF_DEFAULT_SERVER}
 
 
-
-echo "NSF SERVER: $NSF_SERVER"
-echo
+# echo "NSF SERVER: $NSF_SERVER, TLS_ENABLED: $TLS_ENABLED"
+# echo
 
 clean
-generateCerts $CONFIG_FILE
+generateCerts $CONFIG_FILE 
 sleep 1
 generateChannelArtifacts
-generateK8sYaml $NSF_SERVER
+generateK8sYaml $NSF_SERVER $TLS_ENABLED

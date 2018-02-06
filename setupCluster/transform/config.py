@@ -9,10 +9,11 @@ PORTSTARTFROM = 30001
 GAP = 100  #interval for worker's port
 NSF_SERVER = '192.168.99.1'
 VERSION = '1.0.2'
+TLS_ENABLED = 'false'
 
 def render(src, dest, **kw):
 	t = Template(open(src, 'r').read())	
-	options = dict(version=VERSION, **kw)    
+	options = dict(version=VERSION, tlsEnabled=TLS_ENABLED, **kw)    
 	with open(dest, 'w') as f:
 		f.write(t.substitute(**options))
 
@@ -34,8 +35,8 @@ def getAddressSegment(name):
 
 # create org/namespace 
 # copy to "/opt/share/" => need to map to nfs
-def configORGS(name, path): # name means if of org, path describe where is the namespace yaml to be created. 	
-	namespaceTemplate = getTemplate("fabric_1_0_template_namespace.yaml")
+def configORGS(name, path, orderer0): # name means if of org, path describe where is the namespace yaml to be created. 	
+	namespaceTemplate = getTemplate("template_namespace.yaml")
 	hostPath = path.replace("transform/../", "/opt/share/")
 	render(namespaceTemplate, path + "/" + name + "-namespace.yaml", 
 		org = name,
@@ -47,10 +48,11 @@ def configORGS(name, path): # name means if of org, path describe where is the n
 	
 	if path.find("peer") != -1 :
 		####### pod config yaml for org cli
-		cliTemplate = getTemplate("fabric_1_0_template_cli.yaml")
+		cliTemplate = getTemplate("template_cli.yaml")
 		
 		mspPathTemplate = 'users/Admin@{}/msp'
-		tlsPathTemplate =  'peers/{}/tls'
+		tlsPathTemplate =  'users/Admin@{}/tls'		
+
 
 		render(cliTemplate, path + "/" + name + "-cli.yaml", 
 			name = "cli",
@@ -62,6 +64,7 @@ def configORGS(name, path): # name means if of org, path describe where is the n
       artifactsName = name + "-artifacts-pv",
 			peerAddress = "peer0." + name + ":7051",
 			mspid = name.split('-')[0].capitalize()+"MSP",
+			orderer0 = orderer0,
 			path = hostPath
 		)
 		#######
@@ -75,7 +78,7 @@ def configORGS(name, path): # name means if of org, path describe where is the n
 		# each oganization should have unique ip, so ip + port should be unique
 		exposedPort = PORTSTARTFROM + addressSegment
 
-		caTemplate = getTemplate("fabric_1_0_template_ca.yaml")
+		caTemplate = getTemplate("template_ca.yaml")
 		
 		tlsCertTemplate = '/etc/hyperledger/fabric-ca-server-config/{}-cert.pem'
 		tlsKeyTemplate = '/etc/hyperledger/fabric-ca-server-config/{}'
@@ -108,7 +111,7 @@ def generateYaml(member, memberPath, flag):
 
 # create peer/pod
 def configPEERS(name, path): # name means peerid.
-	configTemplate = getTemplate("fabric_1_0_template_peer.yaml")
+	configTemplate = getTemplate("template_peer.yaml")
 	hostPath = path.replace("transform/../", "/opt/share/")
 	mspPathTemplate = 'peers/{}/msp'
 	tlsPathTemplate =  'peers/{}/tls'
@@ -148,7 +151,7 @@ def configPEERS(name, path): # name means peerid.
 
 # create orderer/pod
 def configORDERERS(name, path): # name means ordererid
-	configTemplate = getTemplate("fabric_1_0_template_orderer.yaml")
+	configTemplate = getTemplate("template_orderer.yaml")
 	hostPath = path.replace("transform/../", "/opt/share/")
 	genesisPath = os.path.dirname(os.path.dirname(hostPath))
 	mspPathTemplate = 'orderers/{}/msp'

@@ -1,0 +1,62 @@
+Tenant: f-1
+OrdererOrgs:
+  - Name: Orderer
+    Domain: orgorderer 
+    Template:
+      Count: 1
+PeerOrgs:
+  - Name: Org1
+    Domain: org1
+    Template:
+      Count: 1
+    Users:
+      Count: 0
+
+# Tenant: v1
+
+# OrdererOrgs:
+#   - Name: Orderer
+#     Domain: orgorderer 
+#     Template:
+#       Count: 1
+
+# PeerOrgs:
+#   - Name: IDP1
+#     Domain: idp1
+#     Template:
+#       Count: 4
+#     Users:
+#       Count: 0
+#   - Name: IDP2
+#     Domain: idp2
+#     Template:
+#       Count: 4
+#     Users:
+#       Count: 0
+#   - Name: IDP3
+#     Domain: idp3
+#     Template:
+#       Count: 4
+#     Users:
+#       Count: 0
+
+#   - Name: AS1
+#     Domain: as1
+#     Template:
+#       Count: 4
+#     Users:
+#       Count: 0
+#   - Name: AS2
+#     Domain: as2
+#     Template:
+#       Count: 4
+#     Users:
+#       Count: 0
+
+#   - Name: RP1
+#     Domain: rp1
+#     Template:
+#       Count: 4
+#     Users:
+#       Count: 0
+

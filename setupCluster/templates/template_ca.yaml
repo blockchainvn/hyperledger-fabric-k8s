@@ -23,7 +23,7 @@ spec:
          - name:  FABRIC_CA_SERVER_CA_NAME
            value: ca
          - name:  FABRIC_CA_SERVER_TLS_ENABLED
-           value: "false"
+           value: "$tlsEnabled"
          - name:  FABRIC_CA_SERVER_TLS_CERTFILE
            value: $tlsCert
          - name:  FABRIC_CA_SERVER_TLS_KEYFILE
@@ -36,10 +36,16 @@ spec:
           - mountPath: /etc/hyperledger/fabric-ca-server-config
             name: certificate
             # subPath: $caPath
+          - mountPath: /etc/hyperledger/fabric-ca-server
+            name: data
       volumes:
          - name: certificate
            hostPath:
              path: $path/$caPath
+
+         - name: data
+           hostPath:
+             path: /opt/share/ca/$namespace
            # persistentVolumeClaim:
                # claimName: $pvName 
 
