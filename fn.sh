@@ -32,7 +32,7 @@ function printHelp () {
     echo "$res"    
   else      
     echo "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--tls-enabled false]"    
+    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false]"    
     echo 
     echo "      - 'scale' - scale a deployment of a namespace for the network"
     echo "          ./fn.sh scale --deployment=orderer0-orgorderer-v1 --min=2 --max=10"    
@@ -133,7 +133,7 @@ setupConfig() {
     fi  
     glide install    
   fi
-  
+
   # run command
   go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml
   printCommand "go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml"
