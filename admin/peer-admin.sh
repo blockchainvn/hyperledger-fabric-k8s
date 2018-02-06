@@ -4,8 +4,8 @@ NAMESPACE=$1
 PRIVATE_KEY=$(ls $MSP_PATH/keystore/*_sk | head -1)
 CERTIFICATE=$(cat $MSP_PATH/signcerts/Admin@${NAMESPACE}-cert.pem | sed 's/$/\\r\\n/' | tr -d '\n')
 PRIVATE_KEY_NAME=`basename $PRIVATE_KEY | sed 's/_sk//'`
-
-MSPID=$(echo ${NAMESPACE%-*} | sed -e "s/\b\(.\)/\u\1/g")MSP
+# replace all until no - left
+MSPID=$(echo ${NAMESPACE%%-*} | sed -e "s/\b\(.\)/\u\1/g")MSP
 
 cat << EOF > /hfc-key-store/PeerAdmin
 {
