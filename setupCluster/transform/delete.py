@@ -1,9 +1,7 @@
 import os
 import time
+import config as tc
 
-BASEDIR = os.path.dirname(__file__)
-ORDERER = os.path.join(BASEDIR, "../crypto-config/ordererOrganizations") # it must point to the ordererOrgnaizations dir
-PEER = os.path.join(BASEDIR, "../crypto-config/peerOrganizations") # it must point to the peerOrgnaizations dir
 ### order of run ###
 
 #### orderer
@@ -16,46 +14,61 @@ PEER = os.path.join(BASEDIR, "../crypto-config/peerOrganizations") # it must poi
 ####### single peer
 
 def deleteOrderers(path):
-        orgs = os.listdir(path)
-        for org in orgs:
-                orgPath = os.path.join(path, org)
-                namespaceYaml = os.path.join(orgPath, org + "-namespace.yaml" ) #orgYaml namespace.yaml
+  orgs = sorted(os.listdir(path))
+  for org in orgs:
+    orgPath = os.path.join(path, org)
+    namespaceYaml = os.path.join(orgPath, org + "-namespace.yaml" ) #orgYaml namespace.yaml
 
-                for orderer in os.listdir(orgPath + "/orderers"):
-                        ordererPath = os.path.join(orgPath + "/orderers", orderer)
-                        ordererYaml = os.path.join(ordererPath, orderer + ".yaml")
-                        checkAndDelete(ordererYaml)
+    for orderer in os.listdir(orgPath + "/orderers"):
+      ordererPath = os.path.join(orgPath + "/orderers", orderer)
+      ordererYaml = os.path.join(ordererPath, orderer + ".yaml")
+      checkAndDelete(ordererYaml)
 
-                time.sleep(5)
-                checkAndDelete(namespaceYaml)
+    time.sleep(1)
+    checkAndDelete(namespaceYaml)
 
 
 
 
 def deletePeers(path):
-        orgs = os.listdir(path)
-        for org in orgs:
-                orgPath = os.path.join(path, org)
+  orgs = sorted(os.listdir(path))
+  for org in orgs:
+    orgPath = os.path.join(path, org)
 
-                namespaceYaml = os.path.join(orgPath, org + "-namespace.yaml" ) # namespace.yaml
-                caYaml = os.path.join(orgPath, org + "-ca.yaml" ) # ca.yaml
-                cliYaml = os.path.join(orgPath, org + "-cli.yaml" ) # cli.yaml  
+    namespaceYaml = os.path.join(orgPath, org + "-namespace.yaml" ) # namespace.yaml
+    caYaml = os.path.join(orgPath, org + "-ca.yaml" ) # ca.yaml
+    cliYaml = os.path.join(orgPath, org + "-cli.yaml" ) # cli.yaml  
 
-                for peer in os.listdir(orgPath + "/peers"):
-                        peerPath = os.path.join(orgPath + "/peers", peer)
-                        peerYaml = os.path.join(peerPath, peer + ".yaml")
-                        checkAndDelete(peerYaml)
+    for peer in sorted(os.listdir(orgPath + "/peers")):
+      peerPath = os.path.join(orgPath + "/peers", peer)
+      peerYaml = os.path.join(peerPath, peer + ".yaml")
+      checkAndDelete(peerYaml)
 
-                checkAndDelete(cliYaml)
-                checkAndDelete(caYaml)
+    checkAndDelete(cliYaml)
+    checkAndDelete(caYaml)
 
-                time.sleep(5)               # keep namespace alive until every resources have been destroyed
-                checkAndDelete(namespaceYaml)
+    time.sleep(1)               # keep namespace alive until every resources have been destroyed
+    checkAndDelete(namespaceYaml)
+
+def deleteKafkas(path):
+  for i in range(0, 4):
+      kafkaYaml = os.path.join(path, "kafka" + str(i) + "-kafka.yaml")
+      checkAndDelete(kafkaYaml)
+
+  for i in range(0, 3):
+      zkYaml = os.path.join(path, "zookeeper" + str(i) + "-zookeeper.yaml")
+      checkAndDelete(zkYaml)
+
+  namespaceYaml = os.path.join(path, "kafka-namespace.yaml")
+  time.sleep(1)     
+  checkAndDelete(namespaceYaml)
 
 def checkAndDelete(f):
-        if os.path.isfile(f):
-                os.system("kubectl delete -f " + f)
+  if os.path.isfile(f):
+    os.system("kubectl delete -f " + f)
 
 if __name__ == "__main__":
-        deleteOrderers(ORDERER)
-        deletePeers(PEER)                
+  deleteOrderers(tc.ORDERER)
+  deletePeers(tc.PEER)      
+  deleteKafkas(tc.KAFKA)
+

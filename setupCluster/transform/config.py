@@ -13,6 +13,11 @@ NSF_SERVER = '192.168.99.1'
 VERSION = '1.0.2'
 TLS_ENABLED = 'false'
 
+BASEDIR = os.path.dirname(__file__)
+ORDERER = os.path.join(BASEDIR, "../crypto-config/ordererOrganizations")
+PEER = os.path.join(BASEDIR, "../crypto-config/peerOrganizations")
+KAFKA = os.path.join(BASEDIR, "../crypto-config/kafka")
+
 def render(src, dest, **kw):
 	t = Template(open(src, 'r').read())	
 	options = dict(version=VERSION, tlsEnabled=TLS_ENABLED, **kw)    

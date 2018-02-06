@@ -1,9 +1,7 @@
 import os
 import sys
+import config as tc
 
-BASEDIR = os.path.dirname(__file__)
-ORDERER = os.path.join(BASEDIR, "../crypto-config/ordererOrganizations") # it must point to the ordererOrgnaizations dir
-PEER = os.path.join(BASEDIR, "../crypto-config/peerOrganizations") # it must point to the peerOrgnaizations dir
 ### order of run ###
 
 #### orderer
@@ -16,7 +14,7 @@ PEER = os.path.join(BASEDIR, "../crypto-config/peerOrganizations") # it must poi
 ####### single peer
 
 def runOrderers(path):
-	orgs = os.listdir(path)
+	orgs = sorted(os.listdir(path))
 	for org in orgs:
 		orgPath = os.path.join(path, org)
 		namespaceYaml = os.path.join(orgPath, org + "-namespace.yaml" ) #orgYaml namespace.yaml
@@ -28,7 +26,7 @@ def runOrderers(path):
 			checkAndRun(ordererYaml)
 
 def runPeers(path):
-	orgs = os.listdir(path)
+	orgs = sorted(os.listdir(path))
 	for org in orgs:
 		orgPath = os.path.join(path, org)
 
@@ -46,6 +44,19 @@ def runPeers(path):
 			peerYaml = os.path.join(peerPath, peer + ".yaml")
 			checkAndRun(peerYaml)
 
+def runKafkas(path):
+  namespaceYaml = os.path.join(path, "kafka-namespace.yaml")
+  checkAndRun(namespaceYaml)
+
+  for i in range(0, 3):
+    zkYaml = os.path.join(path, "zookeeper" + str(i) + "-zookeeper.yaml")
+    checkAndRun(zkYaml)
+    # sleep(3)
+
+  for i in range(0, 4):
+    kafkaYaml = os.path.join(path, "kafka" + str(i) + "-kafka.yaml")
+    checkAndRun(kafkaYaml)
+    # sleep(5)
 
 def checkAndRun(f):
 	method = sys.argv[1] if len(sys.argv) > 1 else "create"
@@ -54,11 +65,16 @@ def checkAndRun(f):
 	
 
 	if os.path.isfile(f):
-		os.system("kubectl " + method + " -f " + f)
+		os.system("kubectl " + method + " -f " + f + " --save-config")
 
 	else:
 		print("file %s no exited"%(f))
+
+
+
 if __name__ == "__main__":
-	runOrderers(ORDERER)
-	runPeers(PEER)
+	runKafkas(tc.KAFKA)
+	runOrderers(tc.ORDERER)
+	runPeers(tc.PEER)
 	
+
