@@ -1,0 +1,82 @@
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: kafka
+  name: $zkPodName
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+       app: hyperledger
+       role: zookeeper
+       zookeeper-id: $zookeeperID
+       ns: kafka
+    spec:      
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: $zkPodName
+          image: hyperledger/fabric-zookeeper:x86_64-$version
+          env:
+            - name: ZOO_MY_ID
+              value: "$seq"
+            - name: ZOO_SERVERS
+              value: "$zooServers"
+            - name: ZOO_TICK_TIME
+              value: "2000"
+            - name: ZOO_INIT_LIMIT
+              value: "10"
+            - name: ZOO_SYNC_LIMIT
+              value: "2"
+            # - name: aliyun_logs_fluentd
+            #   value: "stdout"
+          volumeMounts:
+            - mountPath: /datalog
+              name: datalog
+            - mountPath: /data
+              name: data
+          lifecycle:
+            preStop:
+              exec:
+                # SIGTERM triggers a quick exit; gracefully terminate instead
+                command: ["zkServer.sh", "stop"]
+      volumes:
+        - name: datalog
+          hostPath:
+              path: /opt/share/kafka/zk_log/$zookeeperID
+        - name: data
+          hostPath:
+              path: /opt/share/kafka/zk_data/$zookeeperID
+---
+apiVersion: v1
+kind: Service
+metadata:
+   namespace: kafka
+   name: $zookeeperID
+spec:
+ selector:
+   app: hyperledger
+   role: zookeeper
+   zookeeper-id: $zookeeperID
+   ns: kafka
+ clusterIP: None
+
+ ports:
+   - name: zookeeper-port1
+     protocol: TCP
+     port: 2888
+     # nodePort: $nodePort1
+
+   - name: zookeeper-port2
+     protocol: TCP
+     port: 3888
+     # nodePort: $nodePort2
+
+   - name: zookeeper-port3
+     protocol: TCP
+     port: 2181
+     # nodePort: $nodePort3
+---

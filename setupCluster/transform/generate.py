@@ -10,16 +10,23 @@ import argparse
 BASEDIR = os.path.dirname(__file__)
 ORDERER = os.path.join(BASEDIR, "../crypto-config/ordererOrganizations")
 PEER = os.path.join(BASEDIR, "../crypto-config/peerOrganizations")
+KAFKA = os.path.join(BASEDIR, "../crypto-config/kafka")
 
 #generateNamespacePod generate the yaml file to create the namespace for k8s, and return a set of paths which indicate the location of org files  
 
-def generateNamespacePod(DIR):
+def generateKafka(DIR, override):
+    tc.configKafkaNamespace(DIR, override)
+    tc.configZookeepers(DIR, override)
+    tc.configKafkas(DIR, override)
+
+def generateNamespacePod(DIR, override):
 	orderer0 = sorted(os.listdir(ORDERER))[0]
 	orgs = []
-	for org in os.listdir(DIR):
+	# remain ordered list
+	for index, org in enumerate(sorted(os.listdir(DIR))):
 		orgDIR = os.path.join(DIR, org)
 		## generate namespace first.
-		tc.configORGS(org, orgDIR, orderer0)
+		tc.configORGS(org, orgDIR, orderer0, override, index)
 		orgs.append(orgDIR)
 		#orgs.append(orgDIR + "/" + DIR.lower())
 	
@@ -27,8 +34,8 @@ def generateNamespacePod(DIR):
 	return orgs
 
 
-def generateDeploymentPod(orgs):
-	for org in orgs:
+def generateDeploymentPod(orgs, override):
+	for orgindex, org in enumerate(orgs):
 
 		if org.find("peer") != -1: #whether it create orderer pod or peer pod 
 			suffix = "/peers"
@@ -41,17 +48,19 @@ def generateDeploymentPod(orgs):
 			memberDIR = os.path.join(org + suffix, member)
 			#print(memberDIR)
 			#print(os.listdir(memberDIR))
-			tc.generateYaml(member,memberDIR, suffix)
+			tc.generateYaml(member,memberDIR, suffix, override, orgindex)
 
 
 #TODO kafa nodes and zookeeper nodes don't have dir to store their certificate, must use anotherway to create pod yaml.
 
-def allInOne():
-	peerOrgs = generateNamespacePod(PEER)
-	generateDeploymentPod(peerOrgs)
+def allInOne(override):
+	peerOrgs = generateNamespacePod(PEER, override)
+	generateDeploymentPod(peerOrgs, override)
 
-	ordererOrgs = generateNamespacePod(ORDERER)
-	generateDeploymentPod(ordererOrgs)
+	generateKafka(KAFKA, override)
+
+	ordererOrgs = generateNamespacePod(ORDERER, override)
+	generateDeploymentPod(ordererOrgs, override)
 
 def processArguments():
 	parser = argparse.ArgumentParser(description='Generate network artifacts.')	
@@ -61,18 +70,23 @@ def processArguments():
 	                    help='Fabric version (default: ' + tc.VERSION + ')')
 	parser.add_argument('--tls-enabled', dest='TLS_ENABLED', type=str,
 	                    help='Enable tls mode (default: ' + tc.TLS_ENABLED + ')')
+
+	parser.add_argument("-o", "--override", dest='OVERRIDE', type=str, default="false", help="Override existing k8s yaml files")	
+
 	args = parser.parse_args()	
 
 	tc.NSF_SERVER = args.NSF_SERVER or tc.NSF_SERVER
 	tc.VERSION = args.VERSION or tc.VERSION
 	tc.TLS_ENABLED = args.TLS_ENABLED or tc.TLS_ENABLED
 
-	print('Setup network NSF_SERVER:{0}, VERSION:{1}, and TLS_ENABLED:{2}.'
-		.format(tc.NSF_SERVER, tc.VERSION, tc.TLS_ENABLED))	
+	print('Setup network NSF_SERVER:{0}, VERSION:{1}, TLS_ENABLED:{2}, OVERRIDE:{3}'
+		.format(tc.NSF_SERVER, tc.VERSION, tc.TLS_ENABLED, args.OVERRIDE))	
+
+	return args
 
 if __name__ == "__main__" :	
-	processArguments()
-	allInOne()	
+	args = processArguments()
+	allInOne(True if args.OVERRIDE == "true" else False)	
 	
 	
 	

@@ -21,6 +21,16 @@ function generateCerts (){
 
 }
 
+function generateKafkaDir() {
+  if [[ $OVERRIDE == "true" ]]; then
+      return
+  fi
+
+  if [ ! -d ./crypto-config/kafka ]; then
+      mkdir -p ./crypto-config/kafka
+  fi
+}
+
 function generateChannelArtifacts() {
 	if [ ! -d channel-artifacts ];then
 		mkdir channel-artifacts
@@ -44,14 +54,22 @@ function generateChannelArtifacts() {
 }
 
 function generateK8sYaml (){
-	$PYTHON transform/generate.py --nfs-server $1 --tls-enabled $2
+	$PYTHON transform/generate.py --nfs-server $1 --tls-enabled $2 -o $OVERRIDE
 }
 
 function clean () {
-	rm -rf /opt/share/crypto-config/*
-	rm -rf crypto-config
+	if [[ $OVERRIDE != "true" ]];then
+		rm -rf /opt/share/crypto-config/*
+		rm -rf crypto-config
+	fi
 }
 
+function extend() {
+  if [[ $OVERRIDE == "true" ]]; then
+    rsync -rv --exclude=*.yaml --ignore-existing ./crypto-config /opt/share/
+    rmdir /opt/share/crypto-config/kafka
+  fi
+}
 
 ## Genrates orderer genesis block, channel configuration transaction and anchor peer upddate transactions
 ##function generateChannelArtifacts () {
@@ -59,7 +77,7 @@ function clean () {
 	
 #}
 
-while getopts "c:p:s:t:" opt; do
+while getopts "c:p:s:t:o:" opt; do
   case "$opt" in
     c)  CONFIG_FILE=$OPTARG
     ;;
@@ -68,6 +86,8 @@ while getopts "c:p:s:t:" opt; do
     s)  NSF_SERVER=$OPTARG
     ;;
     t)  TLS_ENABLED=$OPTARG
+    ;;
+    o)  OVERRIDE=$OPTARG
     ;;
   esac
 done
@@ -89,4 +109,6 @@ clean
 generateCerts $CONFIG_FILE 
 sleep 1
 generateChannelArtifacts
+generateKafkaDir
 generateK8sYaml $NSF_SERVER $TLS_ENABLED
+extend

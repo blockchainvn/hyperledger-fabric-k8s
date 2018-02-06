@@ -197,10 +197,12 @@ func GenOrdererOrg(domainName string) *Organization {
   return &ordererOrg
 }
 
-func GenKafka(conf Conf) (Kafka, error) {
+// by default, we use 4 kafkas and 3 zookeepers
+// and kafka can be shared between orderer, so no need to use tenant
+func GenKafka(number int) (Kafka, error) {
   var kafka_list []string
-  for i := 0; i < len(conf.OrdererOrgs); i++ {
-    kafka_list = append(kafka_list, "kafka"+strconv.Itoa(i)+"."+conf.OrdererOrgs[i].Domain+"-"+conf.Tenant+":9092")
+  for i := 0; i < number; i++ {
+    kafka_list = append(kafka_list, "kafka"+strconv.Itoa(i)+".kafka"+":9092")
   }
 
   var kafka = Kafka{
@@ -210,15 +212,20 @@ func GenKafka(conf Conf) (Kafka, error) {
   return kafka, nil
 }
 
-func GenOrdererDomain(conf Conf, index int) string {
-  return "orderer" + strconv.Itoa(index) + "." + conf.OrdererOrgs[index].Domain + "-" + conf.Tenant + ":7050"
+func GenOrdererDomain(domainName string, index int) string {
+  return "orderer" + strconv.Itoa(index) + "." + domainName + ":7050"
 }
 
 func GenOrderer(conf Conf) (Orderer, error) {
   var address_list []string
   var orderer Orderer
-  if len(conf.OrdererOrgs) == 1 {
-    address_list = append(address_list, GenOrdererDomain(conf, 0))
+  // currently only support 1 orderer oganization
+  // with multiple, it is awkward
+  orderer0 := conf.OrdererOrgs[0]
+  domainName := orderer0.Domain + "-" + conf.Tenant
+  // one orderer, it must be solo mode, zero will fail
+  if orderer0.Template.Count == 1 {
+    address_list = append(address_list, GenOrdererDomain(domainName, 0))
     orderer = Orderer{
       OrdererType:  "solo",
       Addresses:    address_list,
@@ -231,12 +238,13 @@ func GenOrderer(conf Conf) (Orderer, error) {
       Organizations: make([]*Organization, 1),
     }
   } else {
-    numOrderer := len(conf.OrdererOrgs)
+    numOrderer := orderer0.Template.Count
     for i := 0; i < numOrderer; i++ {
-      address_list = append(address_list, GenOrdererDomain(conf, i))
+      address_list = append(address_list, GenOrdererDomain(domainName, i))
     }
 
-    kafka, _ := GenKafka(conf)
+    // 4 kafka by default
+    kafka, _ := GenKafka(4)
 
     orderer = Orderer{
       OrdererType:  "kafka",
@@ -251,7 +259,8 @@ func GenOrderer(conf Conf) (Orderer, error) {
       Organizations: make([]*Organization, 1),
     }
   }
-  domainName := conf.OrdererOrgs[0].Domain + "-" + conf.Tenant
+
+  // finishing
   orderer.Organizations[0] = GenOrdererOrg(domainName)
   return orderer, nil
 }

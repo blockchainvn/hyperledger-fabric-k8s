@@ -122,21 +122,29 @@ setupConfig() {
   local profile=$(getArgument "profile" MultiOrgsOrdererGenesis)
   local filePath=$(getArgument "file" cluster-config.yaml)
   local tlsEnabled=$(getArgument "tls_enabled" false)
+  local override=$(getArgument "override" false)
 
   cd setupCluster/genConfig
-  if [ ! `command -v glide` ]; then        
-    curl https://glide.sh/get | sh    
-  fi  
 
-  glide install
+  # if not install vendor then install it
+  if [[ ! -d vendor ]];then
+    if [ ! `command -v glide` ]; then        
+      curl https://glide.sh/get | sh    
+    fi  
+    glide install    
+  fi
+  
+  # run command
   go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml
   printCommand "go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml"
+
   # back to setupCluster folder
   cd ../
   echo "Creating genesis, profile [$profile]..."
-  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled
-  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled"
+  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override
+  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override"
   chmod -R 777 /opt/share
+
   # assign label, so we can deploy peer to only this node
   local master_node=$(kubectl get nodes | awk '$3~/master/{print $1}')
   if [[ ! -z $master_node ]];then
@@ -736,9 +744,6 @@ POLICY=$(getArgument "policy")
 VERSION=$(getArgument "version" v1)
 MODE=$(getArgument "mode" ${args[0]:-up})
 TIMEOUT=$(getArgument "timeout" 120)
-
-untilInstalledChaincode
-exit 1
 
 # for convenient
 # echo "args: "$(getArgument "query" "select * from")

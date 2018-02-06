@@ -5,7 +5,9 @@ import string
 import os
 
 TestDir = './dest/'
-PORTSTARTFROM = 30001
+PORT_START_FROM = 30500
+ZOOKEEPER_PORT_START_FROM = 32750
+KAFKA_PORT_START_FROM = 32730
 GAP = 100  #interval for worker's port
 NSF_SERVER = '192.168.99.1'
 VERSION = '1.0.2'
@@ -22,23 +24,80 @@ def render(src, dest, **kw):
 	##with open(TestDir+testDest, 'w') as d:##
 	##d.write(t.substitute(**kw))      	##
 	##########################################
+
+def condRender(src, dest, override, **kw):
+  if not os.path.exists(dest):
+      render(src, dest, **kw)
+  elif os.path.exists(dest) and override:
+      render(src, dest, **kw)
+
 def getTemplate(templateName):
 	baseDir = os.path.dirname(__file__)
 	configTemplate = os.path.join(baseDir, "../templates/" + templateName)
 	return configTemplate
 
-def getAddressSegment(name):
-	pattern = re.compile('(\d+)$')
-	result = re.search(pattern, name.split("-")[0])
-	return (int(result.group(0)) -1 if result else 0) * GAP	
+def getAddressSegment(index):
+	# pattern = re.compile('(\d+)$')
+	# result = re.search(pattern, name.split("-")[0])
+	# return (int(result.group(0)) -1 if result else 0) * GAP	
+	return index * GAP
+
+def configKafkaNamespace(path, override):
+    namespaceTemplate = getTemplate("template_kafka_namespace.yaml")
+    condRender(namespaceTemplate, path + "/" + "kafka-namespace.yaml", override)
+
+# bydefault 3 kafka and 4 zookeeper as channel, and multiple orderer will be scale based on this
+def configZookeepers(path, override):
+    for i in range(0, 3):
+        zkTemplate = getTemplate("template_zookeeper.yaml")
+        zkPodName = "zookeeper" + str(i) + "-kafka"
+        zookeeperID = "zookeeper" + str(i)
+        seq = i + 1
+        nodePort1 = ZOOKEEPER_PORT_START_FROM + (i * 3 + 1)
+        nodePort2 = nodePort1 + 1
+        nodePort3 = nodePort2 + 1
+        zooServersTemplate = "server.1=zookeeper0.kafka:2888:3888 server.2=zookeeper1.kafka:2888:3888 server.3=zookeeper2.kafka:2888:3888"
+        zooServers = zooServersTemplate.replace("zookeeper" + str(i) + ".kafka", "0.0.0.0")
+        
+        condRender(zkTemplate, path + "/" + zookeeperID + "-zookeeper.yaml", override,
+           zkPodName=zkPodName, 
+           zookeeperID=zookeeperID, 
+           seq=seq, 
+           zooServers=zooServers,
+           nodePort1=nodePort1, 
+           nodePort2=nodePort2, 
+           nodePort3=nodePort3
+				)
+
+
+def configKafkas(path, override):
+    for i in range(0, 4):
+        kafkaTemplate = getTemplate("template_kafka.yaml")
+        kafkaPodName = "kafka" + str(i) + "-kafka"
+        kafkaID = "kafka" + str(i)
+        seq = i
+        nodePort1 = KAFKA_PORT_START_FROM + (i * 2 + 1)
+        nodePort2 = nodePort1 + 1
+        advertisedHostname = "kafka" + str(i) + ".kafka"
+
+        condRender(kafkaTemplate, path + "/" + kafkaID + "-kafka.yaml", override,
+           kafkaPodName=kafkaPodName, 
+           kafkaID=kafkaID, 
+           seq=seq,
+           advertisedHostname=advertisedHostname, 
+           nodePort1=nodePort1,
+           nodePort2=nodePort2
+        )
+
 
 
 # create org/namespace 
 # copy to "/opt/share/" => need to map to nfs
-def configORGS(name, path, orderer0): # name means if of org, path describe where is the namespace yaml to be created. 	
+def configORGS(name, path, orderer0, override, index): # name means if of org, path describe where is the namespace yaml to be created. 	
 	namespaceTemplate = getTemplate("template_namespace.yaml")
 	hostPath = path.replace("transform/../", "/opt/share/")
-	render(namespaceTemplate, path + "/" + name + "-namespace.yaml", 
+
+	condRender(namespaceTemplate, path + "/" + name + "-namespace.yaml", override,
 		org = name,
 		pvName = name + "-pv",
 		nsfServer = NSF_SERVER,
@@ -54,7 +113,7 @@ def configORGS(name, path, orderer0): # name means if of org, path describe wher
 		tlsPathTemplate =  'users/Admin@{}/tls'		
 
 
-		render(cliTemplate, path + "/" + name + "-cli.yaml", 
+		condRender(cliTemplate, path + "/" + name + "-cli.yaml", override,
 			name = "cli",
 			namespace = name,
 			mspPath = mspPathTemplate.format(name),
@@ -74,9 +133,9 @@ def configORGS(name, path, orderer0): # name means if of org, path describe wher
 		###Need to expose pod's port to worker ! ####
 		##org format like this org1-f-1##
 		# addressSegment = (int(name.split("-")[0].split("org")[-1]) - 1) * GAP			
-		addressSegment = getAddressSegment(name)	
+		addressSegment = getAddressSegment(index)	
 		# each oganization should have unique ip, so ip + port should be unique
-		exposedPort = PORTSTARTFROM + addressSegment
+		exposedPort = PORT_START_FROM + addressSegment
 
 		caTemplate = getTemplate("template_ca.yaml")
 		
@@ -90,7 +149,7 @@ def configORGS(name, path, orderer0): # name means if of org, path describe wher
 			if f.endswith("_sk"):
 				skFile = f
 			
-		render(caTemplate, path + "/" + name + "-ca.yaml", 
+		condRender(caTemplate, path + "/" + name + "-ca.yaml", override,
 			namespace = name,
 			command = '"' + cmdTemplate.format("ca."+name, skFile) + '"',
 			caPath = caPathTemplate,
@@ -102,15 +161,15 @@ def configORGS(name, path, orderer0): # name means if of org, path describe wher
 		)
 		#######
 
-def generateYaml(member, memberPath, flag):
+def generateYaml(member, memberPath, flag, override, index):
 	if flag == "/peers":
-		configPEERS(member, memberPath)
+		configPEERS(member, memberPath, override, index)
 	else:
-		configORDERERS(member, memberPath) 
+		configORDERERS(member, memberPath, override, index) 
 	
 
 # create peer/pod
-def configPEERS(name, path): # name means peerid.
+def configPEERS(name, path, override, index): # name means peerid.
 	configTemplate = getTemplate("template_peer.yaml")
 	hostPath = path.replace("transform/../", "/opt/share/")
 	mspPathTemplate = 'peers/{}/msp'
@@ -122,14 +181,14 @@ def configPEERS(name, path): # name means peerid.
 	orgName = nameSplit[1]
 
 	# addressSegment = (int(orgName.split("-")[0].split("org")[-1]) - 1) * GAP
-	addressSegment = getAddressSegment(orgName)
+	addressSegment = getAddressSegment(index)
 	##peer from like this peer 0##
 	peerOffset = int((peerName.split("peer")[-1])) * 4
-	exposedPort1 = PORTSTARTFROM + addressSegment + peerOffset + 1
-	exposedPort2 = PORTSTARTFROM + addressSegment + peerOffset + 2
-	exposedPort3 = PORTSTARTFROM + addressSegment + peerOffset + 3
+	exposedPort1 = PORT_START_FROM + addressSegment + peerOffset + 1
+	exposedPort2 = PORT_START_FROM + addressSegment + peerOffset + 2
+	exposedPort3 = PORT_START_FROM + addressSegment + peerOffset + 3
 	
-	render(configTemplate, path + "/" + name + ".yaml", 
+	condRender(configTemplate, path + "/" + name + ".yaml", override,
 		namespace = orgName,
 		podName = peerName + "-" + orgName,
 		peerID  = peerName,
@@ -150,7 +209,7 @@ def configPEERS(name, path): # name means peerid.
 
 
 # create orderer/pod
-def configORDERERS(name, path): # name means ordererid
+def configORDERERS(name, path, override, index): # name means ordererid
 	configTemplate = getTemplate("template_orderer.yaml")
 	hostPath = path.replace("transform/../", "/opt/share/")
 	genesisPath = os.path.dirname(os.path.dirname(hostPath))
@@ -162,9 +221,10 @@ def configORDERERS(name, path): # name means ordererid
 	orgName = nameSplit[1]
 	
 	ordererOffset = int(ordererName.split("orderer")[-1])
-	exposedPort = 32700 + ordererOffset
+	addressSegment = getAddressSegment(index) 
+	exposedPort = 32000 + addressSegment + ordererOffset
 
-	render(configTemplate, path + "/" + name + ".yaml", 
+	condRender(configTemplate, path + "/" + name + ".yaml", override, 
 		namespace = orgName,
 		ordererID = ordererName,
 		podName =  ordererName + "-" + orgName,
