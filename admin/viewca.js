@@ -9,5 +9,5 @@ program
 
 var controller = require("./controller")(program.channel, program.host);
 
-var cert = controller.view_ca(program.user);
+var cert = controller.viewca(program.user);
 console.log(cert);
