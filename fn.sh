@@ -252,7 +252,7 @@ setupNetwork() {
     fi  
 
     echo "Cleaning persistent volumes"
-    rm -rf /opt/share/ca/* /opt/share/peer/* /opt/share/orderer/* /opt/share/couchdb/*
+    rm -rf /opt/share/ca/* /opt/share/peer/* /opt/share/orderer/* /opt/share/couchdb/* /opt/share/kafka/*
 
     echo 
   else
