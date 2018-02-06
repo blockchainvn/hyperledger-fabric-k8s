@@ -509,7 +509,7 @@ untilInstalledChaincode(){
   local chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1) 
   echo "Waiting for chaincode to be installed on $chaincode_name"
   printCommand "kubectl exec -it $chaincode_name -n $NAMESPACE -- bash -c 'if [[ -f $CHAINCODE ]];then echo true;fi' | sed $'s/[^[:print:]"'\\t'"]//g'"
-
+  # Remove everything except the printable characters
   while [[ $CHAINCODE_STATUS != true && $start -lt $wait_timeout ]]; do            
       CHAINCODE_STATUS=$(kubectl exec -it $chaincode_name -n $NAMESPACE -- bash -c 'if [[ -f '$CHAINCODE' ]];then echo true;fi' | sed $'s/[^[:print:]\t]//g')      
       sleep 1
