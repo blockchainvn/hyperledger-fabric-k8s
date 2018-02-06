@@ -504,18 +504,20 @@ installChaincode() {
 untilInstalledChaincode(){  
   local wait_timeout=${1:-$TIMEOUT}
   local start=0  
-  local CHAINCODE_STATUS=
+  local CHAINCODE_STATUS=  
   # do not use bash to get the result, it is very strange
-  while [[ $CHAINCODE_STATUS != "true" && $start -lt $wait_timeout ]]; do
-      local chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1) 
-      echo "Waiting for chaincode to be installed on $chaincode_name"
-      CHAINCODE_STATUS=$(kubectl exec -it $chaincode_name -n $NAMESPACE -- [ -f $CHAINCODE ] && echo "true")      
+  local chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1) 
+  echo "Waiting for chaincode to be installed on $chaincode_name"
+  printCommand "kubectl exec -it $chaincode_name -n $NAMESPACE -- bash -c 'if [[ -f $CHAINCODE ]];then echo true;fi' | sed $'s/[^[:print:]"'\\t'"]//g'"
+
+  while [[ $CHAINCODE_STATUS != true && $start -lt $wait_timeout ]]; do            
+      CHAINCODE_STATUS=$(kubectl exec -it $chaincode_name -n $NAMESPACE -- bash -c 'if [[ -f '$CHAINCODE' ]];then echo true;fi' | sed $'s/[^[:print:]\t]//g')      
       sleep 1
       ((start+=1)) 
       echo "Waiting after $start second, result got: $CHAINCODE_STATUS"
   done
 
-  if [[ $CHAINCODE_STATUS != "true" ]];then
+  if [[ $CHAINCODE_STATUS != true ]];then
     echo "Waiting for chaincode to be installed timeout"
     exit 1
   fi
@@ -734,6 +736,9 @@ POLICY=$(getArgument "policy")
 VERSION=$(getArgument "version" v1)
 MODE=$(getArgument "mode" ${args[0]:-up})
 TIMEOUT=$(getArgument "timeout" 120)
+
+untilInstalledChaincode
+exit 1
 
 # for convenient
 # echo "args: "$(getArgument "query" "select * from")
