@@ -47,7 +47,10 @@ joinChannel() {
   peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME
   # CORE_PEER_MSPCONFIGPATH=$CORE_PEER_MSPCONFIGPATH \
   peer channel join -b ${CHANNEL_NAME}.block 
-  echo "===================== $CORE_PEER_ID joined on the channel \"$CHANNEL_NAME\" ===================== "
+
+  res=$?  
+  verifyResult $res "Join channel failed"  
+  echo "===================== $CORE_PEER_ADDRESS joined on the channel \"$CHANNEL_NAME\" ===================== "
   sleep $DELAY
   echo  
 }
@@ -72,7 +75,7 @@ updateChaincode(){
 ACTION="$1"
 shift
 
-while getopts "o:C:n:v:c:d:P:" opt; do
+while getopts "o:C:n:v:c:d:P:m:" opt; do
   case "$opt" in
     o)  ORDERER_ADDRESS=$OPTARG
     ;;
@@ -88,6 +91,7 @@ while getopts "o:C:n:v:c:d:P:" opt; do
     ;;
     P)  POLICY=$OPTARG
     ;;
+    m)  MODE=$OPTARG
   esac
 done
 
@@ -109,9 +113,17 @@ fi
 if [[ $ACTION == 'instantiate' || $ACTION == 'upgrade' ]];then
   updateChaincode
 else 
-  echo "Creating & Having $CORE_PEER_ID join the channel..."
-  createChannel
-  joinChannel
+  if [[ $MODE == 'join' ]];then
+    echo "Having $CORE_PEER_ADDRESS join the channel..."
+    joinChannel
+  elif [[ $MODE == 'create' ]];then
+    echo "Creating the channel..."
+    createChannel
+  else     
+    echo "Creating & Having $CORE_PEER_ADDRESS join the channel..."
+    createChannel  
+    joinChannel
+  fi
 fi
 
 echo

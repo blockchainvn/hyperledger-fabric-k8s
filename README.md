@@ -74,7 +74,9 @@ docker load < /opt/share/docker/admin-api.tar
 **Step3: Start the channel**  
 ```sh
 # run ./fn.sh help channel for more information
-./fn.sh channel
+./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace as1-v1
+# join other organization to channel
+./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace idp2-v1 --mode=join
 ```
 
 **Step4: Install the chaincode**  

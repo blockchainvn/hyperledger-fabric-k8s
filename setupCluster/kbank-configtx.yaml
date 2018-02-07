@@ -67,7 +67,36 @@ Profiles:
         MSPDir: crypto-config/peerOrganizations/as1-v1/msp
         AnchorPeers:
         - Host: peer0.as1-v1
-          Port: 7051     
+          Port: 7051      
+
+  As1IdpsChannel:
+    Consortium: SampleConsortium
+    Application:
+      Organizations:
+      - Name: Idp1MSP
+        ID: Idp1MSP
+        MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
+        AnchorPeers:
+        - Host: peer0.idp1-v1
+          Port: 7051
+      - Name: Idp2MSP
+        ID: Idp2MSP
+        MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
+        AnchorPeers:
+        - Host: peer0.idp2-v1
+          Port: 7051
+      - Name: Idp3MSP
+        ID: Idp3MSP
+        MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
+        AnchorPeers:
+        - Host: peer0.idp3-v1
+          Port: 7051
+      - Name: As1MSP
+        ID: As1MSP
+        MSPDir: crypto-config/peerOrganizations/as1-v1/msp
+        AnchorPeers:
+        - Host: peer0.as1-v1
+          Port: 7051
 
 
   As2IdpsChannel:

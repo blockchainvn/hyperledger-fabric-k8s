@@ -20,6 +20,8 @@ DOCKER_COMPOSE_FILE=docker-compose.yml
 SCRIPT_NAME=`basename "$0"`
 ENV=DEV
 
+export FABRIC_CFG_PATH=$BASE_DIR/setupCluster
+
 : ${GOPATH:=/opt/gopath}
 export GOBIN=$GOPATH/bin
 
@@ -57,7 +59,7 @@ printHelp () {
     echo "          ./fn.sh bash cli 'peer channel list' --namespace org1-v1"
     echo
     echo "      - 'channel' - setup channel"
-    echo "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050"
+    echo "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050 [--mode=create|join|up]"
     echo
     echo "      - 'install' - install chaincode"
     echo "          ./fn.sh install --channel mychannel --namespace org1-v1 --chaincode mycc -v v1 [--no-pod true]"
@@ -518,12 +520,14 @@ bashContainer () {
 setupChannel() {
   cd setupCluster
   local profile=$(getArgument "profile" MultiOrgsChannel)
-  echo "Creating channel artifacts, profile [$profile]..."  
-  ../bin/configtxgen -profile $profile -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME}
-  printCommand "../bin/configtxgen -profile $profile -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME}"
-  echo
+  if [[ $MODE != "join" ]];then
+    echo "Creating channel artifacts, profile [$profile]..."  
+    ../bin/configtxgen -profile $profile -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME}
+    printCommand "../bin/configtxgen -profile $profile -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME}"
+    echo
+    cp -r ./channel-artifacts /opt/share/
+  fi
 
-  cp -r ./channel-artifacts /opt/share/
   cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
   if [[ ! -z $cli_name ]];then      
     # use fetch channel after that for sure, in case channel has been created
@@ -534,8 +538,8 @@ setupChannel() {
     # kubectl exec -it $cli_name -n $NAMESPACE -- peer channel join -b ${CHANNEL_NAME}.block
     # printCommand "${GREEN}kubectl exec -it $cli_name -n $NAMESPACE -- peer channel join -b ${CHANNEL_NAME}.block"
 
-    kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh channel -C $CHANNEL_NAME -o $ORDERER_ADDRESS
-    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh channel -C $CHANNEL_NAME -o $ORDERER_ADDRESS"
+    kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh channel -C $CHANNEL_NAME -o $ORDERER_ADDRESS -m $MODE
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh channel -C $CHANNEL_NAME -o $ORDERER_ADDRESS -m $MODE"
 
     res=$?  
     verifyResult $res "Setup channel failed"
