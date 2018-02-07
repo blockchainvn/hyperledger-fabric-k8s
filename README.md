@@ -109,3 +109,20 @@ docker load < /opt/share/docker/admin-api.tar
 
 
 > Alternative way to run at your local machine is using fnssh.sh script
+> fnssh.sh using sshpass to automate script at local
+
+**you can use sshpass alone**
+```sh
+sshpass -p 'password' ssh -t user@host 'sudo su <<\EOF
+cd /home/hyperledger-k8s
+./fn.sh move --namespace idp1-v1 --org IDP1
+./fn.sh move --namespace idp2-v1 --org IDP2
+./fn.sh move --namespace idp3-v1 --org IDP3
+./fn.sh move --namespace as1-v1 --org AS1
+./fn.sh move --namespace as2-v1 --org AS2
+./fn.sh move --namespace rp1-v1 --org RP1
+./fn.sh move --namespace orgorderer-v1 --org Orderer2
+./fn.sh move --namespace kafka --org Master
+EOF'
+```
+
