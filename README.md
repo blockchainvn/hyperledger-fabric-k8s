@@ -20,11 +20,23 @@ Copy chaincode
 cp -r chaincode /opt/share/channel-artifacts/
 ```
 
-nfs server
-for cluster please run sudo mount /opt/share <master_ip>:/opt/share  
+nfs setup  
 ```sh
-echo "/opt/share -network <master_ip> -mask 255.255.255.0 -alldirs -maproot=root:wheel" | sudo tee -a /etc/exports
-sudo nfsd restart
+# server
+apt-get update
+apt-get install nfs-kernel-server -y
+mkdir /opt/share
+chown mastertest /opt/share
+echo "/opt/share    *(rw,sync,no_subtree_check)" | sudo tee -a /etc/exports
+exportfs -a
+service nfs-kernel-server start
+
+# client
+sudo apt-get update
+sudo apt-get install nfs-common
+mkdir /opt/share
+mount -t nfs 52.230.86.63:/opt/share /opt/share
+mount -t nfs
 ```
 
 Build admin api images: **optional**  
