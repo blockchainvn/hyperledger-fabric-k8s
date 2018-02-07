@@ -42,6 +42,8 @@ chown -R nobody:nogroup /opt/share/
 Build admin api images: **optional**  
 ```sh
 # on master node
+cd admin
+docker build -t hyperledger/admin-api .
 docker save hyperledger/admin-api > /opt/share/docker/admin-api.tar
 # on slave node
 docker load < /opt/share/docker/admin-api.tar

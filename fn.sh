@@ -20,7 +20,7 @@ DOCKER_COMPOSE_FILE=docker-compose.yml
 SCRIPT_NAME=`basename "$0"`
 ENV=DEV
 
-export GOPATH=/opt/gopath
+: ${GOPATH:=/opt/gopath}
 export GOBIN=$GOPATH/bin
 
 # Print the usage message
