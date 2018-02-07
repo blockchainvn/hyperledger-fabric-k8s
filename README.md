@@ -33,10 +33,9 @@ service nfs-kernel-server start
 
 # client
 sudo apt-get update
-sudo apt-get install nfs-common
+sudo apt-get install nfs-common -y
 mkdir /opt/share
-mount -t nfs 52.230.86.63:/opt/share /opt/share
-mount -t nfs
+mount -t nfs 10.0.0.4:/opt/share /opt/share
 ```
 
 Build admin api images: **optional**  
