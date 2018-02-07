@@ -7,7 +7,7 @@
 #
 # export so other script can access
 
-if [[ ! command -v sshpass ]];then
+if [ ! `command -v sshpass` ];then
   echo "Try to install sshpass:"
   echo "apt-get install sshpass"
   echo "brew install https://raw.githubusercontent.com/kadwanev/bigboybrew/master/Library/Formula/sshpass.rb"
