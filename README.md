@@ -6,6 +6,12 @@ Run
 ./fn.sh help [method]
 ```
 
+Run fn from ssh mode  
+```sh
+./fnssh.sh user:passwd@server:/path
+```
+
+
 Copy chaincode  
 ```sh
 cp -r chaincode /opt/share/channel-artifacts/
