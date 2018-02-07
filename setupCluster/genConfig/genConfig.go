@@ -111,7 +111,7 @@ type Template struct {
   Count int `yaml:"Count"`
 }
 
-func GenConfigtx(conf Conf) (TopLevel, error) {
+func GenConfigtx(conf Conf, genesisProfile string) (TopLevel, error) {
 
   var orderer Orderer
   orderer, _ = GenOrderer(conf)
@@ -140,7 +140,8 @@ func GenConfigtx(conf Conf) (TopLevel, error) {
   }
 
   topProfile := make(map[string]*Profile, 2)
-  topProfile["MultiOrgsOrdererGenesis"] = &profGenesis
+  topProfile[genesisProfile] = &profGenesis
+  // by default, there is a multi-channel for all
   topProfile["MultiOrgsChannel"] = &profChannel
 
   domainName := conf.OrdererOrgs[0].Domain + conf.Tenant
@@ -282,9 +283,10 @@ func getConf(path string) Conf {
 
 func main() {
 
-  var configPath, outputPath string
+  var configPath, outputPath, genesisProfile string
   flag.StringVar(&configPath, "In", "../cluster-config.yaml", "Config path of the network")
   flag.StringVar(&outputPath, "Out", "../configtx.yaml", "Config path of the network")
+  flag.StringVar(&genesisProfile, "Profile", "MultiOrgsOrdererGenesis", "Genesis config name of the network")
   // for kafka zoo keeper to work, you have to use kafka-zookeeper template
   // and config it by-hand
 
@@ -299,7 +301,7 @@ func main() {
   check(err)
 
   // Generate configtx.yaml
-  configtx, err := GenConfigtx(conf)
+  configtx, err := GenConfigtx(conf, genesisProfile)
   check(err)
   fmt.Println("Generating YAML file from configtx config....")
   configtxYAML, err := yaml.Marshal(&configtx)

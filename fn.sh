@@ -19,8 +19,12 @@ BASE_DIR=$PWD
 DOCKER_COMPOSE_FILE=docker-compose.yml
 SCRIPT_NAME=`basename "$0"`
 ENV=DEV
+
+export GOPATH=/opt/gopath
+export GOBIN=$GOPATH/bin
+
 # Print the usage message
-function printHelp () {
+printHelp () {
 
   echo "Usage: "
   echo "  $SCRIPT_NAME [-m|--method=] install|instantiate|upgrade|query"
@@ -32,7 +36,7 @@ function printHelp () {
     echo "$res"    
   else      
     echo "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false]"    
+    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false --version 1.0.2]"    
     echo 
     echo "      - 'scale' - scale a deployment of a namespace for the network"
     echo "          ./fn.sh scale --deployment=orderer0-orgorderer-v1 --min=2 --max=10"    
@@ -69,6 +73,13 @@ function printHelp () {
     echo
     echo "      - 'invoke' - invoke chaincode"    
     echo "          ./fn.sh invoke --namespace org1-v1 --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
+    echo
+    echo "      - 'assign' - assign org label to node"
+    echo "          ./fn.sh assign --node master --org org1"
+    echo
+    echo "      - 'move' - move namespace to group labeled"
+    echo "          ./fn.sh move --namespace org1-v1 --org org1"
+    echo
   fi
 
   echo
@@ -126,32 +137,56 @@ setupConfig() {
 
   cd setupCluster/genConfig
 
+  assertGoInstall
   # if not install vendor then install it
-  if [[ ! -d vendor ]];then
-    if [ ! `command -v glide` ]; then        
-      curl https://glide.sh/get | sh    
-    fi  
-    glide install    
-  fi
+  # if [[ ! -d vendor ]];then
+  #   # if [ ! `command -v glide` ]; then        
+  #   #   curl https://glide.sh/get | bash    
+  #   # fi  
+  #   # mkdir $GOBIN
+  #   go get gopkg.in/yaml.v2
+  #   # glide install    
+  # fi
 
   # run command
-  go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml
-  printCommand "go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml"
+  go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml -Profile $profile
+  printCommand "go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml -Profile $profile"
 
   # back to setupCluster folder
   cd ../
   echo "Creating genesis, profile [$profile]..."
-  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override
-  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override"
+  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override -v $VERSION
+  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override -v $VERSION"
   chmod -R 777 /opt/share
 
   # assign label, so we can deploy peer to only this node
   local master_node=$(kubectl get nodes | awk '$3~/master/{print $1}')
-  if [[ ! -z $master_node ]];then
-    echo "Assign label org=$NAMESPACE to master node $master_node"
+  if [[ ! -z $master_node ]];then    
     kubectl label nodes $master_node admin=true --overwrite=true
     printCommand "kubectl label nodes $master_node admin=true --overwrite=true"
   fi
+}
+
+assignNode(){
+  local node=$(getArgument "node")
+  local org=$(getArgument "org")
+  if [[ -z $node || -z $org ]];then
+    echo "Please enter --node and --org params"
+    exit 1
+  fi
+  kubectl label nodes $node org=$org --overwrite=true
+  printCommand "kubectl label nodes $node org=$org --overwrite=true"
+}
+
+moveToNode(){  
+  local org=$(getArgument "org")
+  if [[ -z $NAMESPACE || -z $org ]];then
+    echo "Please enter --namespace and --org params"
+    exit 1
+  fi
+  local deployments=$(kubectl get deployment -n $NAMESPACE | awk 'NR>1{print $1}')
+  kubectl patch deployment $deployments -n $NAMESPACE -p '{"spec":{"template":{"spec":{"nodeSelector":{"org":"'$org'"}}}}}'  
+  printCommand "kubectl patch deployment $deployments -n $NAMESPACE -p '{\"spec\":{\"template\":{\"spec\":{\"nodeSelector\":{\"org\":\"$org\"}}}}}'"
 }
 
 scalePod() {
@@ -189,10 +224,10 @@ EOF
 
 }
 
-function buildCryptoTools() {
-
+assertGoInstall(){
   # install go and fabric library
-  if [[ -d $GOPATH ]];then
+  if [[ ! -d $GOPATH ]];then
+    echo "Installing go for the first time"
     ARCH=`uname -s | grep Darwin`
     if [ "$ARCH" == "Darwin" ]; then
       if [ ! `command -v go` ]; then
@@ -206,18 +241,44 @@ function buildCryptoTools() {
     fi  
 
     apt install libtool libltdl-dev
-    mkdir -p /opt/gopath/src
-    export GOPATH=/opt/gopath
+    mkdir -p $GOPATH/src    
     cd $GOPATH/src
     mkdir -p github.com/hyperledger
     cd github.com/hyperledger
     git clone https://github.com/hyperledger/fabric.git
+    # finally install yaml.v2
+    go get gopkg.in/yaml.v2
   fi
+}
 
+assertPythonInstall(){
+  if [ ! `command v python` ];then
+    if [ "$ARCH" == "Darwin" ]; then
+      brew install python
+    else
+      sudo apt-get install python
+    fi  
+  fi
+}
+
+assertPipInstall(){
+  # assert python
+  assertPythonInstall
+  # install pip
+  if [ ! `command v pip` ];then
+    if [ "$ARCH" != "Darwin" ]; then
+      sudo apt-get install python-setuptools -y   
+    fi
+    sudo easy_install pip
+  fi
+}
+
+buildCryptoTools() {
+  assertGoInstall
   # install pyyaml for sure
-  pip install pyyaml
-
-  cd ${GOPATH}/src/github.com/hyperledger/fabric/
+  assertPipInstall
+  pip install pyyaml  
+  cd $GOPATH/src/github.com/hyperledger/fabric/
   make configtxgen
   res=$?
   make cryptogen  
@@ -304,7 +365,7 @@ createChaincodeDeploymentDev() {
             # inline is more readable            
             command: [ "/bin/bash", "-c", "--" ]            
             args: [ "cp -r /home/$CHAINCODE/* ./ && go build -i && ./$CHAINCODE" ]
-            workingDir: /opt/gopath/src/$CHAINCODE
+            workingDir: $GOPATH/src/$CHAINCODE
             volumeMounts:
               - mountPath: /host/var/run/
                 name: run
@@ -318,7 +379,7 @@ createChaincodeDeploymentDev() {
               - name: CORE_CHAINCODE_ID_NAME
                 value: ${CHAINCODE}:${VERSION}    
               - name: GOPATH
-                value: /opt/gopath          
+                value: $GOPATH          
               - name: CORE_VM_ENDPOINT
                 value: unix:///host/var/run/docker.sock
             imagePullPolicy: IfNotPresent
@@ -787,6 +848,12 @@ case "${METHOD}" in
   invoke)
     execChaincode invoke
   ;;   
+  assign)
+    assignNode
+  ;;
+  move)
+    moveToNode
+  ;;
   *) 
     printHelp 1 ${args[0]}
   ;;

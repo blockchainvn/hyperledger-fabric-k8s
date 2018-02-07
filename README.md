@@ -98,5 +98,13 @@ docker load < /opt/share/docker/admin-api.tar
 ./fn.sh admin --port 31999
 ```
 
+**Step8: Scaling**  
+```sh
+# assign a label to node then move namespace to that label later
+./fn.sh assign --node master --org Master
+# move all depoyments belong to a namespace
+./fn.sh move --namespace kafka --org Master
+```
+
 
 > Alternative way to run at your machine is using fnssh.sh scritp
