@@ -1,4 +1,5 @@
-#### Setup 
+## Setup 
+[View detail here](#setup-detail)  
 ==============
 
 Run  
@@ -13,7 +14,6 @@ Run fn from ssh mode
 # run command on server
 ./fnssh.sh user:passwd@server:/path -- command
 ```
-
 
 Copy chaincode  
 ```sh
@@ -47,3 +47,57 @@ docker save hyperledger/admin-api > /opt/share/docker/admin-api.tar
 docker load < /opt/share/docker/admin-api.tar
 ```
 
+## Setup detail
+==============
+
+**Step1: Build configtx.yaml, kubernetes files for the network**  
+```sh
+# change cluster-config file and all kubernetes templates inside setupCluster/templates folder
+# view help and hint
+./fn.sh help config
+# run config
+./fn.sh config
+# change setupCluster/configtx.yaml to add more Channel configuration 
+# default we have MultiOrgsChannel including all organizations
+```
+
+**Step2: Start, stop network**  
+```sh
+# start the network
+./fn.sh network
+# stop the network
+./fn.sh network down
+```
+
+**Step3: Start the channel**  
+```sh
+# run ./fn.sh help channel for more information
+./fn.sh channel
+```
+
+**Step3: Install the chaincode**  
+```sh
+# run ./fn.sh help install for more information
+./fn.sh install
+```
+
+**Step3: Instantiate/upgrade the chaincode**  
+```sh
+# run ./fn.sh help instantiate/upgrade for more information
+./fn.sh instantiate
+```
+
+**Step3: query/invoke the chaincode**  
+```sh
+# run ./fn.sh help query/invoke for more information
+./fn.sh query
+```
+
+**Step3: Start api-server**  
+```sh
+# run ./fn.sh help admin for more information
+./fn.sh admin --port 31999
+```
+
+
+> Alternative way to run at your machine is using fnssh.sh scritp
