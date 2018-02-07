@@ -10,14 +10,14 @@ Run
 Run fn from ssh mode  
 ```sh
 # synchornize local folder to server
-./fnssh.sh user:passwd@server:/path sync localpath
+./sshfn.sh user:passwd@server:/path sync localpath
 # run command on server
-./fnssh.sh user:passwd@server:/path -- command
+./sshfn.sh user:passwd@server:/path -- command
 ```
 
 Copy chaincode  
 ```sh
-cp -r chaincode /opt/share/channel-artifacts/
+cp -r ./chaincode /opt/share/channel-artifacts/
 ```
 
 nfs setup  
@@ -108,8 +108,8 @@ docker load < /opt/share/docker/admin-api.tar
 ```
 
 
-> Alternative way to run at your local machine is using fnssh.sh script
-> fnssh.sh using sshpass to automate script at local
+> Alternative way to run at your local machine is using sshfn.sh script
+> sshfn.sh using sshpass to automate script at local
 
 **you can use sshpass alone**
 ```sh

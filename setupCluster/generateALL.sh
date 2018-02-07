@@ -49,7 +49,7 @@ function generateChannelArtifacts() {
 	# echo "cp -r ./crypto-config /opt/share/ && cp -r ./channel-artifacts /opt/share/"
 	cp -r ./crypto-config /opt/share/ && cp -r ./channel-artifacts /opt/share/
 	# copy script for later use
-	cp -r ./scripts/ /opt/share/channel-artifacts/
+	cp -r ./scripts/* /opt/share/channel-artifacts/
 	#/opt/share mouts the remote /opt/share from nfs server
 }
 
