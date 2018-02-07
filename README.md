@@ -8,7 +8,10 @@ Run
 
 Run fn from ssh mode  
 ```sh
-./fnssh.sh user:passwd@server:/path
+# synchornize local folder to server
+./fnssh.sh user:passwd@server:/path sync localpath
+# run command on server
+./fnssh.sh user:passwd@server:/path -- command
 ```
 
 
