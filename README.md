@@ -75,25 +75,25 @@ docker load < /opt/share/docker/admin-api.tar
 ./fn.sh channel
 ```
 
-**Step3: Install the chaincode**  
+**Step4: Install the chaincode**  
 ```sh
 # run ./fn.sh help install for more information
 ./fn.sh install
 ```
 
-**Step3: Instantiate/upgrade the chaincode**  
+**Step5: Instantiate/upgrade the chaincode**  
 ```sh
 # run ./fn.sh help instantiate/upgrade for more information
 ./fn.sh instantiate
 ```
 
-**Step3: query/invoke the chaincode**  
+**Step6: query/invoke the chaincode**  
 ```sh
 # run ./fn.sh help query/invoke for more information
 ./fn.sh query
 ```
 
-**Step3: Start api-server**  
+**Step7: Start api-server**  
 ```sh
 # run ./fn.sh help admin for more information
 ./fn.sh admin --port 31999
