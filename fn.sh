@@ -36,7 +36,7 @@ printHelp () {
     echo "$res"    
   else      
     echo "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false --version 1.0.2]"    
+    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false --fabric-version 1.0.2]"    
     echo 
     echo "      - 'scale' - scale a deployment of a namespace for the network"
     echo "          ./fn.sh scale --deployment=orderer0-orgorderer-v1 --min=2 --max=10"    
@@ -134,6 +134,7 @@ setupConfig() {
   local filePath=$(getArgument "file" cluster-config.yaml)
   local tlsEnabled=$(getArgument "tls_enabled" false)
   local override=$(getArgument "override" false)
+  local fabric_version=$(getArgument "fabric_version" 1.0.2)
 
   cd setupCluster/genConfig
 
@@ -155,8 +156,8 @@ setupConfig() {
   # back to setupCluster folder
   cd ../
   echo "Creating genesis, profile [$profile]..."
-  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override -v $VERSION
-  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override -v $VERSION"
+  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override -v $fabric_version
+  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override -v $fabric_version"
   chmod -R 777 /opt/share
 
   # assign label, so we can deploy peer to only this node

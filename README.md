@@ -36,6 +36,7 @@ sudo apt-get update
 sudo apt-get install nfs-common -y
 mkdir /opt/share
 mount -t nfs 10.0.0.4:/opt/share /opt/share
+chown -R nobody:nogroup /opt/share/
 ```
 
 Build admin api images: **optional**  
@@ -107,4 +108,4 @@ docker load < /opt/share/docker/admin-api.tar
 ```
 
 
-> Alternative way to run at your machine is using fnssh.sh scritp
+> Alternative way to run at your local machine is using fnssh.sh script

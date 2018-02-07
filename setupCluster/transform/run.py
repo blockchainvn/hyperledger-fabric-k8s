@@ -65,7 +65,7 @@ def checkAndRun(f):
 	
 
 	if os.path.isfile(f):
-		os.system("kubectl " + method + " -f " + f + " --save-config")
+		os.system("kubectl " + method + " -f " + f + (" --save-config" if method == "create" else ""))
 
 	else:
 		print("file %s no exited"%(f))
