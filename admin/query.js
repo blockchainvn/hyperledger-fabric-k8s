@@ -5,7 +5,7 @@ program
   .option("-u, --user []", "User id", "user1")
   .option("--name, --channel []", "A channel", "mychannel")
   .option("--chaincode, --chaincode []", "A chaincode", "origincert")
-  .option("--host, --host []", "Host", "peer0.org1-f-1:7051")
+  .option("--host, --host []", "Host", process.env.PEER_HOST)
   .option("-m, --method []", "A method", "getCreator")
   .option(
     "-a, --arguments [value]",

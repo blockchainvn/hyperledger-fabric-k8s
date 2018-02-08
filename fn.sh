@@ -342,7 +342,7 @@ createChaincodeDeploymentDev() {
 
   local docker_image=hyperledger/fabric-ccenv:x86_64-1.0.2
   local chaincode_shared_path=${CHAINCODE_PATH/github.com\/hyperledger\/fabric\/peer/\/opt\/share}
-  
+  local org=$(getArgument "org" $(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z]))
   cat <<EOF | kubectl create -f -
   apiVersion: extensions/v1beta1
   kind: Deployment
@@ -361,6 +361,7 @@ createChaincodeDeploymentDev() {
         # nodeSelector:
           # assume all org node can access to docker
           # org: $NAMESPACE
+          org: $org
         containers:
           - name: $CHAINCODE
             image: $docker_image
@@ -799,7 +800,7 @@ case "$METHOD" in
 esac
 
 # process methods and arguments, by default first is channel and next is org_id
-ENV=$(getArgument "env" PROD)
+ENV=$(getArgument "env" DEV)
 CHANNEL_NAME=$(getArgument "channel" mychannel)
 NAMESPACE=$(getArgument "namespace" idp1-v1)
 PEER_ADDRESS=$(getArgument "peer" peer0.${NAMESPACE}:7051) 

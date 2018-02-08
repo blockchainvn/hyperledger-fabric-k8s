@@ -5,9 +5,9 @@ program
   .option("-u, --user []", "User id", "user1")
   .option("--name, --channel []", "A channel", "mychannel")
   .option("--chaincode, --chaincode []", "A chaincode", "origincert")
-  .option("--host, --host []", "Host", "peer0.org1-f-1:7051")
-  .option("--ehost, --event-host []", "Host", "peer0.org1-f-1:7053")
-  .option("--ohost, --orderer-host []", "Host", "orderer0.orgorderer-f-1:7050")
+  .option("--host, --host []", "Host", process.env.PEER_HOST)
+  .option("--ehost, --event-host []", "Host", process.env.EVENT_HOST)
+  .option("--ohost, --orderer-host []", "Host", process.env.ORDERER_HOST)
   .option("-m, --method []", "A method", "getCreator")
   .option(
     "-a, --arguments [value]",

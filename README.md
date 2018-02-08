@@ -41,6 +41,7 @@ chown -R nobody:nogroup /opt/share/
 
 Build admin api images: **optional**  
 ```sh
+# should have a registry instead of saving and loading
 # on master node
 cd admin
 docker build -t hyperledger/admin-api .
@@ -88,6 +89,7 @@ docker load < /opt/share/docker/admin-api.tar
 **Step5: Instantiate/upgrade the chaincode**  
 ```sh
 # run ./fn.sh help instantiate/upgrade for more information
+# in production mode, must move peer to current running node so that it can find chaincode image, or save image to share folder
 ./fn.sh instantiate
 ```
 
