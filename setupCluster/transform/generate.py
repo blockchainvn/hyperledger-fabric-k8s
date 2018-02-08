@@ -57,6 +57,7 @@ def allInOne(override):
 	peerOrgs = generateNamespacePod(PEER, override)
 	generateDeploymentPod(peerOrgs, override)
 
+	# check more than 1 order then run this
 	generateKafka(KAFKA, override)
 
 	ordererOrgs = generateNamespacePod(ORDERER, override)
