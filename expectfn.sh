@@ -47,7 +47,17 @@ elif [[ $1 == "build" ]]; then
   build
 elif [[ $1 == "--" ]];then
   shift
-  QUERY="$@"
+  # parsing params
+  QUERY=  
+  while [[ ! -z $1 ]];do     
+    if [[ $1 =~ [\ ] ]]; then            
+        QUERY="$QUERY '$1'"
+    else
+        QUERY="$QUERY $1"
+    fi  
+    shift
+  done
+  # run expect
   expect << EOF
   spawn ssh -i $SSH_KEY -t $user@$server -o StrictHostKeyChecking=no "sudo su <<\EOF
 $base_dir/fn.sh $QUERY

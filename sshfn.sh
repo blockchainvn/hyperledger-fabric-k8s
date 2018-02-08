@@ -46,8 +46,18 @@ elif [[ $1 == "build" ]]; then
   build
 elif [[ $1 == "--" ]];then
   shift
-  QUERY="$@"
-sshpass -p $passwd ssh -o StrictHostKeyChecking=no -t $user@$server "sudo su <<\EOF
+  # parsing params
+  QUERY=  
+  while [[ ! -z $1 ]];do     
+    if [[ $1 =~ [\ ] ]]; then            
+        QUERY="$QUERY '$1'"
+    else
+        QUERY="$QUERY $1"
+    fi  
+    shift
+  done
+  # run sshpass     
+  sshpass -p $passwd ssh -o StrictHostKeyChecking=no -t $user@$server "sudo su <<\EOF
 $base_dir/fn.sh $QUERY
 EOF"
 else
