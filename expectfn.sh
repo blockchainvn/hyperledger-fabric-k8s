@@ -46,7 +46,7 @@ elif [[ $1 == "--" ]];then
   shift
   QUERY="$@"
   expect << EOF
-  spawn ssh -i $SSH_KEY -t $user@$server "sudo su <<\EOF
+  spawn ssh -i $SSH_KEY -t $user@$server -o StrictHostKeyChecking=no "sudo su <<\EOF
 $base_dir/fn.sh $QUERY
 EOF"
   expect "Enter passphrase"

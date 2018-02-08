@@ -47,7 +47,7 @@ elif [[ $1 == "build" ]]; then
 elif [[ $1 == "--" ]];then
   shift
   QUERY="$@"
-sshpass -p $passwd ssh -t $user@$server "sudo su <<\EOF
+sshpass -p $passwd ssh -o StrictHostKeyChecking=no -t $user@$server "sudo su <<\EOF
 $base_dir/fn.sh $QUERY
 EOF"
 else

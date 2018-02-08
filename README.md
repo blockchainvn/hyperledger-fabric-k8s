@@ -37,6 +37,20 @@ sudo apt-get install nfs-common -y
 mkdir /opt/share
 mount -t nfs 10.0.0.4:/opt/share /opt/share
 chown -R nobody:nogroup /opt/share/
+
+# client run with expect
+expect << EOF
+  spawn ssh -o StrictHostKeyChecking=no -i /Users/thanhtu/Downloads/azure_cert_node -t nodeu2@52.230.2.130 "sudo su <<\EOF
+sudo apt-get update
+sudo apt-get install nfs-common -y
+mkdir /opt/share
+mount -t nfs 10.0.0.13:/opt/share /opt/share
+chown -R nobody:nogroup /opt/share/
+EOF"
+  expect "Enter passphrase"
+  send "123123\r"
+  expect eof
+EOF
 ```
 
 Build admin api images: **optional**  
