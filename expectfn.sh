@@ -10,16 +10,19 @@ if [ ! `command -v expect` ];then
   exit
 fi
 
-SSH_KEY=/Users/thanhtu/Downloads/azure_cert_node
-
 CONFIG=$1
 first=${CONFIG%%@*}
 last=${CONFIG##*@}
 user=${first%%:*}
-passwd=${first##*:}
+keypasswd=${first##*:}
 server=${last%%:*}
 base_dir=${last##*:}
+# SSH_KEY=/Users/thanhtu/Downloads/azure_cert_node
+SSH_KEY=${keypasswd%%,*}
+passwd=${keypasswd##*,}
+
 shift
+
 if [[ $1 == "sync" ]];then
   path=${2:-$PWD}
   echo "Sync folder to server"

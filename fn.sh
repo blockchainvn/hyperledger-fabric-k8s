@@ -161,8 +161,8 @@ setupConfig() {
   cd ../
   echo "Creating genesis, profile [$profile]..."
   chmod u+x generateALL.sh
-  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override -v $fabric_version -e $ENV -f SHARE_FOLDER
-  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override -v $fabric_version -e $ENV -f SHARE_FOLDER"
+  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override -v $fabric_version -e $ENV -f $SHARE_FOLDER
+  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override -v $fabric_version -e $ENV -f $SHARE_FOLDER"
   chmod -R 777 $SHARE_FOLDER
 
   # assign label, so we can deploy peer to only this node

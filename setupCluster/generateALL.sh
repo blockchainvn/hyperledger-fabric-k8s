@@ -77,7 +77,7 @@ function extend() {
 	
 #}
 
-while getopts "c:p:s:t:o:v:e:f" opt; do
+while getopts "c:p:s:t:o:v:e:f:" opt; do
   case "$opt" in
     c)  CONFIG_FILE=$OPTARG
     ;;

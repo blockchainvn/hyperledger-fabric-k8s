@@ -7,12 +7,14 @@ Run
 ./fn.sh help [method]
 ```
 
-Run fn from ssh mode  
+Run fn from ssh mode from sshfn and expectfn  
 ```sh
 # synchornize local folder to server
-./sshfn.sh user:passwd@server:/path sync localpath
+./sshfn.sh user:passwd@server:/path sync [localpath]
+./expectfn.sh user:key,passphrase@server:/path sync [current]
 # run command on server
 ./sshfn.sh user:passwd@server:/path -- command
+./expectfn.sh user:key,passphrase@server:/path -- command
 ```
 
 Copy chaincode  
@@ -135,7 +137,27 @@ docker load < /opt/share/docker/admin-api.tar
 > Alternative way to run at your local machine is using sshfn.sh script
 > sshfn.sh using sshpass to automate script at local
 
-**you can use sshpass alone**
+**you can use sshpass| expect alone**  
+```sh
+# sshpass command
+sshpass -p 'password' ssh -t user@host 'sudo su <<\EOF
+cd /home/hyperledger-k8s
+./fn.sh command
+EOF'
+
+# expect command
+expect << EOF
+  spawn ssh -o StrictHostKeyChecking=no -i key_file -t user@server "sudo su <<\EOF
+cd /home/hyperledger-k8s
+./fn.sh command
+EOF"
+  expect "Enter passphrase"
+  send "123123\r"
+  expect eof
+EOF
+```
+
+**Command for assign node and move namespace to node**  
 ```sh
 ./fn.sh assign --node ipd1 --org IDP1
 ./fn.sh assign --node ipd2 --org IDP2
