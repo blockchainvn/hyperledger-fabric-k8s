@@ -54,7 +54,7 @@ function generateChannelArtifacts() {
 }
 
 function generateK8sYaml (){
-	$PYTHON transform/generate.py --nfs-server $1 --tls-enabled $2 -o $OVERRIDE --version $VERSION -e $ENV
+	$PYTHON transform/generate.py --nfs-server $1 --tls-enabled $2 -o $OVERRIDE --version $VERSION --env $ENV
 }
 
 function clean () {
@@ -77,7 +77,7 @@ function extend() {
 	
 #}
 
-while getopts "c:p:s:t:o:v:e" opt; do
+while getopts "c:p:s:t:o:v:e:" opt; do
   case "$opt" in
     c)  CONFIG_FILE=$OPTARG
     ;;

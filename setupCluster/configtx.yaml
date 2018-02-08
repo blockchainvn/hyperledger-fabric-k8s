@@ -3,275 +3,55 @@ Profiles:
     Consortium: SampleConsortium
     Application:
       Organizations:
-      - Name: Idp1MSP
-        ID: Idp1MSP
-        MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
+      - Name: Org1MSP
+        ID: Org1MSP
+        MSPDir: crypto-config/peerOrganizations/org1-f-1/msp
         AnchorPeers:
-        - Host: peer0.idp1-v1
+        - Host: peer0.org1-f-1
           Port: 7051
-      - Name: Idp2MSP
-        ID: Idp2MSP
-        MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp2-v1
-          Port: 7051
-      - Name: Idp3MSP
-        ID: Idp3MSP
-        MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp3-v1
-          Port: 7051
-      - Name: As1MSP
-        ID: As1MSP
-        MSPDir: crypto-config/peerOrganizations/as1-v1/msp
-        AnchorPeers:
-        - Host: peer0.as1-v1
-          Port: 7051
-      - Name: As2MSP
-        ID: As2MSP
-        MSPDir: crypto-config/peerOrganizations/as2-v1/msp
-        AnchorPeers:
-        - Host: peer0.as2-v1
-          Port: 7051
-      - Name: Rp1MSP
-        ID: Rp1MSP
-        MSPDir: crypto-config/peerOrganizations/rp1-v1/msp
-        AnchorPeers:
-        - Host: peer0.rp1-v1
-          Port: 7051
-
-  As1IdpsChannel:
-    Consortium: SampleConsortium
-    Application:
-      Organizations:
-      - Name: Idp1MSP
-        ID: Idp1MSP
-        MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp1-v1
-          Port: 7051
-      - Name: Idp2MSP
-        ID: Idp2MSP
-        MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp2-v1
-          Port: 7051
-      - Name: Idp3MSP
-        ID: Idp3MSP
-        MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp3-v1
-          Port: 7051
-      - Name: As1MSP
-        ID: As1MSP
-        MSPDir: crypto-config/peerOrganizations/as1-v1/msp
-        AnchorPeers:
-        - Host: peer0.as1-v1
-          Port: 7051     
-
-
-  As2IdpsChannel:
-    Consortium: SampleConsortium
-    Application:
-      Organizations:
-      - Name: Idp1MSP
-        ID: Idp1MSP
-        MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp1-v1
-          Port: 7051
-      - Name: Idp2MSP
-        ID: Idp2MSP
-        MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp2-v1
-          Port: 7051
-      - Name: Idp3MSP
-        ID: Idp3MSP
-        MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp3-v1
-          Port: 7051
-      - Name: As2MSP
-        ID: As2MSP
-        MSPDir: crypto-config/peerOrganizations/as2-v1/msp
-        AnchorPeers:
-        - Host: peer0.as2-v1
-          Port: 7051
-
-
-  Rp1IdpsChannel:
-    Consortium: SampleConsortium
-    Application:
-      Organizations:
-      - Name: Idp1MSP
-        ID: Idp1MSP
-        MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp1-v1
-          Port: 7051
-      - Name: Idp2MSP
-        ID: Idp2MSP
-        MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp2-v1
-          Port: 7051
-      - Name: Idp3MSP
-        ID: Idp3MSP
-        MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp3-v1
-          Port: 7051
-      - Name: Rp1MSP
-        ID: Rp1MSP
-        MSPDir: crypto-config/peerOrganizations/rp1-v1/msp
-        AnchorPeers:
-        - Host: peer0.rp1-v1
-          Port: 7051
-
-
-  IdpsChannel:
-    Consortium: SampleConsortium
-    Application:
-      Organizations:
-      - Name: Idp1MSP
-        ID: Idp1MSP
-        MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp1-v1
-          Port: 7051
-      - Name: Idp2MSP
-        ID: Idp2MSP
-        MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp2-v1
-          Port: 7051
-      - Name: Idp3MSP
-        ID: Idp3MSP
-        MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
-        AnchorPeers:
-        - Host: peer0.idp3-v1
-          Port: 7051
-
-  MultiOrgsOrdererGenesis:
+  OneOrgOrdererGenesis:
     Orderer:
-      OrdererType: kafka
+      OrdererType: solo
       Addresses:
-      - orderer0.orgorderer-v1:7050
-      - orderer1.orgorderer-v1:7050
-      - orderer2.orgorderer-v1:7050
+      - orderer0.orgorderer-f-1:7050
       BatchTimeout: 2s
       BatchSize:
         MaxMessageCount: 10
         AbsoluteMaxBytes: 103809024
         PreferredMaxBytes: 524288
-      Kafka:
-        Brokers:
-        - kafka0.kafka:9092
-        - kafka1.kafka:9092
-        - kafka2.kafka:9092
-        - kafka3.kafka:9092
       Organizations:
       - Name: OrdererOrg
         ID: Orderer0MSP
-        MSPDir: crypto-config/ordererOrganizations/orgorderer-v1/msp
+        MSPDir: crypto-config/ordererOrganizations/orgorderer-f-1/msp
     Consortiums:
       SampleConsortium:
         Organizations:
-        - Name: Idp1MSP
-          ID: Idp1MSP
-          MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
+        - Name: Org1MSP
+          ID: Org1MSP
+          MSPDir: crypto-config/peerOrganizations/org1-f-1/msp
           AnchorPeers:
-          - Host: peer0.idp1-v1
-            Port: 7051
-        - Name: Idp2MSP
-          ID: Idp2MSP
-          MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
-          AnchorPeers:
-          - Host: peer0.idp2-v1
-            Port: 7051
-        - Name: Idp3MSP
-          ID: Idp3MSP
-          MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
-          AnchorPeers:
-          - Host: peer0.idp3-v1
-            Port: 7051
-        - Name: As1MSP
-          ID: As1MSP
-          MSPDir: crypto-config/peerOrganizations/as1-v1/msp
-          AnchorPeers:
-          - Host: peer0.as1-v1
-            Port: 7051
-        - Name: As2MSP
-          ID: As2MSP
-          MSPDir: crypto-config/peerOrganizations/as2-v1/msp
-          AnchorPeers:
-          - Host: peer0.as2-v1
-            Port: 7051
-        - Name: Rp1MSP
-          ID: Rp1MSP
-          MSPDir: crypto-config/peerOrganizations/rp1-v1/msp
-          AnchorPeers:
-          - Host: peer0.rp1-v1
+          - Host: peer0.org1-f-1
             Port: 7051
 Organizations:
 - Name: OrdererOrg
   ID: Orderer0MSP
-  MSPDir: crypto-config/ordererOrganizations/orgordererv1/msp
-- Name: Idp1MSP
-  ID: Idp1MSP
-  MSPDir: crypto-config/peerOrganizations/idp1-v1/msp
+  MSPDir: crypto-config/ordererOrganizations/orgordererf-1/msp
+- Name: Org1MSP
+  ID: Org1MSP
+  MSPDir: crypto-config/peerOrganizations/org1-f-1/msp
   AnchorPeers:
-  - Host: peer0.idp1-v1
-    Port: 7051
-- Name: Idp2MSP
-  ID: Idp2MSP
-  MSPDir: crypto-config/peerOrganizations/idp2-v1/msp
-  AnchorPeers:
-  - Host: peer0.idp2-v1
-    Port: 7051
-- Name: Idp3MSP
-  ID: Idp3MSP
-  MSPDir: crypto-config/peerOrganizations/idp3-v1/msp
-  AnchorPeers:
-  - Host: peer0.idp3-v1
-    Port: 7051
-- Name: As1MSP
-  ID: As1MSP
-  MSPDir: crypto-config/peerOrganizations/as1-v1/msp
-  AnchorPeers:
-  - Host: peer0.as1-v1
-    Port: 7051
-- Name: As2MSP
-  ID: As2MSP
-  MSPDir: crypto-config/peerOrganizations/as2-v1/msp
-  AnchorPeers:
-  - Host: peer0.as2-v1
-    Port: 7051
-- Name: Rp1MSP
-  ID: Rp1MSP
-  MSPDir: crypto-config/peerOrganizations/rp1-v1/msp
-  AnchorPeers:
-  - Host: peer0.rp1-v1
+  - Host: peer0.org1-f-1
     Port: 7051
 Orderer:
-  OrdererType: kafka
+  OrdererType: solo
   Addresses:
-  - orderer0.orgorderer-v1:7050
-  - orderer1.orgorderer-v1:7050
-  - orderer2.orgorderer-v1:7050
+  - orderer0.orgorderer-f-1:7050
   BatchTimeout: 2s
   BatchSize:
     MaxMessageCount: 10
     AbsoluteMaxBytes: 103809024
     PreferredMaxBytes: 524288
-  Kafka:
-    Brokers:
-    - kafka0.kafka:9092
-    - kafka1.kafka:9092
-    - kafka2.kafka:9092
-    - kafka3.kafka:9092
   Organizations:
   - Name: OrdererOrg
     ID: Orderer0MSP
-    MSPDir: crypto-config/ordererOrganizations/orgorderer-v1/msp
+    MSPDir: crypto-config/ordererOrganizations/orgorderer-f-1/msp

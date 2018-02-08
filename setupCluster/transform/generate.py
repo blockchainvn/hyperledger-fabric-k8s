@@ -70,9 +70,12 @@ def processArguments():
 	                    help='Fabric version (default: ' + tc.VERSION + ')')
 	parser.add_argument('--tls-enabled', dest='TLS_ENABLED', type=str,
 	                    help='Enable tls mode (default: ' + tc.TLS_ENABLED + ')')
+	parser.add_argument('--env', dest='ENV', type=str,
+	                    help='Fabric environment (default: ' + tc.ENV + ')')
 
 	parser.add_argument("-o", "--override", dest='OVERRIDE', type=str, default="false", help="Override existing k8s yaml files")	
-	parser.add_argument("-e", "--env", dest='ENV', type=str, default="PROD", help="Environment for deployment")	
+
+	
 
 	args = parser.parse_args()	
 

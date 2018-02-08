@@ -254,7 +254,7 @@ assertGoInstall(){
 }
 
 assertPythonInstall(){
-  if [ ! `command v python` ];then
+  if [ ! `command -v python` ];then
     if [ "$ARCH" == "Darwin" ]; then
       brew install python
     else
@@ -267,7 +267,7 @@ assertPipInstall(){
   # assert python
   assertPythonInstall
   # install pip
-  if [ ! `command v pip` ];then
+  if [ ! `command -v pip` ];then
     if [ "$ARCH" != "Darwin" ]; then
       sudo apt-get install python-setuptools -y   
     fi
