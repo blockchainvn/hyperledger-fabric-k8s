@@ -13,8 +13,8 @@ build(){
   cd sshpass
   ./configure
   sudo make install
-  echo "apt-get install sshpass"
-  echo "brew install https://raw.githubusercontent.com/kadwanev/bigboybrew/master/Library/Formula/sshpass.rb"
+  # echo "apt-get install sshpass"
+  # echo "brew install https://raw.githubusercontent.com/kadwanev/bigboybrew/master/Library/Formula/sshpass.rb"
 }
 
 if [ ! `command -v sshpass` ];then
