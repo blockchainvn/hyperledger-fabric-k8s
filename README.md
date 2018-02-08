@@ -40,19 +40,31 @@ mkdir /opt/share
 mount -t nfs 10.0.0.4:/opt/share /opt/share
 chown -R nobody:nogroup /opt/share/
 
-# client run with expect
-expect << EOF
-  spawn ssh -o StrictHostKeyChecking=no -i /Users/thanhtu/Downloads/azure_cert_node -t nodeu2@52.230.2.130 "sudo su <<\EOF
-sudo apt-get update
-sudo apt-get install nfs-common -y
-mkdir /opt/share
-mount -t nfs 10.0.0.13:/opt/share /opt/share
-chown -R nobody:nogroup /opt/share/
+# client run with expect to all slave nodes
+array="orderer2@52.187.15.1 
+nodeu1@52.163.243.228
+nodeu2@52.230.2.130
+nodeu3@52.237.75.126
+nodeu4@52.187.106.1
+nodeu5@52.163.125.166
+nodeu6@52.230.0.187"
+SAVEIFS=$IFS
+IFS=$'\n'
+array=($array)
+IFS=$SAVEIFS
+for addr in "${array[@]}";do 
+    expect << EOF
+    spawn ssh -o StrictHostKeyChecking=no -i /Users/thanhtu/Downloads/azure_cert_node -t $addr "sudo su <<\EOF
+    sudo apt-get update
+    sudo apt-get install nfs-common -y
+    sudo mkdir -p /opt/share
+    sudo mount -t nfs 10.0.0.13:/opt/share /opt/share    
 EOF"
-  expect "Enter passphrase"
-  send "123123\r"
-  expect eof
+    expect "Enter passphrase"
+    send "123123\r"
+    expect eof
 EOF
+done
 ```
 
 Build admin api images: **optional**  
