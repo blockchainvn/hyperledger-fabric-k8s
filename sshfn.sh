@@ -7,10 +7,18 @@
 #
 # export so other script can access
 
-if [ ! `command -v sshpass` ];then
+build(){
   echo "Try to install sshpass:"
+  # bash ./sshpass/install-sh  
+  cd sshpass
+  ./configure
+  sudo make install
   echo "apt-get install sshpass"
   echo "brew install https://raw.githubusercontent.com/kadwanev/bigboybrew/master/Library/Formula/sshpass.rb"
+}
+
+if [ ! `command -v sshpass` ];then
+  build
   exit
 fi
 
@@ -33,6 +41,9 @@ if [[ $1 == "sync" ]];then
     --exclude 'setupCluster/crypto-config' \
     --exclude 'setupCluster/channel-artifacts' \
     $path/ $user@$last
+elif [[ $1 == "build" ]]; then
+  #statements
+  build
 elif [[ $1 == "--" ]];then
   shift
   QUERY="$@"
