@@ -516,11 +516,11 @@ bashContainer () {
   if [[ $pod_name ]]; then
     local container=
     if [[ ! -z ${args[1]} ]];then
-      container="-c ${args[1]}"
+      container="-c ${args[1]} "
     fi    
     if [[ ! -z $QUERY ]]; then      
       kubectl exec -it $pod_name -n $NAMESPACE $container -- $QUERY
-      printCommand "kubectl exec -it $pod_name -n $NAMESPACE $container -- $QUERY"
+      printCommand "kubectl exec -it $pod_name -n $NAMESPACE $container-- $QUERY"
     else
       kubectl exec -it $pod_name -n $NAMESPACE $container bash
     fi
