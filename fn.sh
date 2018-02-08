@@ -708,8 +708,12 @@ subjects:
   name: $token_name
   namespace: kube-system
 EOF
+    
+    echo "Patching dashboard to use nodePort 30000"
+    kubectl patch service kubernetes-dashboard -n kube-system -p '{"spec":{"type":"NodePort","ports":[{"nodePort":30000,"port":443,"protocol":"TCP","targetPort":8443}]}}'    
     token_check=$(kubectl -n kube-system get secret | grep ${token_name}-token | awk '{print $1}')
-  fi  
+  fi 
+
   if [[ ! -z $token_check ]];then
     echo "Your token: $token_check"
     echo
