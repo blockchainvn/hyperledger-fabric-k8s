@@ -22,6 +22,7 @@ SCRIPT_NAME=`basename "$0"`
 export FABRIC_CFG_PATH=$BASE_DIR/setupCluster
 
 : ${GOPATH:=/opt/gopath}
+export GOPATH=$GOPATH
 export GOBIN=$GOPATH/bin
 
 # Print the usage message
@@ -140,6 +141,8 @@ setupConfig() {
   cd setupCluster/genConfig
 
   assertGoInstall
+  # install pyyaml for sure
+  assertPipInstall
   # if not install vendor then install it
   # if [[ ! -d vendor ]];then
   #   # if [ ! `command -v glide` ]; then        
@@ -157,6 +160,7 @@ setupConfig() {
   # back to setupCluster folder
   cd ../
   echo "Creating genesis, profile [$profile]..."
+  chmod u+x generateALL.sh
   ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override -v $fabric_version -e $ENV
   printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override -v $fabric_version -e $ENV"
   chmod -R 777 /opt/share
@@ -245,6 +249,9 @@ assertGoInstall(){
     apt install libtool libltdl-dev
     mkdir -p $GOPATH/src    
     cd $GOPATH/src
+    # update GOPATH
+    echo "export GOPATH=/opt/gopath" | tee ~/.bashrc
+    source ~/.bashrc
     mkdir -p github.com/hyperledger
     cd github.com/hyperledger
     git clone https://github.com/hyperledger/fabric.git
@@ -255,6 +262,7 @@ assertGoInstall(){
 
 assertPythonInstall(){
   if [ ! `command -v python` ];then
+    ARCH=`uname -s | grep Darwin`
     if [ "$ARCH" == "Darwin" ]; then
       brew install python
     else
@@ -268,10 +276,12 @@ assertPipInstall(){
   assertPythonInstall
   # install pip
   if [ ! `command -v pip` ];then
+    ARCH=`uname -s | grep Darwin`
     if [ "$ARCH" != "Darwin" ]; then
       sudo apt-get install python-setuptools -y   
     fi
     sudo easy_install pip
+    pip install pyyaml
   fi
 }
 
@@ -279,7 +289,7 @@ buildCryptoTools() {
   assertGoInstall
   # install pyyaml for sure
   assertPipInstall
-  pip install pyyaml  
+    
   cd $GOPATH/src/github.com/hyperledger/fabric/
   make configtxgen
   res=$?
