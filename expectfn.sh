@@ -1,19 +1,16 @@
 #!/bin/bash
 
 build(){
-  echo "Try to install sshpass:"
-  # bash ./sshpass/install-sh  
-  cd sshpass
-  ./configure
-  sudo make install
-  # echo "apt-get install sshpass"
-  # echo "brew install https://raw.githubusercontent.com/kadwanev/bigboybrew/master/Library/Formula/sshpass.rb"
+  echo "Please install expect first"
+  exit 1
 }
 
-if [ ! `command -v sshpass` ];then
+if [ ! `command -v expect` ];then
   build
   exit
 fi
+
+SSH_KEY=/Users/thanhtu/Downloads/azure_cert_node
 
 CONFIG=$1
 first=${CONFIG%%@*}
@@ -28,7 +25,7 @@ if [[ $1 == "sync" ]];then
   echo "Sync folder to server"
 
   expect << EOF  
-  spawn rsync -e "ssh -i /Users/thanhtu/Downloads/azure_cert_node" \
+  spawn rsync -e "ssh -i $SSH_KEY" \
     -chavP --stats --exclude ".git" \
     --exclude "**/node_modules/" \
     --exclude "**/vendor/" \
@@ -49,7 +46,7 @@ elif [[ $1 == "--" ]];then
   shift
   QUERY="$@"
   expect << EOF
-  spawn ssh -i /Users/thanhtu/Downloads/azure_cert_node -t $user@$server "sudo su <<\EOF
+  spawn ssh -i $SSH_KEY -t $user@$server "sudo su <<\EOF
 $base_dir/fn.sh $QUERY
 EOF"
   expect "Enter passphrase"
