@@ -5,6 +5,7 @@ import config as tc
 import os
 import sys
 import argparse
+import yaml
 
 
 BASEDIR = os.path.dirname(__file__)
@@ -53,12 +54,15 @@ def generateDeploymentPod(orgs, override):
 
 #TODO kafa nodes and zookeeper nodes don't have dir to store their certificate, must use anotherway to create pod yaml.
 
-def allInOne(override):
+def allInOne(override, file):
 	peerOrgs = generateNamespacePod(PEER, override)
 	generateDeploymentPod(peerOrgs, override)
 
 	# check more than 1 order then run this
-	generateKafka(KAFKA, override)
+	stream = open(file, "r")
+	YAML = yaml.load(stream)
+	if YAML["OrdererOrgs"][0]["Template"]["Count"] > 1:
+		generateKafka(KAFKA, override)
 
 	ordererOrgs = generateNamespacePod(ORDERER, override)
 	generateDeploymentPod(ordererOrgs, override)
@@ -73,10 +77,14 @@ def processArguments():
 	                    help='Enable tls mode (default: ' + tc.TLS_ENABLED + ')')
 	parser.add_argument('--env', dest='ENV', type=str,
 	                    help='Fabric environment (default: ' + tc.ENV + ')')
-
+	parser.add_argument('--file', dest='FILE', type=str,
+	                    help='Config file')
 	parser.add_argument("-o", "--override", dest='OVERRIDE', type=str, default="false", help="Override existing k8s yaml files")	
 
-	
+	# config_file = sys.argv[1] if len(sys.argv) > 1 else "cluster-config.yaml"
+
+	# stream = open(config_file, "r")
+	# YAML = yaml.load(stream)
 
 	args = parser.parse_args()	
 
@@ -87,12 +95,12 @@ def processArguments():
 
 	print('Setup network NSF_SERVER:{0}, VERSION:{1}, TLS_ENABLED:{2}, OVERRIDE:{3}'
 		.format(tc.NSF_SERVER, tc.VERSION, tc.TLS_ENABLED, args.OVERRIDE))	
-
+	
 	return args
 
 if __name__ == "__main__" :	
 	args = processArguments()
-	allInOne(True if args.OVERRIDE == "true" else False)	
+	allInOne(True if args.OVERRIDE == "true" else False, args.FILE)	
 	
 	
 	

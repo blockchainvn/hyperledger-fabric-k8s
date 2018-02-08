@@ -54,7 +54,7 @@ function generateChannelArtifacts() {
 }
 
 function generateK8sYaml (){
-	$PYTHON transform/generate.py --nfs-server $1 --tls-enabled $2 -o $OVERRIDE --version $VERSION --env $ENV
+	$PYTHON transform/generate.py --nfs-server $1 --tls-enabled $2 -o $OVERRIDE --version $VERSION --env $ENV --file $CONFIG_FILE
 }
 
 function clean () {

@@ -72,7 +72,13 @@ docker load < /opt/share/docker/admin-api.tar
 ./fn.sh network down
 ```
 
-**Step3: Start the channel**  
+**Step3: Labeling nodes**  
+```sh
+# assign a label to node then move namespace to that label later
+./fn.sh assign --node master --org Master
+```
+
+**Step4: Start the channel**  
 ```sh
 # run ./fn.sh help channel for more information
 ./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace as1-v1
@@ -80,35 +86,33 @@ docker load < /opt/share/docker/admin-api.tar
 ./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace idp2-v1 --mode=join
 ```
 
-**Step4: Install the chaincode**  
+**Step5: Install the chaincode**  
 ```sh
 # run ./fn.sh help install for more information
 ./fn.sh install
 ```
 
-**Step5: Instantiate/upgrade the chaincode**  
+**Step6: Instantiate/upgrade the chaincode**  
 ```sh
 # run ./fn.sh help instantiate/upgrade for more information
 # in production mode, must move peer to current running node so that it can find chaincode image, or save image to share folder
 ./fn.sh instantiate
 ```
 
-**Step6: query/invoke the chaincode**  
+**Step7: query/invoke the chaincode**  
 ```sh
 # run ./fn.sh help query/invoke for more information
 ./fn.sh query
 ```
 
-**Step7: Start api-server**  
+**Step8: Start api-server**  
 ```sh
 # run ./fn.sh help admin for more information
 ./fn.sh admin --port 31999
 ```
 
-**Step8: Scaling**  
+**Step9: Scaling**  
 ```sh
-# assign a label to node then move namespace to that label later
-./fn.sh assign --node master --org Master
 # move all depoyments belong to a namespace
 ./fn.sh move --namespace kafka --org Master
 ```

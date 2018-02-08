@@ -9,7 +9,7 @@ Profiles:
         AnchorPeers:
         - Host: peer0.org1-f-1
           Port: 7051
-  OneOrgOrdererGenesis:
+  MultiOrgsOrdererGenesis:
     Orderer:
       OrdererType: solo
       Addresses:

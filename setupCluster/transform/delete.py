@@ -67,8 +67,9 @@ def checkAndDelete(f):
   if os.path.isfile(f):
     os.system("kubectl delete -f " + f)
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
+  if len(os.listdir(tc.KAFKA)) > 1:
+    deleteKafkas(tc.KAFKA) 
   deleteOrderers(tc.ORDERER)
   deletePeers(tc.PEER)      
-  deleteKafkas(tc.KAFKA)
 

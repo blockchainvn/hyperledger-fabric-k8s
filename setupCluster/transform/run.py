@@ -73,7 +73,10 @@ def checkAndRun(f):
 
 
 if __name__ == "__main__":
-	runKafkas(tc.KAFKA)
+
+	if len(os.listdir(tc.KAFKA)) > 1:
+		runKafkas(tc.KAFKA)
+
 	runOrderers(tc.ORDERER)
 	runPeers(tc.PEER)
 	

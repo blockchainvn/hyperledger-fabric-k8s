@@ -358,7 +358,7 @@ createChaincodeDeploymentDev() {
           app: chaincode
           channel: $CHANNEL_NAME
       spec:
-        # nodeSelector:
+        nodeSelector:
           # assume all org node can access to docker
           # org: $NAMESPACE
           org: $org
