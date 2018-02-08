@@ -46,28 +46,28 @@ function generateChannelArtifacts() {
 	chmod -R 777 ./channel-artifacts && chmod -R 777 ./crypto-config
 
 	cp ./channel-artifacts/genesis.block ./crypto-config/ordererOrganizations/*
-	# echo "cp -r ./crypto-config /opt/share/ && cp -r ./channel-artifacts /opt/share/"
-	cp -r ./crypto-config /opt/share/ && cp -r ./channel-artifacts /opt/share/
+	# echo "cp -r ./crypto-config $SHARE_FOLDER/ && cp -r ./channel-artifacts $SHARE_FOLDER/"
+	cp -r ./crypto-config $SHARE_FOLDER/ && cp -r ./channel-artifacts $SHARE_FOLDER/
 	# copy script for later use
-	cp -r ./scripts/* /opt/share/channel-artifacts/
-	#/opt/share mouts the remote /opt/share from nfs server
+	cp -r ./scripts/* $SHARE_FOLDER/channel-artifacts/
+	#$SHARE_FOLDER mouts the remote $SHARE_FOLDER from nfs server
 }
 
 function generateK8sYaml (){
-	$PYTHON transform/generate.py --nfs-server $1 --tls-enabled $2 -o $OVERRIDE --version $VERSION --env $ENV --file $CONFIG_FILE
+	$PYTHON transform/generate.py --nfs-server $1 --tls-enabled $2 -o $OVERRIDE --version $VERSION --env $ENV --file $CONFIG_FILE --share $SHARE_FOLDER
 }
 
 function clean () {
 	if [[ $OVERRIDE != "true" ]];then
-		rm -rf /opt/share/crypto-config/*
+		rm -rf $SHARE_FOLDER/crypto-config/*
 		rm -rf crypto-config
 	fi
 }
 
 function extend() {
   if [[ $OVERRIDE == "true" ]]; then
-    rsync -rv --exclude=*.yaml --ignore-existing ./crypto-config /opt/share/
-    rmdir /opt/share/crypto-config/kafka
+    rsync -rv --exclude=*.yaml --ignore-existing ./crypto-config $SHARE_FOLDER/
+    rmdir $SHARE_FOLDER/crypto-config/kafka
   fi
 }
 
@@ -77,7 +77,7 @@ function extend() {
 	
 #}
 
-while getopts "c:p:s:t:o:v:e:" opt; do
+while getopts "c:p:s:t:o:v:e:f" opt; do
   case "$opt" in
     c)  CONFIG_FILE=$OPTARG
     ;;
@@ -93,6 +93,7 @@ while getopts "c:p:s:t:o:v:e:" opt; do
     ;;
     e)  ENV=$OPTARG
     ;;
+    f)  SHARE_FOLDER=$OPTARG
   esac
 done
 

@@ -79,6 +79,9 @@ def processArguments():
 	                    help='Fabric environment (default: ' + tc.ENV + ')')
 	parser.add_argument('--file', dest='FILE', type=str,
 	                    help='Config file')
+	parser.add_argument('--share', dest='SHARE_FOLDER', type=str,
+	                    help='Share Folder (default: ' + tc.SHARE_FOLDER + ')')
+	
 	parser.add_argument("-o", "--override", dest='OVERRIDE', type=str, default="false", help="Override existing k8s yaml files")	
 
 	# config_file = sys.argv[1] if len(sys.argv) > 1 else "cluster-config.yaml"
@@ -92,6 +95,7 @@ def processArguments():
 	tc.VERSION = args.VERSION or tc.VERSION
 	tc.TLS_ENABLED = args.TLS_ENABLED or tc.TLS_ENABLED
 	tc.ENV = args.ENV or tc.ENV
+	tc.SHARE_FOLDER = args.SHARE_FOLDER or tc.SHARE_FOLDER
 
 	print('Setup network NSF_SERVER:{0}, VERSION:{1}, TLS_ENABLED:{2}, OVERRIDE:{3}'
 		.format(tc.NSF_SERVER, tc.VERSION, tc.TLS_ENABLED, args.OVERRIDE))	

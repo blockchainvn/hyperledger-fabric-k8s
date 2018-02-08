@@ -72,10 +72,10 @@ spec:
             path: $genesis/genesis.block
         - name: data
           hostPath:
-            path: /opt/share/orderer/$namespace/$ordererID
+            path: $shareFolder/orderer/$namespace/$ordererID
          # persistentVolumeClaim:
              # claimName: $pvName
-           #path: /opt/share
+           #path: $shareFolder
          #persistentVolumeClaim:
          #  claimName: nfs
 

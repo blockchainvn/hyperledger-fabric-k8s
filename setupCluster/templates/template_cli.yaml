@@ -9,9 +9,9 @@
 #        - ReadWriteMany
 #     # storageClassName: standard
 #     # hostPath:
-#     #   path: /opt/share/channel-artifacts
+#     #   path: $shareFolder/channel-artifacts
 #     nfs: 
-#       path: /opt/share/channel-artifacts
+#       path: $shareFolder/channel-artifacts
 #       server: $nsfServer
 #       # server: 192.168.43.141 # change to your nfs server ip here.
 # ---
@@ -106,13 +106,13 @@ spec:
 
         - name: orderercertificate
           hostPath:
-            path: /opt/share/crypto-config/ordererOrganizations/$orderer0/msp/tlscacerts
+            path: $shareFolder/crypto-config/ordererOrganizations/$orderer0/msp/tlscacerts
 
           # persistentVolumeClaim:
           #     claimName: $pvName
         - name: artifacts
           hostPath:
-            path: /opt/share/channel-artifacts
+            path: $shareFolder/channel-artifacts
           # persistentVolumeClaim:
               # claimName: $artifactsName
         - name: run

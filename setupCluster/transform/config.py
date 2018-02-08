@@ -13,6 +13,7 @@ NSF_SERVER = '192.168.99.1'
 VERSION = '1.0.2'
 TLS_ENABLED = 'false'
 ENV = 'DEV'
+SHARE_FOLDER = '/opt/share'
 
 BASEDIR = os.path.dirname(__file__)
 ORDERER = os.path.join(BASEDIR, "../crypto-config/ordererOrganizations")
@@ -21,7 +22,7 @@ KAFKA = os.path.join(BASEDIR, "../crypto-config/kafka")
 
 def render(src, dest, **kw):
 	t = Template(open(src, 'r').read())	
-	options = dict(version=VERSION, tlsEnabled=TLS_ENABLED, **kw)    
+	options = dict(version = VERSION, tlsEnabled = TLS_ENABLED, shareFolder = SHARE_FOLDER, **kw)    
 	with open(dest, 'w') as f:
 		f.write(t.substitute(**options))
 
@@ -98,10 +99,10 @@ def configKafkas(path, override):
 
 
 # create org/namespace 
-# copy to "/opt/share/" => need to map to nfs
+# copy to SHARE_FOLDER => need to map to nfs
 def configORGS(name, path, orderer0, override, index): # name means if of org, path describe where is the namespace yaml to be created. 	
 	namespaceTemplate = getTemplate("template_namespace.yaml")
-	hostPath = path.replace("transform/../", "/opt/share/")
+	hostPath = path.replace("transform/../", SHARE_FOLDER + "/")
 
 	condRender(namespaceTemplate, path + "/" + name + "-namespace.yaml", override,
 		org = name,
@@ -177,7 +178,7 @@ def generateYaml(member, memberPath, flag, override, index):
 # create peer/pod
 def configPEERS(name, path, override, index): # name means peerid.
 	configTemplate = getTemplate("template_peer.yaml")
-	hostPath = path.replace("transform/../", "/opt/share/")
+	hostPath = path.replace("transform/../", SHARE_FOLDER + "/")
 	mspPathTemplate = 'peers/{}/msp'
 	tlsPathTemplate =  'peers/{}/tls'
 	#mspPathTemplate = './msp'
@@ -218,7 +219,7 @@ def configPEERS(name, path, override, index): # name means peerid.
 # create orderer/pod
 def configORDERERS(name, path, override, index): # name means ordererid
 	configTemplate = getTemplate("template_orderer.yaml")
-	hostPath = path.replace("transform/../", "/opt/share/")
+	hostPath = path.replace("transform/../", SHARE_FOLDER + "/")
 	genesisPath = os.path.dirname(os.path.dirname(hostPath))
 	mspPathTemplate = 'orderers/{}/msp'
 	tlsPathTemplate = 'orderers/{}/tls'

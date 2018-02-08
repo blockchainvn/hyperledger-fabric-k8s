@@ -58,7 +58,7 @@ spec:
       volumes:
         - name: data
           hostPath:
-              path: /opt/share/kafka/data/$kafkaID
+              path: $shareFolder/kafka/data/$kafkaID
 ---
 
 apiVersion: v1

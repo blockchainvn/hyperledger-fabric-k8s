@@ -38,7 +38,7 @@ printHelp () {
     echo "$res"    
   else      
     echo "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false --fabric-version 1.0.2]"    
+    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false --fabric-version 1.0.2 --share /opt/share]"    
     echo 
     echo "      - 'scale' - scale a deployment of a namespace for the network"
     echo "          ./fn.sh scale --deployment=orderer0-orgorderer-v1 --min=2 --max=10"    
@@ -122,7 +122,7 @@ buildAdmin(){
   fi
   #statements  
   echo "Update admin source code"
-  rsync -av --progress ./ /opt/share/admin --exclude node_modules
+  rsync -av --progress ./ $SHARE_FOLDER/admin --exclude node_modules
 
   echo "Building admin image..."
   ./build.sh $NAMESPACE $port $method
@@ -161,9 +161,9 @@ setupConfig() {
   cd ../
   echo "Creating genesis, profile [$profile]..."
   chmod u+x generateALL.sh
-  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override -v $fabric_version -e $ENV
-  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override -v $fabric_version -e $ENV"
-  chmod -R 777 /opt/share
+  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override -v $fabric_version -e $ENV -f SHARE_FOLDER
+  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override -v $fabric_version -e $ENV -f SHARE_FOLDER"
+  chmod -R 777 $SHARE_FOLDER
 
   # assign label, so we can deploy peer to only this node
   local master_node=$(kubectl get nodes | awk '$3~/master/{print $1}')
@@ -325,7 +325,7 @@ setupNetwork() {
     fi  
 
     echo "Cleaning persistent volumes"
-    rm -rf /opt/share/ca/* /opt/share/peer/* /opt/share/orderer/* /opt/share/couchdb/* /opt/share/kafka/*
+    rm -rf $SHARE_FOLDER/ca/* $SHARE_FOLDER/peer/* $SHARE_FOLDER/orderer/* $SHARE_FOLDER/couchdb/* $SHARE_FOLDER/kafka/*
 
     echo 
   else
@@ -537,7 +537,7 @@ setupChannel() {
     ../bin/configtxgen -profile $profile -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME}
     printCommand "../bin/configtxgen -profile $profile -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID ${CHANNEL_NAME}"
     echo
-    cp -r ./channel-artifacts /opt/share/
+    cp -r ./channel-artifacts $SHARE_FOLDER/
   fi
 
   cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
@@ -815,6 +815,7 @@ esac
 
 # process methods and arguments, by default first is channel and next is org_id
 ENV=$(getArgument "env" DEV)
+SHARE_FOLDER=$(getArgument "share" /opt/share)
 CHANNEL_NAME=$(getArgument "channel" mychannel)
 NAMESPACE=$(getArgument "namespace" idp1-v1)
 PEER_ADDRESS=$(getArgument "peer" peer0.${NAMESPACE}:7051) 
