@@ -18,8 +18,7 @@ build(){
 }
 
 if [ ! `command -v sshpass` ];then
-  build
-  exit
+  build  
 fi
 
 CONFIG=$1

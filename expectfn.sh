@@ -1,13 +1,29 @@
 #!/bin/bash
 
 build(){
-  echo "Please install expect first"
-  exit 1
+  echo "Try to install expect:"
+  cd expect/tcl8.5.15
+  ARCH=`uname -s | grep Darwin`
+  if [ "$ARCH" != "Darwin" ]; then
+    cd unix
+  else
+    cd macosx
+  fi
+  # build tcl, move to /usr/local
+  ./configure --prefix=/usr/local
+  make
+  make install
+  cd ../../
+  # build expect, move to /usr/local
+  cd expect5.45
+  ./configure --prefix=/usr/local
+  make
+  make install  
+  cd ../
 }
 
 if [ ! `command -v expect` ];then
-  build
-  exit
+  build  
 fi
 
 CONFIG=$1
