@@ -18,7 +18,6 @@ NORMAL=$(tput sgr0)
 BASE_DIR=$PWD
 DOCKER_COMPOSE_FILE=docker-compose.yml
 SCRIPT_NAME=`basename "$0"`
-ENV=DEV
 
 export FABRIC_CFG_PATH=$BASE_DIR/setupCluster
 
@@ -158,8 +157,8 @@ setupConfig() {
   # back to setupCluster folder
   cd ../
   echo "Creating genesis, profile [$profile]..."
-  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override -v $fabric_version
-  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override -v $fabric_version"
+  ./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s "$nfs_server" -t $tlsEnabled -o $override -v $fabric_version -e $ENV
+  printCommand "./generateALL.sh -c ${BASE_DIR}/$filePath -p $profile -s \"$nfs_server\" -t $tlsEnabled -o $override -v $fabric_version -e $ENV"
   chmod -R 777 /opt/share
 
   # assign label, so we can deploy peer to only this node
@@ -426,7 +425,7 @@ createChaincodeDeployment() {
   fi
 
   local docker_image=$(docker images | grep "${CHAINCODE}-${VERSION}" | awk '{print $1}' | head -1)
-
+  local org=$(getArgument "org" $(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z]))
   cat <<EOF | kubectl create -f -
   apiVersion: extensions/v1beta1
   kind: Deployment
@@ -443,7 +442,9 @@ createChaincodeDeployment() {
       spec:
         nodeSelector:
           # assume all org node can access to docker
-          org: $NAMESPACE
+          # org: $NAMESPACE
+          # deploy at current node that run the script
+          org: $org
         containers:
           - name: $CHAINCODE
             # tty: true
@@ -798,6 +799,7 @@ case "$METHOD" in
 esac
 
 # process methods and arguments, by default first is channel and next is org_id
+ENV=$(getArgument "env" PROD)
 CHANNEL_NAME=$(getArgument "channel" mychannel)
 NAMESPACE=$(getArgument "namespace" idp1-v1)
 PEER_ADDRESS=$(getArgument "peer" peer0.${NAMESPACE}:7051) 

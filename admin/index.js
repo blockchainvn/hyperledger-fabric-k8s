@@ -22,6 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.get("/viewca", function(req, res) {
+  const controller = controller_API(req.query.channel, config.peerHost);
   const cert = controller.viewca(req.query.user);
   res.json(cert);
 });

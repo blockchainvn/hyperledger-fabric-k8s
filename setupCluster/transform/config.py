@@ -12,6 +12,7 @@ GAP = 100  #interval for worker's port
 NSF_SERVER = '192.168.99.1'
 VERSION = '1.0.2'
 TLS_ENABLED = 'false'
+ENV = 'PROD'
 
 BASEDIR = os.path.dirname(__file__)
 ORDERER = os.path.join(BASEDIR, "../crypto-config/ordererOrganizations")
@@ -209,7 +210,8 @@ def configPEERS(name, path, override, index): # name means peerid.
 		nodePort2 = exposedPort2,
 		nodePort3 = exposedPort3,
     pvName = orgName + "-pv",
-    path = hostPath
+    path = hostPath,
+    peerCmd = "start --peer-chaincodedev=true" if ENV == "DEV" else "start"
 	)
 
 

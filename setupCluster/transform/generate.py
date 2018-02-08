@@ -72,12 +72,14 @@ def processArguments():
 	                    help='Enable tls mode (default: ' + tc.TLS_ENABLED + ')')
 
 	parser.add_argument("-o", "--override", dest='OVERRIDE', type=str, default="false", help="Override existing k8s yaml files")	
+	parser.add_argument("-e", "--env", dest='ENV', type=str, default="PROD", help="Environment for deployment")	
 
 	args = parser.parse_args()	
 
 	tc.NSF_SERVER = args.NSF_SERVER or tc.NSF_SERVER
 	tc.VERSION = args.VERSION or tc.VERSION
 	tc.TLS_ENABLED = args.TLS_ENABLED or tc.TLS_ENABLED
+	tc.ENV = args.ENV or tc.ENV
 
 	print('Setup network NSF_SERVER:{0}, VERSION:{1}, TLS_ENABLED:{2}, OVERRIDE:{3}'
 		.format(tc.NSF_SERVER, tc.VERSION, tc.TLS_ENABLED, args.OVERRIDE))	

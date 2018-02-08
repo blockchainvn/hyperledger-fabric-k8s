@@ -113,7 +113,7 @@ spec:
          - containerPort: 7053
         command: ["/bin/bash", "-c", "--"]
         # args: ["sleep 5; peer node start"]
-        args: ["sleep 5; peer node start --peer-chaincodedev=true"] 
+        args: ["sleep 5; peer node $peerCmd"] 
         volumeMounts:
          #- mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts 
          #  name: certificate
