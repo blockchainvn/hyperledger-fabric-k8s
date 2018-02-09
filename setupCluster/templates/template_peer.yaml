@@ -167,14 +167,14 @@ spec:
    role: peer
    peer-id: $peerID
    org: $namespace
- # type: NodePort
- type: ClusterIP
+ type: NodePort
+ # type: ClusterIP
  ports:
    - name: externale-listen-endpoint
      protocol: TCP
      port: 7051
      targetPort: 7051
-     # nodePort: $nodePort1
+     nodePort: $nodePort1
 
    # - name: chaincode-listen
    #   protocol: TCP
@@ -186,7 +186,7 @@ spec:
      protocol: TCP
      port: 7053
      targetPort: 7053
-     # nodePort: $nodePort3
+     nodePort: $nodePort3
 
 
 

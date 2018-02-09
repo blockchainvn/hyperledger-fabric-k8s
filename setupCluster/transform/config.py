@@ -128,7 +128,7 @@ def configORGS(name, path, orderer0, override, index): # name means if of org, p
 			pvName = name + "-pv",
 			nsfServer = NSF_SERVER,
       artifactsName = name + "-artifacts-pv",
-			peerAddress = "peer0." + name + ":7051",
+			peerAddress = "peer0." + name + ":" + nodePort1,
 			mspid = name.split('-')[0].capitalize()+"MSP",
 			orderer0 = orderer0,
 			path = hostPath

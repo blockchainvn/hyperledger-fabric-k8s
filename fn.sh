@@ -71,10 +71,10 @@ printHelp () {
     printBoldColor $BLUE  "          ./fn.sh upgrade --orderer orderer0.orgorderer-v1:7050 --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
     echo
     printBoldColor $BROWN "      - 'query' - query chaincode"    
-    printBoldColor $BLUE  "          ./fn.sh query --namespace org1-v1 --args='{\"Args\":[\"query\",\"a\"]}'"
+    printBoldColor $BLUE  "          ./fn.sh query --namespace org1-v1 --channel mychannel --chaincode mycc --args='{\"Args\":[\"query\",\"a\"]}'"
     echo
     printBoldColor $BROWN "      - 'invoke' - invoke chaincode"    
-    printBoldColor $BLUE  "          ./fn.sh invoke --namespace org1-v1 --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
+    printBoldColor $BLUE  "          ./fn.sh invoke --namespace org1-v1 --channel mychannel --chaincode mycc --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
     echo
     printBoldColor $BROWN "      - 'assign' - assign org label to node"
     printBoldColor $BLUE  "          ./fn.sh assign --node master --org org1"
@@ -659,9 +659,9 @@ updateChaincode(){
 
     else
       # kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c "$ARGS" -C $CHANNEL_NAME $SUFFIX_ARG &        
-      kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P "$POLICY" &
-      createChaincodeDeployment $METHOD
-      untilPod
+      kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P "$POLICY" 
+      # createChaincodeDeployment $METHOD
+      # untilPod
     fi
     
     # kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode upgrade -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c $ARGS -C $CHANNEL_NAME -P '$POLICY'
@@ -821,7 +821,7 @@ case "$METHOD" in
 esac
 
 # process methods and arguments, by default first is channel and next is org_id
-ENV=$(getArgument "env" DEV)
+ENV=$(getArgument "env" PROD)
 SHARE_FOLDER=$(getArgument "share" /opt/share)
 CHANNEL_NAME=$(getArgument "channel" mychannel)
 NAMESPACE=$(getArgument "namespace" idp1-v1)

@@ -169,6 +169,52 @@ EOF"
 EOF
 ```
 
+**create hosts file for all nodes, then copy to /opt/share folder
+```txt
+127.0.0.1 localhost
+
+# The following lines are desirable for IPv6 capable hosts
+::1 ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+
+10.0.0.5 peer0.idp1-v1
+10.0.0.6 peer0.idp2-v1
+10.0.0.7 peer0.idp3-v1
+10.0.0.8 peer0.as1-v1
+10.0.0.9 peer0.as2-v1
+10.0.0.10 peer0.rp1-v1
+```
+
+**Update hosts file for all nodes
+```sh
+array="orderer2@52.187.15.1 
+nodeu1@52.163.243.228
+nodeu2@52.230.2.130
+nodeu3@52.237.75.126
+nodeu4@52.187.106.1
+nodeu5@52.163.125.166
+nodeu6@52.230.0.187"
+SAVEIFS=$IFS
+IFS=$'\n'
+array=($array)
+IFS=$SAVEIFS
+for addr in "${array[@]}";do 
+    expect << EOF
+    spawn ssh -o StrictHostKeyChecking=no -i /Users/thanhtu/Downloads/azure_cert_node -t $addr "sudo su <<\EOF
+    mv /etc/hosts /etc/hosts.bk
+    ln -s /opt/share/hosts /etc/hosts 
+EOF"
+    expect "Enter passphrase"
+    send "123123\r"
+    expect eof
+EOF
+done
+```
+
 **Command for assign node and move namespace to node**  
 ```sh
 ./fn.sh assign --node ipd1 --org IDP1
