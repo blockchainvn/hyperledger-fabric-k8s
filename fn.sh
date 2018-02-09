@@ -28,59 +28,59 @@ export GOBIN=$GOPATH/bin
 # Print the usage message
 printHelp () {
 
-  echo "Usage: "
+  echo $BOLD "Usage: "
   echo "  $SCRIPT_NAME [-m|--method=] install|instantiate|upgrade|query"
   echo "  $SCRIPT_NAME -h|--help (print this message)"  
-  echo
+  echo $NORMAL
 
   if [[ ! -z $2 ]]; then
     res=$(printHelp 0 | grep -A2 "\- '$2' \-")
     echo "$res"    
   else      
-    echo "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    echo "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false --fabric-version 1.0.2 --share /opt/share]"    
+    printBoldColor $BROWN "      - 'config' - generate channel-artifacts and crypto-config for the network${NC}${NORMAL}"
+    printBoldColor $BLUE  "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false --fabric-version 1.0.2 --share /opt/share]"    
     echo 
-    echo "      - 'scale' - scale a deployment of a namespace for the network"
-    echo "          ./fn.sh scale --deployment=orderer0-orgorderer-v1 --min=2 --max=10"    
+    printBoldColor $BROWN "      - 'scale' - scale a deployment of a namespace for the network"
+    printBoldColor $BLUE  "          ./fn.sh scale --deployment=orderer0-orgorderer-v1 --min=2 --max=10"    
     echo 
-    echo "      - 'tool' - re-build crypto tools with the current version of hyperledger"
-    echo "          ./fn.sh tool"
+    printBoldColor $BROWN "      - 'tool' - re-build crypto tools with the current version of hyperledger"
+    printBoldColor $BLUE  "          ./fn.sh tool"
     echo 
-    echo "      - 'token' - get token of cluster user"
-    echo "          ./fn.sh token"
+    printBoldColor $BROWN "      - 'token' - get token of cluster user"
+    printBoldColor $BLUE  "          ./fn.sh token"
     echo
-    echo "      - 'admin' - build admin with namespace and port"
-    echo "          ./fn.sh admin --namespace org1-v1 --port 30009 [--mode=up|down]"
+    printBoldColor $BROWN "      - 'admin' - build admin with namespace and port"
+    printBoldColor $BLUE  "          ./fn.sh admin --namespace org1-v1 --port 30009 [--mode=up|down]"
     echo
-    echo "      - 'network' - setup the network with kubernetes"
-    echo "          ./fn.sh network [apply|down]"
+    printBoldColor $BROWN "      - 'network' - setup the network with kubernetes"
+    printBoldColor $BLUE  "          ./fn.sh network [apply|down]"
     echo 
-    echo "      - 'bash' - go inside bash environment of a container matching selector"
-    echo "          ./fn.sh bash cli 'peer channel list' --namespace org1-v1"
+    printBoldColor $BROWN "      - 'bash' - go inside bash environment of a container matching selector"
+    printBoldColor $BLUE  "          ./fn.sh bash cli 'peer channel list' --namespace org1-v1"
     echo
-    echo "      - 'channel' - setup channel"
-    echo "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050 [--mode=create|join|up]"
+    printBoldColor $BROWN "      - 'channel' - setup channel"
+    printBoldColor $BLUE  "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050 [--mode=create|join|up]"
     echo
-    echo "      - 'install' - install chaincode"
-    echo "          ./fn.sh install --channel mychannel --namespace org1-v1 --chaincode mycc -v v1 [--no-pod true]"
+    printBoldColor $BROWN "      - 'install' - install chaincode"
+    printBoldColor $BLUE  "          ./fn.sh install --channel mychannel --namespace org1-v1 --chaincode mycc -v v1 [--no-pod true]"
     echo    
-    echo "      - 'instantiate' - instantiate chaincode"
-    echo "          ./fn.sh instantiate --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
+    printBoldColor $BROWN "      - 'instantiate' - instantiate chaincode"
+    printBoldColor $BLUE  "          ./fn.sh instantiate --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
     echo
-    echo "      - 'upgrade' - upgrade chaincode"
-    echo "          ./fn.sh upgrade --orderer orderer0.orgorderer-v1:7050 --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
+    printBoldColor $BROWN "      - 'upgrade' - upgrade chaincode"
+    printBoldColor $BLUE  "          ./fn.sh upgrade --orderer orderer0.orgorderer-v1:7050 --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
     echo
-    echo "      - 'query' - query chaincode"    
-    echo "          ./fn.sh query --namespace org1-v1 --args='{\"Args\":[\"query\",\"a\"]}'"
+    printBoldColor $BROWN "      - 'query' - query chaincode"    
+    printBoldColor $BLUE  "          ./fn.sh query --namespace org1-v1 --args='{\"Args\":[\"query\",\"a\"]}'"
     echo
-    echo "      - 'invoke' - invoke chaincode"    
-    echo "          ./fn.sh invoke --namespace org1-v1 --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
+    printBoldColor $BROWN "      - 'invoke' - invoke chaincode"    
+    printBoldColor $BLUE  "          ./fn.sh invoke --namespace org1-v1 --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
     echo
-    echo "      - 'assign' - assign org label to node"
-    echo "          ./fn.sh assign --node master --org org1"
+    printBoldColor $BROWN "      - 'assign' - assign org label to node"
+    printBoldColor $BLUE  "          ./fn.sh assign --node master --org org1"
     echo
-    echo "      - 'move' - move namespace to group labeled"
-    echo "          ./fn.sh move --namespace org1-v1 --org org1"
+    printBoldColor $BROWN "      - 'move' - move namespace to group labeled"
+    printBoldColor $BLUE  "          ./fn.sh move --namespace org1-v1 --org org1"
     echo
   fi
 
@@ -103,9 +103,12 @@ verifyResult() {
 
 printCommand(){
   echo -e ""
-  echo -e "${BROWN}${BOLD}Command:${NC}"
-  echo -e "\t${BLUE}${BOLD}$1${NC}"
-  echo -e "${NORMAL}"
+  printBoldColor $BROWN "Command:"
+  printBoldColor $BLUE "\t$1"  
+}
+
+printBoldColor(){
+  echo -e "$1${BOLD}$2${NC}${NORMAL}"
 }
 
 buildAdmin(){  
