@@ -180,6 +180,7 @@ EOF
 ./fn.sh assign --node orderer2 --org Orderer2
 ./fn.sh assign --node master --org Master
 
+# move namespaces
 ./fn.sh move --namespace idp1-v1 --org IDP1
 ./fn.sh move --namespace idp2-v1 --org IDP2
 ./fn.sh move --namespace idp3-v1 --org IDP3
@@ -187,10 +188,10 @@ EOF
 ./fn.sh move --namespace as2-v1 --org AS2
 ./fn.sh move --namespace rp1-v1 --org RP1
 ./fn.sh move --namespace orgorderer-v1 --org Orderer2
-./fn.sh move --namespace kafka --org Master
+#./fn.sh move --namespace kafka --org Master
 ```
 
-**Command for create and join peers to some channels
+**Command for create and join peers to some channels**  
 ```sh
 # create all channel
 ./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050
