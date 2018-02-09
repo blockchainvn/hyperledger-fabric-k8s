@@ -151,6 +151,7 @@ docker load < /opt/share/docker/admin-api.tar
 
 **you can use sshpass| expect alone**  
 ```sh
+# alias expectfn="./expectfn.sh masteru:/Users/thanhtu/Downloads/azure_cert_node,123123@52.187.15.5:/home/hyperledger-k8s"
 # sshpass command
 sshpass -p 'password' ssh -t user@host 'sudo su <<\EOF
 cd /home/hyperledger-k8s
