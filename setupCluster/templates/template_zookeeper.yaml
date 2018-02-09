@@ -31,13 +31,11 @@ spec:
               value: "10"
             - name: ZOO_SYNC_LIMIT
               value: "2"
-            # - name: aliyun_logs_fluentd
-            #   value: "stdout"
-          # volumeMounts:
-          #   - mountPath: /datalog
-          #     name: datalog
-          #   - mountPath: /data
-          #     name: data
+          volumeMounts:
+            - mountPath: /datalog
+              name: datalog
+            - mountPath: /data
+              name: data
           lifecycle:
             preStop:
               exec:

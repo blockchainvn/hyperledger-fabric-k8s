@@ -48,8 +48,8 @@ spec:
             - name: KAFKA_CONTROLLED_SHUTDOWN_ENABLED
               value: "true"            
           volumeMounts:
-            # - mountPath: /tmp/kafka-logs
-            #   name: data
+            - mountPath: /tmp/kafka-logs
+              name: data
           lifecycle:
             preStop:
               exec:
