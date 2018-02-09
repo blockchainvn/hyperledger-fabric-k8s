@@ -5,6 +5,7 @@ KEY_STORE_PATH='/hfc-key-store'
 NAMESPACE=$1 
 PORT=$2
 METHOD=$3
+org=${4:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
 
 IMAGE_CHECK=$(docker images | grep $IMAGE_NAME)
 # use this for multi-node
@@ -41,11 +42,11 @@ spec:
        org: $NAMESPACE
        name: admin
     spec:
-      # nodeSelector:
+      nodeSelector:
       #   # assume all org node can access to docker
       #   # because we map source code folder to this image so we have to select it
       #   # otherwise we copy it to container and update the images
-      #   admin: "true"
+        org: $org
       containers:
        - name: admin
          image: $IMAGE_NAME
