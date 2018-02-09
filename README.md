@@ -169,7 +169,7 @@ EOF"
 EOF
 ```
 
-**create hosts file for all nodes, then copy to /opt/share folder
+**create hosts file for all nodes, then copy to /opt/share folder**  
 ```txt
 127.0.0.1 localhost
 

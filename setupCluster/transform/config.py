@@ -103,6 +103,11 @@ def configKafkas(path, override):
 def configORGS(name, path, orderer0, override, index): # name means if of org, path describe where is the namespace yaml to be created. 	
 	namespaceTemplate = getTemplate("template_namespace.yaml")
 	hostPath = path.replace("transform/../", SHARE_FOLDER + "/")
+  # addressSegment = (int(orgName.split("-")[0].split("org")[-1]) - 1) * GAP
+  # addressSegment = 
+  
+  ##peer from like this peer 0##
+  
 
 	condRender(namespaceTemplate, path + "/" + name + "-namespace.yaml", override,
 		org = name,
@@ -128,7 +133,7 @@ def configORGS(name, path, orderer0, override, index): # name means if of org, p
 			pvName = name + "-pv",
 			nsfServer = NSF_SERVER,
       artifactsName = name + "-artifacts-pv",
-			peerAddress = "peer0." + name + ":" + nodePort1,
+			peerAddress = "peer0." + name + ":7051",
 			mspid = name.split('-')[0].capitalize()+"MSP",
 			orderer0 = orderer0,
 			path = hostPath
@@ -201,7 +206,8 @@ def configPEERS(name, path, override, index): # name means peerid.
 		peerID  = peerName,
 		org = orgName, 
 		corePeerID = name,
-		peerAddress = name + ":7051",
+		# peerAddress = name + ":7051",
+    peerAddress = name + ":" + str(exposedPort1),
 		peerCCAddress = name + ":7052",
 		peerGossip = name  + ":7051",
 		localMSPID = orgName.split('-')[0].capitalize()+"MSP",

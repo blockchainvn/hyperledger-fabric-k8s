@@ -1,0 +1,171 @@
+# assign nodes
+sshpass -p 'aBc#123123123' ssh -t masteru@52.187.15.5 'sudo su <<\EOF
+ssh -i /Users/thanhtu/Downloads/azure_cert_node ssh -t masteru@52.187.15.5 'sudo su <<\EOF
+cd /home/hyperledger-k8s
+./fn.sh assign --node idp1 --org IDP1
+./fn.sh assign --node idp2 --org IDP2
+./fn.sh assign --node idp3 --org IDP3
+./fn.sh assign --node as1 --org AS1
+./fn.sh assign --node as2 --org AS2
+./fn.sh assign --node rp1 --org RP1
+./fn.sh assign --node orderer2 --org Orderer2
+./fn.sh assign --node master --org Master
+EOF'
+
+# move namespace to all nodes
+sshpass -p 'aBc#123123123' ssh -t masteru@52.187.15.5 'sudo su <<\EOF
+ssh -i /Users/thanhtu/Downloads/azure_cert_node ssh -t masteru@52.187.15.5 'sudo su <<\EOF
+cd /home/hyperledger-k8s
+./fn.sh move --namespace idp1-v1 --org IDP1
+./fn.sh move --namespace idp2-v1 --org IDP2
+./fn.sh move --namespace idp3-v1 --org IDP3
+./fn.sh move --namespace as1-v1 --org AS1
+./fn.sh move --namespace as2-v1 --org AS2
+./fn.sh move --namespace rp1-v1 --org RP1
+./fn.sh move --namespace orgorderer-v1 --org Orderer2
+EOF'
+
+2. AS1 + 3 IDPs
+3. AS2 + 3 IDPs
+4. RM + 3 IPDs
+5. Only IDPs
+
+
+# move kafka and zookeeper to all nodes
+kubectl patch deployment kafka0-kafka -n kafka -p '{"spec":{"template":{"spec":{"nodeSelector":{"org":"'IDP1'"}}}}}'  
+kubectl patch deployment kafka1-kafka -n kafka -p '{"spec":{"template":{"spec":{"nodeSelector":{"org":"'IDP2'"}}}}}'  
+kubectl patch deployment kafka2-kafka -n kafka -p '{"spec":{"template":{"spec":{"nodeSelector":{"org":"'IDP3'"}}}}}'  
+kubectl patch deployment kafka3-kafka -n kafka -p '{"spec":{"template":{"spec":{"nodeSelector":{"org":"'AS1'"}}}}}' 
+kubectl patch deployment zookeeper0-kafka -n kafka -p '{"spec":{"template":{"spec":{"nodeSelector":{"org":"'AS2'"}}}}}' 
+kubectl patch deployment zookeeper1-kafka -n kafka -p '{"spec":{"template":{"spec":{"nodeSelector":{"org":"'RP1'"}}}}}' 
+kubectl patch deployment zookeeper2-kafka -n kafka -p '{"spec":{"template":{"spec":{"nodeSelector":{"org":"'Orderer2'"}}}}}'  
+
+# patch admin
+kubectl patch service kubernetes-dashboard -n kube-system -p '{"spec":{"type":"NodePort","ports":[{"nodePort":30000,"port":443,"protocol":"TCP","targetPort":8443}]}}'  
+
+
+# create and join
+ssh -i /Users/thanhtu/Downloads/azure_cert_node -t masteru@52.187.15.5 -o StrictHostKeyChecking=no 'sudo su <<\EOF
+cd /home/hyperledger-k8s
+# create all channel
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050
+./fn.sh channel --profile IdpsChannel --channel idpschannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050
+./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace as1-v1 --orderer orderer0.orgorderer-v1:7050
+./fn.sh channel --profile As2IdpsChannel --channel as2idpschannel --namespace as2-v1 --orderer orderer0.orgorderer-v1:7050
+./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace rp1-v1 --orderer orderer0.orgorderer-v1:7050
+
+# join all channel
+
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050  --mode join
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050  --mode join
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace as1-v1 --orderer orderer0.orgorderer-v1:7050  --mode join
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace as2-v1 --orderer orderer0.orgorderer-v1:7050  --mode join
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace rp1-v1 --orderer orderer0.orgorderer-v1:7050  --mode join
+
+./fn.sh channel --profile IdpsChannel --channel idpschannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile IdpsChannel --channel idpschannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+
+./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+
+./fn.sh channel --profile As2IdpsChannel --channel as2idpschannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile As2IdpsChannel --channel as2idpschannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile As2IdpsChannel --channel as2idpschannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+
+./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+EOF'
+
+# install chaincode for multichannel
+./fn.sh install --channel multichannel --namespace idp1-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel multichannel --namespace idp2-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel multichannel --namespace idp3-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel multichannel --namespace as1-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel multichannel --namespace as2-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel multichannel --namespace rp1-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+
+./fn.sh instantiate --channel multichannel --namespace idp1-v1 --chaincode multichanneldid --args='{"Args":[]}' -v v1
+
+./fn.sh invoke --namespace idp1-v1 --channel multichannel --chaincode multichanneldid --args='{"Args":["writeBlock","1","20"]}'
+
+./fn.sh query --namespace idp2-v1 --channel multichannel --chaincode multichanneldid --args='{"Args":["query","1"]}'
+
+
+# install chaincode for idpschannel
+./fn.sh install --channel idpschannel --namespace idp1-v1 --chaincode idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel idpschannel --namespace idp2-v1 --chaincode idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel idpschannel --namespace idp3-v1 --chaincode idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+
+./fn.sh instantiate --channel idpschannel --namespace idp1-v1 --chaincode idpschanneldid --args='{"Args":[]}' -v v1
+
+./fn.sh invoke --namespace idp1-v1 --channel idpschannel --chaincode idpschanneldid --args='{"Args":["writeBlock","1","20"]}'
+
+./fn.sh query --namespace idp2-v1 --channel idpschannel --chaincode idpschanneldid --args='{"Args":["query","1"]}'
+
+
+# install chaincode for as1idpschannel
+./fn.sh install --channel as1idpschannel --namespace as1-v1 --chaincode as1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as1idpschannel --namespace idp1-v1 --chaincode as1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as1idpschannel --namespace idp2-v1 --chaincode as1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as1idpschannel --namespace idp3-v1 --chaincode as1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+
+./fn.sh instantiate --channel as1idpschannel --namespace as1-v1 --chaincode as1idpschanneldid --args='{"Args":[]}' -v v1
+
+./fn.sh invoke --namespace idp1-v1 --channel as1idpschannel --chaincode as1idpschanneldid --args='{"Args":["writeBlock","1","20"]}'
+
+./fn.sh query --namespace idp1-v1 --channel as1idpschannel --chaincode as1idpschanneldid --args='{"Args":["query","1"]}'
+
+
+# install chaincode for as2idpschannel
+./fn.sh install --channel as2idpschannel --namespace as2-v1 --chaincode as2idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as2idpschannel --namespace idp1-v1 --chaincode as2idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as2idpschannel --namespace idp2-v1 --chaincode as2idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as2idpschannel --namespace idp3-v1 --chaincode as2idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+
+./fn.sh instantiate --channel as2idpschannel --namespace as2-v1 --chaincode as2idpschanneldid --args='{"Args":[]}' -v v1
+
+./fn.sh invoke --namespace idp1-v1 --channel as2idpschannel --chaincode as2idpschanneldid --args='{"Args":["writeBlock","1","20"]}'
+
+./fn.sh query --namespace idp2-v1 --channel as2idpschannel --chaincode as2idpschanneldid --args='{"Args":["query","1"]}'
+
+
+# install chaincode for rp1idpschannel
+./fn.sh install --channel rp1idpschannel --namespace rp1-v1 --chaincode rp1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel rp1idpschannel --namespace idp1-v1 --chaincode rp1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel rp1idpschannel --namespace idp2-v1 --chaincode rp1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel rp1idpschannel --namespace idp3-v1 --chaincode rp1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+
+./fn.sh instantiate --channel rp1idpschannel --namespace rp1-v1 --chaincode rp1idpschanneldid --args='{"Args":[]}' -v v1
+
+./fn.sh invoke --namespace idp1-v1 --channel rp1idpschannel --chaincode rp1idpschanneldid --args='{"Args":["writeBlock","1","20"]}'
+
+./fn.sh query --namespace idp1-v1 --channel rp1idpschannel --chaincode rp1idpschanneldid --args='{"Args":["query","1"]}'
+
+
+array="orderer2@52.187.15.1 
+nodeu1@52.163.243.228
+nodeu2@52.230.2.130
+nodeu3@52.237.75.126
+nodeu4@52.187.106.1
+nodeu5@52.163.125.166
+nodeu6@52.230.0.187"
+SAVEIFS=$IFS
+IFS=$'\n'
+array=($array)
+IFS=$SAVEIFS
+for addr in "${array[@]}";do 
+    expect << EOF
+    spawn ssh -o StrictHostKeyChecking=no -i /Users/thanhtu/Downloads/azure_cert_node -t $addr "sudo su <<\EOF
+    sudo apt-get update
+    sudo apt-get install nfs-common -y
+    sudo mkdir -p /opt/share
+    sudo mount -t nfs 10.0.0.13:/opt/share /opt/share    
+EOF"
+    expect "Enter passphrase"
+    send "123123\r"
+    expect eof
+EOF
+done
+
