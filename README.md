@@ -190,3 +190,36 @@ EOF
 ./fn.sh move --namespace kafka --org Master
 ```
 
+**Command for create and join peers to some channels
+```sh
+# create all channel
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050
+./fn.sh channel --profile IdpsChannel --channel idpschannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050
+./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace as1-v1 --orderer orderer0.orgorderer-v1:7050
+./fn.sh channel --profile As2IdpsChannel --channel as2idpschannel --namespace as2-v1 --orderer orderer0.orgorderer-v1:7050
+./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace rp1-v1 --orderer orderer0.orgorderer-v1:7050
+
+# join all channel
+
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050  --mode join
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050  --mode join
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace as1-v1 --orderer orderer0.orgorderer-v1:7050  --mode join
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace as2-v1 --orderer orderer0.orgorderer-v1:7050  --mode join
+./fn.sh channel --profile MultiOrgsChannel --channel multichannel --namespace rp1-v1 --orderer orderer0.orgorderer-v1:7050  --mode join
+
+./fn.sh channel --profile IdpsChannel --channel idpschannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile IdpsChannel --channel idpschannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+
+./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile As1IdpsChannel --channel as1idpschannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+
+./fn.sh channel --profile As2IdpsChannel --channel as2idpschannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile As2IdpsChannel --channel as2idpschannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile As2IdpsChannel --channel as2idpschannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+
+./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+```
+
