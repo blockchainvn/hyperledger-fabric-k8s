@@ -44,7 +44,7 @@ if [[ $1 == "sync" ]];then
   echo "Sync folder to server"
 
   expect << EOF  
-  spawn rsync -e "ssh -i $SSH_KEY" \
+  spawn rsync -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" \
     -chavP --stats --exclude ".git" \
     --exclude "**/node_modules/" \
     --exclude "**/vendor/" \
