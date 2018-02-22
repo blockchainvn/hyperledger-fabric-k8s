@@ -43,7 +43,8 @@ if [[ $1 == "sync" ]];then
   path=${2:-$PWD}
   echo "Sync folder to server"
 
-  expect << EOF  
+  if [[ ! -z $passwd ]];then
+    expect << EOF  
   spawn rsync -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" \
     -chavP --stats --exclude ".git" \
     --exclude "**/node_modules/" \
@@ -53,10 +54,22 @@ if [[ $1 == "sync" ]];then
     --exclude "setupCluster/crypto-config" \
     --exclude "setupCluster/channel-artifacts" \
     $path/ $user@$last
+
   expect "Enter passphrase"
   send "$passwd\r"
   expect eof
 EOF
+  else
+    rsync -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" \
+    -chavP --stats --exclude ".git" \
+    --exclude "**/node_modules/" \
+    --exclude "**/vendor/" \
+    --exclude "bin" \
+    --exclude "admin/hfc-key-store" \
+    --exclude "setupCluster/crypto-config" \
+    --exclude "setupCluster/channel-artifacts" \
+    $path/ $user@$last
+  fi
 
 elif [[ $1 == "build" ]]; then
   #statements
