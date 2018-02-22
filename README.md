@@ -67,7 +67,7 @@ EOF
 done
 ```
 
-Build admin api images: **optional**  
+Build admin api images: **optional, only when image name is not "node"**  
 ```sh
 # should have a registry instead of saving and loading
 # on master node
