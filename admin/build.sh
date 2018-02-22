@@ -6,7 +6,7 @@ NAMESPACE=$1
 PORT=$2
 METHOD=$3
 org=${4:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
-
+COMMAND=$([[ $METHOD == "create" ]] && echo "yarn && yarn start" || echo "yarn start")
 IMAGE_CHECK=$(docker images | grep $IMAGE_NAME)
 # use this for multi-node
 WORKING_PATH=/opt/share/admin
@@ -52,8 +52,10 @@ spec:
          image: $IMAGE_NAME
          imagePullPolicy: Never
          env: 
-         - name:  PORT
+         - name: PORT
            value: "9000"
+         - name: NAMESPACE
+           value: "$NAMESPACE"
          - name: KEY_STORE_PATH
            value: "$KEY_STORE_PATH"
          - name: MSP_PATH
@@ -69,7 +71,7 @@ spec:
           - containerPort: 9000
          # command: ["yarn", "yarn start"]
          command: [ "/bin/bash", "-c", "--" ]
-         args: [ "./peer-admin.sh $NAMESPACE && yarn && yarn start" ]
+         args: [ "./peer-admin.sh $NAMESPACE && $COMMAND" ]
          # args: [ "yarn && yarn start" ]
          workingDir: /home
          volumeMounts:

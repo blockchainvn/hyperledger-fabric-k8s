@@ -17,15 +17,21 @@ program
   )
   .parse(process.argv);
 
-var controller = require("./controller")(program.channel, program.host);
+const config = {
+  peerHost: process.env.PEER_HOST,
+  eventHost: process.env.EVENT_HOST,
+  ordererHost: process.env.ORDERER_HOST,
+  channelName: program.channel,
+  user: program.user
+};
+
+var controller = require("./controller")(config);
 
 var request = {
   //targets: let default to the peer assigned to the client
   chaincodeId: program.chaincode,
   fcn: program.method,
-  args: program.arguments,
-  eventAddress: program.eventHost,
-  ordererAddress: program.ordererHost
+  args: program.arguments
 };
 
 // each method require different certificate of user

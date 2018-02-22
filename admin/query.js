@@ -5,7 +5,6 @@ program
   .option("-u, --user []", "User id", "user1")
   .option("--name, --channel []", "A channel", "mychannel")
   .option("--chaincode, --chaincode []", "A chaincode", "origincert")
-  .option("--host, --host []", "Host", process.env.PEER_HOST)
   .option("-m, --method []", "A method", "getCreator")
   .option(
     "-a, --arguments [value]",
@@ -15,7 +14,15 @@ program
   )
   .parse(process.argv);
 
-var controller = require("./controller")(program.channel, program.host);
+const config = {
+  peerHost: process.env.PEER_HOST,
+  eventHost: process.env.EVENT_HOST,
+  ordererHost: process.env.ORDERER_HOST,
+  channelName: program.channel,
+  user: program.user
+};
+
+var controller = require("./controller")(config);
 
 const request = {
   //targets : --- letting this default to the peers assigned to the channel
