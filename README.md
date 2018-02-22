@@ -218,9 +218,9 @@ done
 
 **Command for assign node and move namespace to node**  
 ```sh
-./fn.sh assign --node ipd1 --org IDP1
-./fn.sh assign --node ipd2 --org IDP2
-./fn.sh assign --node ipd3 --org IDP3
+./fn.sh assign --node idp1 --org IDP1
+./fn.sh assign --node idp2 --org IDP2
+./fn.sh assign --node idp3 --org IDP3
 ./fn.sh assign --node as1 --org AS1
 ./fn.sh assign --node as2 --org AS2
 ./fn.sh assign --node rp1 --org RP1
@@ -269,5 +269,71 @@ done
 ./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace idp1-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
 ./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace idp2-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
 ./fn.sh channel --profile Rp1IdpsChannel --channel rp1idpschannel --namespace idp3-v1 --orderer orderer0.orgorderer-v1:7050 --mode join
+
+# install chaincode for multichannel
+./fn.sh install --channel multichannel --namespace idp1-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel multichannel --namespace idp2-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel multichannel --namespace idp3-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel multichannel --namespace as1-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel multichannel --namespace as2-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel multichannel --namespace rp1-v1 --chaincode multichanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+
+./fn.sh instantiate --channel multichannel --namespace idp1-v1 --chaincode multichanneldid --args='{"Args":[]}' -v v1
+
+./fn.sh invoke --namespace idp1-v1 --channel multichannel --chaincode multichanneldid --args='{"Args":["writeBlock","1","20"]}'
+
+./fn.sh query --namespace idp2-v1 --channel multichannel --chaincode multichanneldid --args='{"Args":["query","1"]}'
+
+
+# install chaincode for idpschannel
+./fn.sh install --channel idpschannel --namespace idp1-v1 --chaincode idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel idpschannel --namespace idp2-v1 --chaincode idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel idpschannel --namespace idp3-v1 --chaincode idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+
+./fn.sh instantiate --channel idpschannel --namespace idp1-v1 --chaincode idpschanneldid --args='{"Args":[]}' -v v1
+
+./fn.sh invoke --namespace idp1-v1 --channel idpschannel --chaincode idpschanneldid --args='{"Args":["writeBlock","1","20"]}'
+
+./fn.sh query --namespace idp2-v1 --channel idpschannel --chaincode idpschanneldid --args='{"Args":["query","1"]}'
+
+
+# install chaincode for as1idpschannel
+./fn.sh install --channel as1idpschannel --namespace as1-v1 --chaincode as1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as1idpschannel --namespace idp1-v1 --chaincode as1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as1idpschannel --namespace idp2-v1 --chaincode as1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as1idpschannel --namespace idp3-v1 --chaincode as1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+
+./fn.sh instantiate --channel as1idpschannel --namespace as1-v1 --chaincode as1idpschanneldid --args='{"Args":[]}' -v v1
+
+./fn.sh invoke --namespace idp1-v1 --channel as1idpschannel --chaincode as1idpschanneldid --args='{"Args":["writeBlock","1","20"]}'
+
+./fn.sh query --namespace idp1-v1 --channel as1idpschannel --chaincode as1idpschanneldid --args='{"Args":["query","1"]}'
+
+
+# install chaincode for as2idpschannel
+./fn.sh install --channel as2idpschannel --namespace as2-v1 --chaincode as2idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as2idpschannel --namespace idp1-v1 --chaincode as2idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as2idpschannel --namespace idp2-v1 --chaincode as2idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel as2idpschannel --namespace idp3-v1 --chaincode as2idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+
+./fn.sh instantiate --channel as2idpschannel --namespace as2-v1 --chaincode as2idpschanneldid --args='{"Args":[]}' -v v1
+
+./fn.sh invoke --namespace idp1-v1 --channel as2idpschannel --chaincode as2idpschanneldid --args='{"Args":["writeBlock","1","20"]}'
+
+./fn.sh query --namespace idp2-v1 --channel as2idpschannel --chaincode as2idpschanneldid --args='{"Args":["query","1"]}'
+
+
+# install chaincode for rp1idpschannel
+./fn.sh install --channel rp1idpschannel --namespace rp1-v1 --chaincode rp1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel rp1idpschannel --namespace idp1-v1 --chaincode rp1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel rp1idpschannel --namespace idp2-v1 --chaincode rp1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+./fn.sh install --channel rp1idpschannel --namespace idp3-v1 --chaincode rp1idpschanneldid -v v1 --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/did
+
+./fn.sh instantiate --channel rp1idpschannel --namespace rp1-v1 --chaincode rp1idpschanneldid --args='{"Args":[]}' -v v1
+
+./fn.sh invoke --namespace idp1-v1 --channel rp1idpschannel --chaincode rp1idpschanneldid --args='{"Args":["writeBlock","1","20"]}'
+
+./fn.sh query --namespace idp1-v1 --channel rp1idpschannel --chaincode rp1idpschanneldid --args='{"Args":["query","1"]}'
+
 ```
 
