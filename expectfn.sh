@@ -35,7 +35,9 @@ server=${last%%:*}
 base_dir=${last##*:}
 # SSH_KEY=/Users/thanhtu/Downloads/azure_cert_node
 SSH_KEY=${keypasswd%%,*}
-passwd=${keypasswd##*,}
+if [[ $keypasswd =~ , ]]; then
+  passwd=${keypasswd##*,}
+fi
 
 shift
 
@@ -87,7 +89,8 @@ elif [[ $1 == "--" ]];then
     shift
   done
   # run expect
-  expect << EOF
+  if [[ ! -z $passwd ]];then
+    expect << EOF
   spawn ssh -i $SSH_KEY -t $user@$server -o StrictHostKeyChecking=no "sudo su <<\EOF
 $base_dir/fn.sh $QUERY
 EOF"
@@ -95,6 +98,11 @@ EOF"
   send "$passwd\r"
   expect eof
 EOF
+  else
+    ssh -i $SSH_KEY -t $user@$server -o StrictHostKeyChecking=no "sudo su <<\EOF
+$base_dir/fn.sh $QUERY
+EOF"
+  fi
 
 else
   echo "Unknow command $1" 1>&2
