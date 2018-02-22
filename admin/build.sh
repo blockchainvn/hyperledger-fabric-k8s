@@ -1,4 +1,4 @@
-IMAGE_NAME='hyperledger/admin-api'
+IMAGE_NAME='node'
 ORDERER_HOST='orderer0.orgorderer-v1:7050'
 KEY_STORE_PATH='/hfc-key-store'
 
@@ -13,9 +13,13 @@ WORKING_PATH=/opt/share/admin
 # WORKING_PATH=$PWD
 
 if [[ -z $IMAGE_CHECK ]];then
-  echo "Building image $IMAGE_NAME ..."
-  echo
-  docker build -t $IMAGE_NAME .
+  if [[ $IMAGE_NAME != "node" ]];then
+    echo "Building image $IMAGE_NAME ..."
+    echo
+    docker build -t $IMAGE_NAME .
+  else    
+    docker pull $IMAGE_NAME
+  fi
 fi
 
 : ${NAMESPACE:="default"}
