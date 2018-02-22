@@ -143,7 +143,9 @@ spec:
 
        - name: data
          hostPath:
-           path: $shareFolder/peer/$namespace/$peerID
+           # path: $shareFolder/peer/$namespace/$peerID
+           # persistent in its own node
+           path: /data/peer/$namespace/$peerID
 
        - name: run
          hostPath:
@@ -151,7 +153,8 @@ spec:
        
        - name: db
          hostPath:
-           path: $shareFolder/couchdb/$namespace/$peerID
+           # path: $shareFolder/couchdb/$namespace/$peerID
+           path: /data/couchdb/$namespace/$peerID
        
 
 ---

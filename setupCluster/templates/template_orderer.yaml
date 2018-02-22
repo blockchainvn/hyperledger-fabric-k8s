@@ -72,7 +72,8 @@ spec:
             path: $genesis/genesis.block
         - name: data
           hostPath:
-            path: $shareFolder/orderer/$namespace/$ordererID
+            # path: $shareFolder/orderer/$namespace/$ordererID
+            path: /data/orderer/$namespace/$ordererID
          # persistentVolumeClaim:
              # claimName: $pvName
            #path: $shareFolder

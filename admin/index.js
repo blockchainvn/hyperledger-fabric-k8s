@@ -1,5 +1,4 @@
 //SPDX-License-Identifier: Apache-2.0
-
 // nodejs server setup
 
 // call the packages we need
@@ -8,48 +7,55 @@ const express = require("express"); // call express
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const os = require("os");
+const moment = require("moment");
 
 const controller_API = require("./controller");
+let nameSpace = process.env.NAMESPACE;
 const config = {
-  peerHost: process.env.PEER_HOST,
-  eventHost: process.env.EVENT_HOST,
-  ordererHost: process.env.ORDERER_HOST,
-  channelName: "multichannel",
-  user: "PeerAdmin"
+  peerHost: process.env.PEER_HOST || "localhost:7051",
+  eventHost: process.env.EVENT_HOST || "localhost:7053",
+  ordererHost: process.env.ORDERER_HOST || "localhost:7050",
+  channelName: process.env.CHANNEL || "multichannel",
+  caServer: "ca." + nameSpace + ":7054" || "ca.idp1-v1:7054",
+  anotherUser: "admin",
+  anotherUserSecret: "adminpw",
+  user: "PeerAdmin",
+  MSP:
+    nameSpace[0].toUpperCase() +
+      nameSpace.replace(/(-v1)/, "").slice(1) +
+      "MSP" || "Idp1MSP"
 };
 
 console.log("Config:", config);
 
-const app = express(); // define our app using express
-// Load all of our middleware
-// configure app to use bodyParser()
-// this will let us get the data from a POST
-// app.use(express.static(__dirname + '/client'));
+const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // app.get("/test/:id", (req, res) => res.json(req.params.id))
 app.use(bodyParser.json());
-app.use(bodyParser.text());
+//app.use(bodyParser.text());
 
 app.post("/send_all/:seq", function(req, res) {
-  console.log("req.body:", req.body);
+  console.log("req.body:", req.body.message);
   const controller = controller_API(config);
   const request = {
     chaincodeId: "multichanneldid",
     fcn: "writeBlock",
-    args: [req.params.seq, req.body]
+    args: [req.params.seq, req.body.message]
   };
 
   controller
     .invoke(req.query.user || config.user, request)
+    /*
     .then(ret => {
-      //return res.json({ message: 'ok na ja' })
-      // return res.json(ret);
-      //const txId = (Array.isArray(ret)) ? ret.find(({ tx_id }) => tx_id || false) : ''
-      //return { txId };
+      console.log(ret);
+      if(ret[1].event_status === 'VALID'){
+        console.log("will move request phase into this");
 
-      //var channel = fabric_client.newChannel(config.channelName);
+      }else{
+        console.log("error: Something wrong with event/Transaction"+ ret[1].event_status);
+      }
 
       const _request = {
         // targets : '',
@@ -62,17 +68,13 @@ app.post("/send_all/:seq", function(req, res) {
       };
 
       return controller.query("PeerAdmin", _request).then(raw => {
-        let prefix = ret[1][0] || "";
-        prefix = prefix.replace("||", "|");
+        let prefix = req.params.seq;
+        let timestamp = ret[1].time_stamp;
+        if(typeof timestamp === 'undefined'){
+          timestamp = moment().format('YYMMDDHHmmss.SSS');
+        }
 
-        const data = new Buffer(raw).toString("hex");
-
-        const response = `${prefix}${data.slice(1, 33).toString()}|${data
-          .slice(33, 66)
-          .toString()}|${data.slice(66, 96).toString()}${os.EOL}`;
-        //data.slice(1, 33).toString() + "|"
-        //data.slice(33, 66).toString() + "|"
-        //data.slice(66, 96).toString() +
+        const response = `${timestamp}|${prefix}|${raw.slice(-96,-64).toString('hex')}|${raw.slice(-64,-32).toString('hex')}|${raw.slice(-32).toString('hex')}${os.EOL}`;
 
         const logFile =
           process.env.NAMESPACE + "." + config.channelName + ".csv";
@@ -81,14 +83,26 @@ app.post("/send_all/:seq", function(req, res) {
         ) {
           if (err) throw err;
           console.log("Saved!");
+
         });
 
         //return { prefix, postfix: data, response };
         return {};
       });
-      //return res.json({ ret });
+  */
+    //return res.json({ message: 'ok na ja' })
+    // return res.json(ret);
+    //const txId = (Array.isArray(ret)) ? ret.find(({ tx_id }) => tx_id || false) : ''
+    //return { txId };
+
+    //var channel = fabric_client.newChannel(config.channelName);
+
+    //return res.json({ ret });
+    // })
+    //.then(response => res.json(response))
+    .then(txid => {
+      return res.status(200).json({ txid: txid });
     })
-    .then(response => res.json(response))
     /*
     .then(({ txId }) => {
         return { txId };
@@ -116,7 +130,7 @@ app.post("/send_idp/:seq", function(req, res) {
       channelID = "rp1idpschannel";
       chaincodeID = "rp1idpschanneldid";
       break;
-    case "as1 ":
+    case "as1":
       channelID = "as1idpschannel";
       chaincodeID = "as1idpschanneldid";
       break;
@@ -142,14 +156,20 @@ app.post("/send_idp/:seq", function(req, res) {
   const request = {
     chaincodeId: chaincodeID,
     fcn: "writeBlock",
-    args: [req.params.seq, req.body]
+    args: [req.params.seq, req.body.message]
   };
 
-  console.log("request:", request);
+  // console.log("request:", request);
 
   controller
     .invoke(req.query.user || config.user, request)
+    /*
     .then(ret => {
+      if(ret[1].event_status === 'VALID'){
+        console.log("will move request phase into this");
+      }else{
+        console.log("error: Something wrong with event/Transaction"+ ret[1].event_status);
+      }
       //return res.json({ message: 'ok na ja' })
       // return res.json(ret);
       //const txId = (Array.isArray(ret)) ? ret.find(({ tx_id }) => tx_id || false) : ''
@@ -167,17 +187,16 @@ app.post("/send_idp/:seq", function(req, res) {
         //txId : trxId
       };
 
-      console.log("_request:", _request);
+     // console.log("_request:", _request);
 
       return controller.query("PeerAdmin", _request).then(raw => {
-        let prefix = ret[1][0] || "";
-        prefix = prefix.replace("||", "|");
+        let prefix = req.params.seq;
+        let timestamp = ret[1].time_stamp;
+        if(typeof timestamp === 'undefined'){
+          timestamp = moment().format('YYMMDDHHmmss.SSS');
+        }
 
-        const data = new Buffer(raw).toString("hex");
-
-        const response = `${prefix}${data.slice(1, 33).toString()}|${data
-          .slice(33, 66)
-          .toString()}|${data.slice(66, 96).toString()}${os.EOL}`;
+        const response = `${timestamp}|${prefix}|${raw.slice(-96,-64).toString('hex')}|${raw.slice(-64,-32).toString('hex')}|${raw.slice(-32).toString('hex')}${os.EOL}`;
 
         const logFile = process.env.NAMESPACE + "." + channelID + ".csv";
         fs.appendFile(path.join(__dirname, logFile), response, "utf8", function(
@@ -190,7 +209,11 @@ app.post("/send_idp/:seq", function(req, res) {
         return {};
       });
     })
-    .then(response => res.json(response))
+*/
+    //.then(response => res.json(response))
+    .then(txid => {
+      return res.status(200).json({ txid: txid });
+    })
     .catch(err => {
       return res.status(500).send(err);
     });

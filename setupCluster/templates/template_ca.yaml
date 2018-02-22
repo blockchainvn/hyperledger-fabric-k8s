@@ -45,7 +45,8 @@ spec:
 
          - name: data
            hostPath:
-             path: $shareFolder/ca/$namespace
+             # path: $shareFolder/ca/$namespace
+             path: /data/ca/$namespace
            # persistentVolumeClaim:
                # claimName: $pvName 
 
