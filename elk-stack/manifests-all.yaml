@@ -127,7 +127,7 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: ES_JAVA_OPTS
-          value: -Xms1024m -Xmx1024m
+          value: -Xms512m -Xms512m
           # ES_MEM_LIMIT=2g
           # ES_JVM_HEAP=1024m
         ports:
