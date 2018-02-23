@@ -25,8 +25,7 @@ For the index pattern in Kibana choose `logstash-*`, then switch to the "Discove
 ## Turn down all logging components
 
 ```bash
-kubectl delete \
-  --filename https://raw.githubusercontent.com/giantswarm/kubernetes-elastic-stack/master/manifests-all.yaml
+kubectl delete -f elk-stack/manifests-all.yaml
 ```
 
 FIXME alternatively
