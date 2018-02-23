@@ -5,6 +5,10 @@
 Run  
 ```sh
 ./fn.sh help [method]
+# on nodes just run 
+./setup-node.sh 
+# then run
+kubeadm join --token d326cf.05fa043803407f75 128.199.72.209:6443 --discovery-token-ca-cert-hash
 ```
 
 Run fn from ssh mode from sshfn and expectfn  

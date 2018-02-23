@@ -37,8 +37,8 @@ if [ ! `command -v kubectl` ];then
 deb http://apt.kubernetes.io/ kubernetes-xenial main  
 EOF
 
-  sudo apt-get update
-  sudo apt-get install -y kubelet kubectl kubernetes-cni
+  sudo apt-get update  
+  sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
 
 else 
   kubectl cluster-info
