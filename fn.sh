@@ -121,7 +121,7 @@ buildAdmin(){
     method=delete
   else
     # echo "Unknown method $MODE"
-    method=create
+    method="$MODE"
     # exit 1
   fi
   #statements  
