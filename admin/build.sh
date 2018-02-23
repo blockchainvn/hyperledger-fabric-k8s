@@ -5,11 +5,12 @@ KEY_STORE_PATH='/hfc-key-store'
 NAMESPACE=$1 
 PORT=$2
 METHOD=$3
+SHARE_FOLDER=$4
 org=${4:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
 COMMAND=$([[ $METHOD == "create" ]] && echo "yarn && yarn start" || echo "yarn start")
 IMAGE_CHECK=$(docker images | grep $IMAGE_NAME)
 # use this for multi-node
-WORKING_PATH=/opt/share/admin
+WORKING_PATH=$SHARE_FOLDER/admin
 # WORKING_PATH=$PWD
 image_policy=Never
 if [[ -z $IMAGE_CHECK ]];then
@@ -103,7 +104,7 @@ spec:
              path: $WORKING_PATH
          - name: msp
            hostPath:
-             path: /opt/share/crypto-config/peerOrganizations/$NAMESPACE/users/Admin@${NAMESPACE}/msp
+             path: $SHARE_FOLDER/crypto-config/peerOrganizations/$NAMESPACE/users/Admin@${NAMESPACE}/msp
 
 --- 
 apiVersion: v1

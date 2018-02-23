@@ -129,7 +129,7 @@ buildAdmin(){
   rsync -av --progress ./ $SHARE_FOLDER/admin --exclude node_modules
 
   echo "Building admin image..."
-  ./build.sh $NAMESPACE $port $method
+  ./build.sh $NAMESPACE $port $method $SHARE_FOLDER
   printCommand "./build.sh $NAMESPACE $port $method"
   echo  
 }
