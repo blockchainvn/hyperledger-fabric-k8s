@@ -120,8 +120,9 @@ buildAdmin(){
   elif [[ $MODE == "down" ]]; then
     method=delete
   else
-    echo "Unknown method $MODE"
-    exit 1
+    # echo "Unknown method $MODE"
+    method=create
+    # exit 1
   fi
   #statements  
   echo "Update admin source code"
