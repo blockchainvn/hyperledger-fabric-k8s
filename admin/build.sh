@@ -11,14 +11,15 @@ IMAGE_CHECK=$(docker images | grep $IMAGE_NAME)
 # use this for multi-node
 WORKING_PATH=/opt/share/admin
 # WORKING_PATH=$PWD
-
+image_policy=Never
 if [[ -z $IMAGE_CHECK ]];then
   if [[ $IMAGE_NAME != "node" ]];then
     echo "Building image $IMAGE_NAME ..."
     echo
-    docker build -t $IMAGE_NAME .
+    docker build -t $IMAGE_NAME .    
   else    
     docker pull $IMAGE_NAME
+    image_policy=IfNotPresent
   fi
 fi
 
@@ -54,7 +55,7 @@ spec:
       containers:
        - name: admin
          image: $IMAGE_NAME
-         imagePullPolicy: Never
+         imagePullPolicy: $image_policy
          env: 
          - name: PORT
            value: "9000"
