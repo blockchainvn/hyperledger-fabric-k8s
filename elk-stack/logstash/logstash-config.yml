@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  labels:
+    component: elasticsearch
+    role: logstash
+data:
+  logstash.conf: |-
+    input {
+      tcp {
+        port => 5043
+        codec => "json"
+      }
+    }
+    
+    output {
+      elasticsearch {
+        hosts => "elasticsearch:9200"
+      }
+    }

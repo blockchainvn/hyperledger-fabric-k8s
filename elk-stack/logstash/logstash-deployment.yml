@@ -1,0 +1,49 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: default
+  labels:
+    component: elasticsearch 
+    role: logstash
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: elasticsearch
+        role: logstash
+    spec:
+      serviceAccount: wso2am
+      containers:
+      - name: logstash
+        image: "docker.elastic.co/logstash/logstash:5.4.2" 
+        env:
+        - name: LOG_LEVEL
+          value: "info"
+        - name: XPACK_MONITORING_ENABLED
+          value: "false"
+        ports:
+        - containerPort: 5043
+          name: logstash-tcp
+          protocol: TCP
+        # livenessProbe:
+        #   httpGet:
+        #     path: /
+        #     port:  5043 
+        #   initialDelaySeconds: 20
+        #   periodSeconds: 20
+        # readinessProbe:
+        #   httpGet:
+        #     path: /
+        #     port:  5043 
+        #   initialDelaySeconds: 15
+        #   periodSeconds: 10
+        volumeMounts:
+        - mountPath: /usr/share/logstash/pipeline 
+          name: logstash-config
+      volumes:
+       - name: logstash-config 
+         configMap:
+            name: logstash-config
