@@ -19,6 +19,11 @@ Run fn from ssh mode from sshfn and expectfn
 # run command on server
 ./sshfn.sh user:passwd@server:/path -- command
 ./expectfn.sh user:key,passphrase@server:/path -- command
+
+# use alias
+alias sshfn='./sshfn.sh blockchainuser:password@server:/home/blockchainuser/hyperledger-k8s'
+alias expectfn='./expectfn.sh blockchainuser:key,passphrase@server:/home/blockchainuser/hyperledger-k8s'
+
 ```
 
 Copy chaincode  
