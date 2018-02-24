@@ -58,7 +58,8 @@ elif [[ $1 == "--" ]];then
   done
   # run sshpass     
   sshpass -p $passwd ssh -o StrictHostKeyChecking=no -t $user@$server "sudo su <<\EOF
-$base_dir/fn.sh $QUERY
+cd $base_dir
+./fn.sh $QUERY
 EOF"
 else
   echo "Unknow command $1" 1>&2

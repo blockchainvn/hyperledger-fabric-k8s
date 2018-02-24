@@ -92,7 +92,8 @@ elif [[ $1 == "--" ]];then
   if [[ ! -z $passwd ]];then
     expect << EOF
   spawn ssh -i $SSH_KEY -t $user@$server -o StrictHostKeyChecking=no "sudo su <<\EOF
-$base_dir/fn.sh $QUERY
+cd $base_dir
+./fn.sh $QUERY
 EOF"
   expect "Enter passphrase"
   send "$passwd\r"
@@ -100,7 +101,8 @@ EOF"
 EOF
   else
     ssh -i $SSH_KEY -t $user@$server -o StrictHostKeyChecking=no "sudo su <<\EOF
-$base_dir/fn.sh $QUERY
+cd $base_dir
+./fn.sh $QUERY
 EOF"
   fi
 
