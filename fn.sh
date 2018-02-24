@@ -359,7 +359,7 @@ createChaincodeDeploymentDev() {
   # fi
 
   local docker_image=hyperledger/fabric-ccenv:x86_64-1.0.2
-  local chaincode_shared_path=${CHAINCODE_PATH/github.com\/hyperledger\/fabric\/peer/\/opt\/share}
+  local chaincode_shared_path=${CHAINCODE_PATH/github.com\/hyperledger\/fabric\/peer/$SHARE_FOLDER}
   local org=$(getArgument "org" $(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z]))
   cat <<EOF | kubectl create -f -
   apiVersion: extensions/v1beta1
