@@ -1,8 +1,5 @@
 # Logging with Elastic in Kubernetes
 
-See [docs](docs/index.md) for full recipe content.
-
-
 This setup is similar to the [`Full Stack Example`](https://github.com/elastic/examples/tree/master/Miscellaneous/docker/full_stack_example), but adopted to be run on a Kubernetes cluster.
 
 There is no access control for the Kibana web interface. If you want to run this in public you need to secure your setup. The provided manifests here are for demonstration purposes only.
@@ -28,8 +25,7 @@ For the index pattern in Kibana choose `logstash-*`, then switch to the "Discove
 ## Turn down all logging components
 
 ```bash
-kubectl delete \
-  --filename https://raw.githubusercontent.com/giantswarm/kubernetes-elastic-stack/master/manifests-all.yaml
+kubectl delete -f elk-stack/manifests-all.yaml
 ```
 
 FIXME alternatively

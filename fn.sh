@@ -120,15 +120,16 @@ buildAdmin(){
   elif [[ $MODE == "down" ]]; then
     method=delete
   else
-    echo "Unknown method $MODE"
-    exit 1
+    # echo "Unknown method $MODE"
+    method="$MODE"
+    # exit 1
   fi
   #statements  
   echo "Update admin source code"
   rsync -av --progress ./ $SHARE_FOLDER/admin --exclude node_modules
 
   echo "Building admin image..."
-  ./build.sh $NAMESPACE $port $method
+  ./build.sh $NAMESPACE $port $method $SHARE_FOLDER
   printCommand "./build.sh $NAMESPACE $port $method"
   echo  
 }

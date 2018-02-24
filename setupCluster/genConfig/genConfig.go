@@ -102,9 +102,10 @@ type PeerOrg struct {
 }
 
 type OrdererOrg struct {
-  Name     string   `yaml:"Name"`
-  Domain   string   `yaml:"Domain"`
-  Template Template `yaml:"Template"`
+  Name            string   `yaml:"Name"`
+  Domain          string   `yaml:"Domain"`
+  Template        Template `yaml:"Template"`
+  MaxMessageCount uint32   `yaml:"MaxMessageCount"`
 }
 
 type Template struct {
@@ -232,7 +233,7 @@ func GenOrderer(conf Conf) (Orderer, error) {
       Addresses:    address_list,
       BatchTimeout: 2 * time.Second,
       BatchSize: BatchSize{
-        MaxMessageCount:   10,
+        MaxMessageCount:   orderer0.MaxMessageCount,
         AbsoluteMaxBytes:  99 * 1024 * 1024, // 99 MB
         PreferredMaxBytes: 512 * 1024,       // 512 KB
       },
@@ -252,7 +253,7 @@ func GenOrderer(conf Conf) (Orderer, error) {
       Addresses:    address_list,
       BatchTimeout: 2 * time.Second,
       BatchSize: BatchSize{
-        MaxMessageCount:   10,
+        MaxMessageCount:   orderer0.MaxMessageCount,
         AbsoluteMaxBytes:  99 * 1024 * 1024, // 99 MB
         PreferredMaxBytes: 512 * 1024,       // 512 KB
       },

@@ -46,7 +46,7 @@ Profiles:
       - orderer0.orgorderer-v1:7050
       BatchTimeout: 2s
       BatchSize:
-        MaxMessageCount: 10
+        MaxMessageCount: 5000
         AbsoluteMaxBytes: 103809024
         PreferredMaxBytes: 524288
       Organizations:
@@ -138,7 +138,7 @@ Orderer:
   - orderer0.orgorderer-v1:7050
   BatchTimeout: 2s
   BatchSize:
-    MaxMessageCount: 10
+    MaxMessageCount: 5000
     AbsoluteMaxBytes: 103809024
     PreferredMaxBytes: 524288
   Organizations:

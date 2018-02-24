@@ -18,7 +18,8 @@ OrdererOrgs:
   - Name: Orderer
     Domain: orgorderer 
     Template:
-      Count: 1
+      Count: 1    
+    MaxMessageCount: 5000
 
 PeerOrgs:
   - Name: IDP1
