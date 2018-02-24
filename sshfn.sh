@@ -22,12 +22,13 @@ if [ ! `command -v sshpass` ];then
 fi
 
 CONFIG=$1
-first=${CONFIG%%@*}
+first=${CONFIG%@*}
 last=${CONFIG##*@}
 user=${first%%:*}
-passwd=${first##*:}
+passwd=${first#*:}
 server=${last%%:*}
-base_dir=${last##*:}
+base_dir=${last#*:}
+
 shift
 if [[ $1 == "sync" ]];then
   path=${2:-$PWD}
