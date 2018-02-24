@@ -60,6 +60,8 @@ EOF
 
   # dashboard
   kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+  # for MACOSX
+  # nohup kubectl proxy --accept-hosts='^.*' --accept-paths='^.*' --address='0.0.0.0' --port=8001 > /dev/null 2>&1 & echo $! > dashboard.pid
 
   # check pods
   kubectl get pods --all-namespaces -o wide
