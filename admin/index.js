@@ -7,7 +7,7 @@ const express = require("express"); // call express
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const os = require("os");
-const moment = require("moment");
+// const moment = require("moment");
 
 const controller_API = require("./controller");
 let nameSpace = process.env.NAMESPACE;
@@ -232,7 +232,9 @@ app.get("/query", function(req, res) {
     fcn: req.query.method,
     args: req.query.arguments
   };
-  const controller = controller_API(config);
+  const controller = controller_API(
+    Object.assign({}, config, { channelName: req.query.channel })
+  );
   // each method require different certificate of user
   controller
     .query(req.query.user || config.user, request)
@@ -245,7 +247,9 @@ app.get("/query", function(req, res) {
 });
 
 app.get("/invoke", function(req, res) {
-  const controller = controller_API(config);
+  const controller = controller_API(
+    Object.assign({}, config, { channelName: req.query.channel })
+  );
   const request = {
     chaincodeId: req.query.chaincode,
     fcn: req.query.method,

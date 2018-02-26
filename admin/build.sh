@@ -6,7 +6,7 @@ NAMESPACE=$1
 PORT=$2
 METHOD=$3
 SHARE_FOLDER=$4
-org=${4:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
+org=${5:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
 COMMAND=$([[ $METHOD == "create" ]] && echo "yarn && yarn start" || echo "yarn start")
 IMAGE_CHECK=$(docker images | grep $IMAGE_NAME)
 # use this for multi-node

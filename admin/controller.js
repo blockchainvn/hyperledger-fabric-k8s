@@ -13,7 +13,7 @@ const path = require("path");
 const util = require("util");
 const fs = require("fs");
 const os = require("os");
-const moment = require("moment");
+// const moment = require("moment");
 const User = require("fabric-client/lib/User.js");
 const CaService = require("fabric-ca-client/lib/FabricCAClientImpl.js");
 
@@ -165,7 +165,7 @@ module.exports = function(config) {
               config.channelName +
               "], checking results"
           );
-          console.log(query_responses);
+          // console.log(query_responses);
           // query_responses could have more than one  results if there multiple peers were used as targets
           if (query_responses && query_responses.length == 1) {
             if (query_responses[0] instanceof Error) {
@@ -201,7 +201,7 @@ module.exports = function(config) {
           });
         })
         .then(results => {
-          console.log("results:", results);
+          // console.log("results:", results);
 
           var proposalResponses = results[0];
           var proposal = results[1];
@@ -224,12 +224,12 @@ module.exports = function(config) {
           }
 
           if (isProposalGood) {
-            console.log(
-              util.format(
-                'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s"',
-                proposalResponses[0].response.status,
-                proposalResponses[0].response.message
-              )
+            // console.log(
+            //   util.format(
+            //     'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s"',
+            //     proposalResponses[0].response.status,
+            //     proposalResponses[0].response.message
+            //   )
             );
             var transaction_id_string = tx_id.getTransactionID();
             const txPromise = this.getEventTxPromise(
