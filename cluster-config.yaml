@@ -3,7 +3,7 @@ OrdererOrgs:
   - Name: Orderer
     Domain: orgorderer 
     Template:
-      Count: 3
+      Count: 1
 PeerOrgs:
   - Name: Org1
     Domain: org1
