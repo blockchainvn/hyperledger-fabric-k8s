@@ -58,8 +58,8 @@ spec:
          - mountPath: /var/hyperledger/orderer/orderer.genesis.block
            name: genesis
            # subPath: genesis.block
-         - mountPath: /var/hyperledger/production/orderer
-           name: data
+         # - mountPath: /var/hyperledger/production/orderer
+         #   name: data
       volumes:
         - name: certificate
           hostPath:

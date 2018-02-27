@@ -332,9 +332,9 @@ setupNetwork() {
       docker rmi $chaincodeImages > /dev/null
     fi  
 
-    echo "Cleaning persistent volumes"
+    echo "Cleaning persistent volumes, including share and data folders"
     rm -rf $SHARE_FOLDER/ca/* $SHARE_FOLDER/peer/* $SHARE_FOLDER/orderer/* $SHARE_FOLDER/couchdb/* $SHARE_FOLDER/kafka/*
-
+    rm -rf /data/ca/* /data/peer/* /data/orderer/* /data/couchdb/* /data/kafka/*
     echo 
   else
     python transform/run.py $MODE

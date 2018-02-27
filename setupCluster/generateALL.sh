@@ -1,7 +1,7 @@
 #!/bin/bash +x
 PYTHON=python
-CHANNEL_NAME=$1
-: ${CHANNEL_NAME:="mychannel"}
+# CHANNEL_NAME=$1
+# : ${CHANNEL_NAME:="mychannel"}
 
 export TOOLS=$PWD/../bin
 export CONFIG_PATH=$PWD
