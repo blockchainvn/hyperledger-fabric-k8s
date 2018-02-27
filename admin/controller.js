@@ -230,7 +230,7 @@ module.exports = function(config) {
             //     proposalResponses[0].response.status,
             //     proposalResponses[0].response.message
             //   )
-            );
+            // );
             var transaction_id_string = tx_id.getTransactionID();
             const txPromise = this.getEventTxPromise(
               config.eventHost,
