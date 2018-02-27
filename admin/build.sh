@@ -6,8 +6,7 @@ NAMESPACE=$1
 PORT=$2
 METHOD=$3
 SHARE_FOLDER=$4
-TLS_ENABLED=$5
-org=${6:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
+org=${5:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
 
 COMMAND=$([[ $METHOD == "create" ]] && echo "yarn && yarn start" || echo "yarn start")
 IMAGE_CHECK=$(docker images | grep $IMAGE_NAME)
@@ -35,6 +34,11 @@ MSPID=$(echo ${NAMESPACE%%-*} | awk '{for(i=1;i<=NF;i++){ $i=toupper(substr($i,1
 function getFileContentString() {  
   cat $1 | sed 's/$/\\\\r\\\\n/' | tr -d '\n'
 }
+
+pod_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
+if [[ $pod_name ]]; then
+  TLS_ENABLED=$(kubectl describe pods $pod_name -n $NAMESPACE | grep CORE_PEER_TLS_ENABLED | awk '{print $2}')
+fi    
 
 if [[ $TLS_ENABLED == "true" ]];then
   PEER_PEM=$(getFileContentString "$SHARE_FOLDER/crypto-config/peerOrganizations/$NAMESPACE/peers/peer0.${NAMESPACE}/tls/ca.crt")

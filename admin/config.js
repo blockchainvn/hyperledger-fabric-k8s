@@ -4,7 +4,8 @@ module.exports = {
   ordererHost: process.env.ORDERER_HOST || "localhost:7050",
   caServer: "ca." + process.env.NAMESPACE + ":7054" || "localhost:7054",
   mspID: process.env.MSPID,
-  tlsEnabled: process.env.TLS_ENABLED,
+  // convert to boolean
+  tlsEnabled: process.env.TLS_ENABLED == "true",
   // we use \r\n to put PEM string into process.env, so we have to replace it to newline
   peerPem: process.env.PEER_PEM.replace(/\\r\\n/g, "\r\n"),
   ordererPem: process.env.ORDERER_PEM.replace(/\\r\\n/g, "\r\n")
