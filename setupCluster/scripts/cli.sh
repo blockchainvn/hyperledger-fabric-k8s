@@ -44,7 +44,12 @@ createChannel() {
 joinChannel() {
   
   # if we have PeerAdmin of channel we can use it to fetch again
-  peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME
+  if [[ ! -z $ORDERER_CA ]];then
+    peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME --tls true --cafile $ORDERER_CA
+  else 
+    peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME
+  fi
+  
   # CORE_PEER_MSPCONFIGPATH=$CORE_PEER_MSPCONFIGPATH \
   peer channel join -b ${CHANNEL_NAME}.block 
 

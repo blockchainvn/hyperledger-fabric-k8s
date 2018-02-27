@@ -11,12 +11,12 @@ PeerOrgs:
       Count: 1
     Users:
       Count: 0
-  - Name: Org2
-    Domain: org2
-    Template:
-      Count: 1
-    Users:
-      Count: 0
+  # - Name: Org2
+  #   Domain: org2
+  #   Template:
+  #     Count: 1
+  #   Users:
+  #     Count: 0
 
 # Tenant: v1
 

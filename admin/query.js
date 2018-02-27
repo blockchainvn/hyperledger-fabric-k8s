@@ -1,4 +1,5 @@
 var program = require("commander");
+var defaultConfig = require("./config");
 
 program
   .version("0.1.0")
@@ -14,13 +15,12 @@ program
   )
   .parse(process.argv);
 
-const config = {
-  peerHost: process.env.PEER_HOST,
-  eventHost: process.env.EVENT_HOST,
-  ordererHost: process.env.ORDERER_HOST,
+const config = Object.assign({}, defaultConfig, {
   channelName: program.channel,
   user: program.user
-};
+});
+
+console.log("Config:", config);
 
 var controller = require("./controller")(config);
 

@@ -20,14 +20,35 @@ const CaService = require("fabric-ca-client/lib/FabricCAClientImpl.js");
 module.exports = function(config) {
   const fabric_client = new Fabric_Client();
   const channel = fabric_client.newChannel(config.channelName);
-  const peer = fabric_client.newPeer("grpc://" + config.peerHost);
-  const orderer = fabric_client.newOrderer("grpc://" + config.ordererHost);
+  const grpcProtocol = config.tlsEnabled ? "grpcs://" : "grpc://";
+  const peerConfig = config.tlsEnabled
+    ? {
+        pem: config.peerPem,
+        "ssl-target-name-override": config.peerHost.split(":")[0]
+      }
+    : null;
+  const peer = fabric_client.newPeer(
+    grpcProtocol + config.peerHost,
+    peerConfig
+  );
+
+  const ordererConfig = config.tlsEnabled
+    ? {
+        pem: config.ordererPem,
+        "ssl-target-name-override": config.ordererHost.split(":")[0]
+      }
+    : null;
+
+  const orderer = fabric_client.newOrderer(
+    grpcProtocol + config.ordererHost,
+    ordererConfig
+  );
   const store_path = process.env.KEY_STORE_PATH;
 
   channel.addPeer(peer);
   channel.addOrderer(orderer);
 
-  console.log("Peer: " + "grpc://" + config.peerHost);
+  console.log("Peer: " + grpcProtocol + config.peerHost);
   console.log("Store path:" + store_path);
 
   // var logFile = process.env.NAMESPACE + '.' + config.channelName + '.csv'

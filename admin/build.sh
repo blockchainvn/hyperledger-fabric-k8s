@@ -6,7 +6,9 @@ NAMESPACE=$1
 PORT=$2
 METHOD=$3
 SHARE_FOLDER=$4
-org=${5:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
+TLS_ENABLED=$5
+org=${6:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
+
 COMMAND=$([[ $METHOD == "create" ]] && echo "yarn && yarn start" || echo "yarn start")
 IMAGE_CHECK=$(docker images | grep $IMAGE_NAME)
 # use this for multi-node
@@ -26,6 +28,18 @@ fi
 
 : ${NAMESPACE:="default"}
 : ${PORT:="31999"}
+
+ORDERER_NAMESPACE=orgorderer-${NAMESPACE#*-}
+MSPID=$(echo ${NAMESPACE%%-*} | awk '{for(i=1;i<=NF;i++){ $i=toupper(substr($i,1,1)) substr($i,2) }}1')MSP
+
+function getFileContentString() {  
+  cat $1 | sed 's/$/\\\\r\\\\n/' | tr -d '\n'
+}
+
+if [[ $TLS_ENABLED == "true" ]];then
+  PEER_PEM=$(getFileContentString "$SHARE_FOLDER/crypto-config/peerOrganizations/$NAMESPACE/peers/peer0.${NAMESPACE}/tls/ca.crt")
+  ORDERER_PEM=$(getFileContentString "$SHARE_FOLDER/crypto-config/ordererOrganizations/$ORDERER_NAMESPACE/orderers/orderer0.${ORDERER_NAMESPACE}/tls/ca.crt")
+fi
 
 # each admin only deployed on a server
 # create template then you can run it normally
@@ -66,12 +80,20 @@ spec:
            value: "$KEY_STORE_PATH"
          - name: MSP_PATH
            value: "/msp"
+         - name: MSPID
+           value: "$MSPID"
          - name: EVENT_HOST
            value: "peer0.${NAMESPACE}:7053"
          - name: PEER_HOST
            value: "peer0.${NAMESPACE}:7051"
          - name: ORDERER_HOST
            value: "$ORDERER_HOST"
+         - name: TLS_ENABLED
+           value: "$TLS_ENABLED"
+         - name: PEER_PEM
+           value: "$PEER_PEM"
+         - name: ORDERER_PEM
+           value: "$ORDERER_PEM"
 
          ports:
           - containerPort: 9000

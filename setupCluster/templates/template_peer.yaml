@@ -97,8 +97,8 @@ spec:
           value: $corePeerID
         - name: CORE_PEER_ADDRESS
           value: $peerAddress
-       # - name: CORE_PEER_CHAINCODELISTENADDRESS
-       #   value: $peerCCAddress
+        # - name: CORE_PEER_CHAINCODELISTENADDRESS
+        #   value: $peerCCAddress
         - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
           value: $peerGossip
         - name: CORE_PEER_LOCALMSPID
@@ -183,7 +183,7 @@ spec:
    #   protocol: TCP
    #   port: 7052
    #   targetPort: 7052
-#     nodePort: $nodePort2
+   #   nodePort: $nodePort2
 
    - name: listen
      protocol: TCP

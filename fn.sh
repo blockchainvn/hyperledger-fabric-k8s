@@ -113,7 +113,8 @@ printBoldColor(){
 
 buildAdmin(){  
   cd admin
-  local port=$(getArgument "port" 31999)    
+  local port=$(getArgument "port" 31999)   
+  local tlsEnabled=$(getArgument "tls_enabled" false) 
   local method=create
   if [[ $MODE == "up" ]];then
     method=apply
@@ -129,7 +130,7 @@ buildAdmin(){
   rsync -av --progress ./ $SHARE_FOLDER/admin --exclude node_modules
 
   echo "Building admin image..."
-  ./build.sh $NAMESPACE $port $method $SHARE_FOLDER
+  ./build.sh $NAMESPACE $port $method $SHARE_FOLDER $tlsEnabled
   printCommand "./build.sh $NAMESPACE $port $method"
   echo  
 }

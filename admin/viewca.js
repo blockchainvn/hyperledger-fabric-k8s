@@ -1,4 +1,6 @@
 var program = require("commander");
+var defaultConfig = require("./config");
+const controller_API = require("./controller");
 
 program
   .version("0.1.0")
@@ -7,7 +9,12 @@ program
   .option("-u, --user []", "User id", null)
   .parse(process.argv);
 
-var controller = require("./controller")(program.channel, program.host);
+const config = Object.assign({}, defaultConfig, {
+  channelName: program.channel,
+  user: program.user
+});
+
+var controller = controller_API(config);
 
 var cert = controller.viewca(program.user);
 console.log(cert);

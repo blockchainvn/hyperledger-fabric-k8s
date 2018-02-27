@@ -16,6 +16,8 @@ var util = require("util");
 var os = require("os");
 var program = require("commander");
 
+var defaultConfig = require("./config");
+
 //
 var fabric_client = new Fabric_Client();
 var fabric_ca_client = null;
@@ -27,7 +29,7 @@ console.log(" Store path:" + store_path);
 program
   .version("0.1.0")
   .option("-u, --user []", "User id", "admin")
-  .option("--host, --host []", "CA host", "ca.org1-f-1:7054")
+  .option("--host, --host []", "CA host", defaultConfig.caServer)
   .option("--domain, --host []", "CA domain", "ca")
   .option("-p, --password []", "User password", "adminpw")
   .parse(process.argv);
@@ -51,7 +53,7 @@ Fabric_Client.newDefaultKeyValueStore({
     };
     // be sure to change the http to https when the CA is running TLS enabled
     fabric_ca_client = new Fabric_CA_Client(
-      "http://" + program.host,
+      (defaultConfig.tlsEnabled ? "https://" : "http://") + program.host,
       tlsOptions,
       program.domain,
       crypto_suite

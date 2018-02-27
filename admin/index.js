@@ -8,23 +8,15 @@ const bodyParser = require("body-parser");
 const fs = require("fs");
 const os = require("os");
 // const moment = require("moment");
-
+var defaultConfig = require("./config");
 const controller_API = require("./controller");
-let nameSpace = process.env.NAMESPACE;
-const config = {
-  peerHost: process.env.PEER_HOST || "localhost:7051",
-  eventHost: process.env.EVENT_HOST || "localhost:7053",
-  ordererHost: process.env.ORDERER_HOST || "localhost:7050",
-  channelName: process.env.CHANNEL || "multichannel",
-  caServer: "ca." + nameSpace + ":7054" || "ca.idp1-v1:7054",
+
+const config = Object.assign({}, defaultConfig, {
   anotherUser: "admin",
   anotherUserSecret: "adminpw",
   user: "PeerAdmin",
-  MSP:
-    nameSpace[0].toUpperCase() +
-      nameSpace.replace(/(-v1)/, "").slice(1) +
-      "MSP" || "Idp1MSP"
-};
+  MSP: defaultConfig.mspID
+});
 
 console.log("Config:", config);
 
@@ -220,7 +212,9 @@ app.post("/send_idp/:seq", function(req, res) {
 });
 
 app.get("/viewca", function(req, res) {
-  const controller = controller_API(config);
+  const controller = controller_API(
+    Object.assign({}, config, { channelName: req.query.channel })
+  );
   const cert = controller.viewca(req.query.user);
   res.json(cert);
 });
