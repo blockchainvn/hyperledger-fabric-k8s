@@ -121,8 +121,8 @@ spec:
          - mountPath: /etc/hyperledger/fabric/msp 
            name: certificate
 
-         - mountPath: /var/hyperledger/production
-           name: data
+         # - mountPath: /var/hyperledger/production
+         #   name: data
            #subPath: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp
            # subPath: $mspPath
          - mountPath: /etc/hyperledger/fabric/tls

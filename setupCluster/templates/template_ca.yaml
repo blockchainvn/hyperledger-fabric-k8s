@@ -36,8 +36,8 @@ spec:
           - mountPath: /etc/hyperledger/fabric-ca-server-config
             name: certificate
             # subPath: $caPath
-          - mountPath: /etc/hyperledger/fabric-ca-server
-            name: data
+          # - mountPath: /etc/hyperledger/fabric-ca-server
+          #   name: data
       volumes:
          - name: certificate
            hostPath:

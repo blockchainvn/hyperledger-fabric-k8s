@@ -32,10 +32,10 @@ spec:
             - name: ZOO_SYNC_LIMIT
               value: "2"
           volumeMounts:
-            - mountPath: /datalog
-              name: datalog
-            - mountPath: /data
-              name: data
+            # - mountPath: /datalog
+            #   name: datalog
+            # - mountPath: /data
+            #   name: data
           lifecycle:
             preStop:
               exec:
