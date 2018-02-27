@@ -96,7 +96,7 @@ while getopts "o:C:n:v:c:d:P:m:" opt; do
 done
 
 : ${CHANNEL_NAME:="mychannel"}
-: ${DELAY:="2"}
+: ${DELAY:="1"}
 : ${ACTION:="channel"}
 
 echo "Channel name : $CHANNEL_NAME, Action: $ACTION"
