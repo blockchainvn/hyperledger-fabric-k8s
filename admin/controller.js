@@ -9,6 +9,7 @@
 // var fs = require("fs-extra");
 const x509 = require("x509");
 const Fabric_Client = require("fabric-client");
+const Fabric_Utils = require("fabric-client/lib/utils.js");
 const path = require("path");
 const util = require("util");
 const fs = require("fs");
@@ -62,17 +63,25 @@ module.exports = function(config) {
     },
 
     get_member_user(user) {
-      return Fabric_Client.newDefaultKeyValueStore({
-        path: store_path
-      })
+      Fabric_Utils.setConfigSetting(
+        "key-value-store",
+        "fabric-client/lib/impl/CouchDBKeyValueStore.js"
+      );
+
+      const keyvalueStoreConfig = {
+        name: "mychannel",
+        url: "http://localhost:5984"
+      };
+
+      return Fabric_Client.newDefaultKeyValueStore(keyvalueStoreConfig)
         .then(store => {
           fabric_client.setStateStore(store);
           const crypto_suite = Fabric_Client.newCryptoSuite();
           // use the same location for the state store (where the users' certificate are kept)
           // and the crypto store (where the users' keys are kept)
-          const crypto_store = Fabric_Client.newCryptoKeyStore({
-            path: store_path
-          });
+          const crypto_store = Fabric_Client.newCryptoKeyStore(
+            keyvalueStoreConfig
+          );
           crypto_suite.setCryptoKeyStore(crypto_store);
           fabric_client.setCryptoSuite(crypto_suite);
           return this.getSubmitter(fabric_client, config);
@@ -91,59 +100,67 @@ module.exports = function(config) {
 
     getSubmitter(client, config) {
       var member;
-      console.log("[getSubmitter]");
-      return client.getUserContext(config.user, true).then(user => {
-        if (user && user.isEnrolled()) {
-          return user;
-        } else {
-          // Need to enroll it with the CA
-          var tlsOptions = {
-            trustedRoots: [null],
-            verify: false
-          };
-          var ca_client = new CaService(
-            "http://" + config.caServer,
-            tlsOptions,
-            null
-          );
-          member = new User(config.anotherUser);
+      console.log("[getSubmitter]", config.user);
 
-          // --- Lets Do It --- //
-          return ca_client
-            .enroll({
-              enrollmentID: config.anotherUser,
-              enrollmentSecret: config.anotherUserSecret
-            })
-            .then(enrollment => {
-              // Store Certs
-              console.log(
-                "[fcw] Successfully enrolled user '" + config.anotherUser + "'"
-              );
-              return member.setEnrollment(
-                enrollment.key,
-                enrollment.certificate,
-                config.MSP
-              );
-            })
-            .then(() => {
-              // Save Submitter Enrollment
-              return client.setUserContext(member);
-            })
-            .then(() => {
-              // Return Submitter Enrollment
-              return member;
-            })
-            .catch(err => {
-              // Send Errors
-              console.error(
-                "[fcw] Failed to enroll and persist user. Error: " + err.stack
-                  ? err.stack
-                  : err
-              );
-              throw new Error("Failed to obtain an enrolled user");
-            });
-        }
-      });
+      return client
+        .getUserContext(config.user, true)
+        .then(user => {
+          if (user && user.isEnrolled()) {
+            return user;
+          } else {
+            // Need to enroll it with the CA
+            var tlsOptions = {
+              trustedRoots: [null],
+              verify: false
+            };
+            var ca_client = new CaService(
+              "http://" + config.caServer,
+              tlsOptions,
+              null
+            );
+            member = new User(config.anotherUser);
+
+            // --- Lets Do It --- //
+            return ca_client
+              .enroll({
+                enrollmentID: config.anotherUser,
+                enrollmentSecret: config.anotherUserSecret
+              })
+              .then(enrollment => {
+                // Store Certs
+                console.log(
+                  "[fcw] Successfully enrolled user '" +
+                    config.anotherUser +
+                    "'"
+                );
+                return member.setEnrollment(
+                  enrollment.key,
+                  enrollment.certificate,
+                  config.MSP
+                );
+              })
+              .then(() => {
+                // Save Submitter Enrollment
+                return client.setUserContext(member);
+              })
+              .then(() => {
+                // Return Submitter Enrollment
+                return member;
+              })
+              .catch(err => {
+                // Send Errors
+                console.error(
+                  "[fcw] Failed to enroll and persist user. Error: " + err.stack
+                    ? err.stack
+                    : err
+                );
+                throw new Error("Failed to obtain an enrolled user");
+              });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
     },
 
     getEventTxPromise(eventAdress, transaction_id_string) {

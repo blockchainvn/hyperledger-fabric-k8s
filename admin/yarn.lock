@@ -420,9 +420,9 @@ eyes@0.1.x:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/eyes/-/eyes-0.1.8.tgz#62cf120234c683785d902348a800ef3e0cc20bc0"
 
-fabric-ca-client@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/fabric-ca-client/-/fabric-ca-client-1.0.2.tgz#a965e263a0f679ad55087aef8a53a6e09ada2931"
+fabric-ca-client@^1.0.0:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/fabric-ca-client/-/fabric-ca-client-1.0.4.tgz#94efac125c75e60561b698dc41939993af995e89"
   dependencies:
     bn.js "^4.11.3"
     elliptic "^6.2.3"
@@ -431,15 +431,15 @@ fabric-ca-client@1.0.2:
     jsrsasign "^6.2.2"
     jssha "^2.1.0"
     nconf "^0.8.4"
-    sjcl "1.0.3"
+    sjcl "1.0.7"
     sjcl-codec "0.1.1"
     url "^0.11.0"
     util "^0.10.3"
     winston "^2.2.0"
 
-fabric-client@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/fabric-client/-/fabric-client-1.0.2.tgz#5ad575dc1f1ed4e33f287f1594e108b6c0fefde1"
+fabric-client@^1.0.0:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/fabric-client/-/fabric-client-1.0.4.tgz#f30b53329591fae05e6a2f15054b9cd9e0c97359"
   dependencies:
     bn.js "^4.11.3"
     callsite "^1.0.0"
@@ -458,7 +458,7 @@ fabric-client@1.0.2:
     path "^0.12.7"
     pkcs11js "^1.0.6"
     promise-settle "^0.3.0"
-    sjcl "1.0.3"
+    sjcl "1.0.7"
     sjcl-codec "0.1.1"
     stream-buffers "3.0.1"
     tar-stream "1.5.2"
@@ -1215,9 +1215,9 @@ sjcl-codec@0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/sjcl-codec/-/sjcl-codec-0.1.1.tgz#6ae6fd736c4e05bffda4bc61a18a31f57d761d95"
 
-sjcl@1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/sjcl/-/sjcl-1.0.3.tgz#4ed486498ed6b742b5d4a21902268116f054a709"
+sjcl@1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/sjcl/-/sjcl-1.0.7.tgz#32b365a50dc9bba26b88ba3c9df8ea34217d9f45"
 
 sntp@1.x.x:
   version "1.0.9"

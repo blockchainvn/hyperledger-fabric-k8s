@@ -93,11 +93,11 @@ spec:
    role: orderer
    orderer-id: $ordererID
    org: $namespace
- # type: NodePort
- type: ClusterIP
+ type: NodePort
+ # type: ClusterIP
  ports:
    - name: listen-endpoint
      protocol: TCP
      port: 7050
      targetPort: 7050
-     # nodePort: $nodePort
+     nodePort: $nodePort

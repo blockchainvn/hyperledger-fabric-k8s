@@ -62,11 +62,11 @@ spec:
    role: ca
    org: $namespace
    name: ca
- # type: NodePort
- type: ClusterIP
+ type: NodePort
+ # type: ClusterIP
  ports:
    - name: endpoint
      protocol: TCP
      port: 7054
      targetPort: 7054
-     # nodePort: $nodePort
+     nodePort: $nodePort

@@ -14,7 +14,7 @@ const controller_API = require("./controller");
 const config = Object.assign({}, defaultConfig, {
   anotherUser: "admin",
   anotherUserSecret: "adminpw",
-  user: "PeerAdmin",
+  user: "admin",
   MSP: defaultConfig.mspID
 });
 

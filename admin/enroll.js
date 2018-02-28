@@ -26,25 +26,34 @@ var member_user = null;
 var store_path = process.env.KEY_STORE_PATH;
 console.log(" Store path:" + store_path);
 
+var Fabric_Utils = require("fabric-client/lib/utils.js");
+
 program
   .version("0.1.0")
   .option("-u, --user []", "User id", "admin")
   .option("--host, --host []", "CA host", defaultConfig.caServer)
-  .option("--domain, --host []", "CA domain", "ca")
   .option("-p, --password []", "User password", "adminpw")
   .parse(process.argv);
 
+Fabric_Utils.setConfigSetting(
+  "key-value-store",
+  "fabric-client/lib/impl/CouchDBKeyValueStore.js"
+);
+
+const keyvalueStoreConfig = {
+  name: "mychannel",
+  url: "http://localhost:5984"
+};
+
 // create the key value store as defined in the fabric-client/config/default.json 'key-value-store' setting
-Fabric_Client.newDefaultKeyValueStore({
-  path: store_path
-})
+Fabric_Client.newDefaultKeyValueStore(keyvalueStoreConfig)
   .then(state_store => {
     // assign the store to the fabric client
     fabric_client.setStateStore(state_store);
     var crypto_suite = Fabric_Client.newCryptoSuite();
     // use the same location for the state store (where the users' certificate are kept)
     // and the crypto store (where the users' keys are kept)
-    var crypto_store = Fabric_Client.newCryptoKeyStore({ path: store_path });
+    var crypto_store = Fabric_Client.newCryptoKeyStore(keyvalueStoreConfig);
     crypto_suite.setCryptoKeyStore(crypto_store);
     fabric_client.setCryptoSuite(crypto_suite);
     var tlsOptions = {
@@ -79,7 +88,7 @@ Fabric_Client.newDefaultKeyValueStore({
           console.log('Successfully enrolled user "' + program.user + '"');
           return fabric_client.createUser({
             username: program.user,
-            mspid: "Org" + program.org + "MSP",
+            mspid: defaultConfig.mspID,
             cryptoContent: {
               privateKeyPEM: enrollment.key.toBytes(),
               signedCertPEM: enrollment.certificate
