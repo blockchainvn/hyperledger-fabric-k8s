@@ -15,6 +15,7 @@ WORKING_PATH=$SHARE_FOLDER/admin
 # WORKING_PATH=$PWD
 image_policy=Never
 if [[ -z $IMAGE_CHECK ]];then
+  echo "Building admin image..."
   if [[ $IMAGE_NAME != "node" ]];then
     echo "Building image $IMAGE_NAME ..."
     echo

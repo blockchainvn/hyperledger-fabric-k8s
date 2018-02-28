@@ -11,21 +11,13 @@ Profiles:
           Port: 7051
   MultiOrgsOrdererGenesis:
     Orderer:
-      OrdererType: kafka
+      OrdererType: solo
       Addresses:
       - orderer0.orgorderer-v1:7050
-      - orderer1.orgorderer-v1:7050
-      - orderer2.orgorderer-v1:7050
       BatchTimeout: 2s
       BatchSize:
         AbsoluteMaxBytes: 103809024
         PreferredMaxBytes: 524288
-      Kafka:
-        Brokers:
-        - kafka0.kafka:9092
-        - kafka1.kafka:9092
-        - kafka2.kafka:9092
-        - kafka3.kafka:9092
       Organizations:
       - Name: OrdererOrg
         ID: Orderer0MSP
@@ -50,21 +42,13 @@ Organizations:
   - Host: peer0.org1-v1
     Port: 7051
 Orderer:
-  OrdererType: kafka
+  OrdererType: solo
   Addresses:
   - orderer0.orgorderer-v1:7050
-  - orderer1.orgorderer-v1:7050
-  - orderer2.orgorderer-v1:7050
   BatchTimeout: 2s
   BatchSize:
     AbsoluteMaxBytes: 103809024
     PreferredMaxBytes: 524288
-  Kafka:
-    Brokers:
-    - kafka0.kafka:9092
-    - kafka1.kafka:9092
-    - kafka2.kafka:9092
-    - kafka3.kafka:9092
   Organizations:
   - Name: OrdererOrg
     ID: Orderer0MSP

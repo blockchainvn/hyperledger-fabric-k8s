@@ -117,7 +117,7 @@ buildAdmin(){
   # local tlsEnabled=$(getArgument "tls_enabled" false) 
   local method=create
   if [[ $MODE == "up" ]];then
-    method=apply
+    method=create
   elif [[ $MODE == "down" ]]; then
     method=delete
   else
@@ -128,8 +128,7 @@ buildAdmin(){
   #statements  
   echo "Update admin source code"
   rsync -av --progress ./ $SHARE_FOLDER/admin --exclude node_modules
-
-  echo "Building admin image..."
+  
   ./build.sh $NAMESPACE $port $method $SHARE_FOLDER # $tlsEnabled
   printCommand "./build.sh $NAMESPACE $port $method"
   echo  
