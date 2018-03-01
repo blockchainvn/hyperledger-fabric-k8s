@@ -107,7 +107,7 @@ spec:
           - containerPort: 9000
          # command: ["yarn", "yarn start"]
          command: [ "/bin/bash", "-c", "--" ]
-         args: [ "./peer-admin.sh $NAMESPACE && $COMMAND" ]
+         args: [ "./peer-admin.sh $NAMESPACE && $COMMAND && /bin/bash" ]
          # args: [ "yarn && yarn start" ]
          workingDir: /home
          volumeMounts:
