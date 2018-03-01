@@ -35,14 +35,17 @@ program
   .option("-p, --password []", "User password", "adminpw")
   .parse(process.argv);
 
-Fabric_Utils.setConfigSetting(
-  "key-value-store",
-  "fabric-client/lib/impl/CouchDBKeyValueStore.js"
-);
+// Fabric_Utils.setConfigSetting(
+//   "key-value-store",
+//   "fabric-client/lib/impl/CouchDBKeyValueStore.js"
+// );
 
+// const keyvalueStoreConfig = {
+//   name: "mychannel",
+//   url: "http://localhost:5984"
+// };
 const keyvalueStoreConfig = {
-  name: "mychannel",
-  url: "http://localhost:5984"
+  path: store_path
 };
 
 // create the key value store as defined in the fabric-client/config/default.json 'key-value-store' setting

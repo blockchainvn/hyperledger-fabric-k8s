@@ -68,14 +68,18 @@ module.exports = function(config) {
         return new Promise(resolve => resolve(currentSubmitter));
       }
 
-      Fabric_Utils.setConfigSetting(
-        "key-value-store",
-        "fabric-client/lib/impl/CouchDBKeyValueStore.js"
-      );
+      // Fabric_Utils.setConfigSetting(
+      //   "key-value-store",
+      //   "fabric-client/lib/impl/CouchDBKeyValueStore.js"
+      // );
+
+      // const keyvalueStoreConfig = {
+      //   name: "mychannel",
+      //   url: "http://localhost:5984"
+      // };
 
       const keyvalueStoreConfig = {
-        name: "mychannel",
-        url: "http://localhost:5984"
+        path: store_path
       };
 
       return Fabric_Client.newDefaultKeyValueStore(keyvalueStoreConfig)
@@ -89,10 +93,11 @@ module.exports = function(config) {
           );
           crypto_suite.setCryptoKeyStore(crypto_store);
           fabric_client.setCryptoSuite(crypto_suite);
-          // return this.getSubmitter(fabric_client, config);
-          return fabric_client
-            .loadUserFromStateStore(config.user)
-            .then(member => fabric_client.setUserContext(member, true));
+          return this.getSubmitter(fabric_client, config);
+
+          // return fabric_client
+          //   .loadUserFromStateStore(config.user)
+          //   .then(member => fabric_client.setUserContext(member, true));
 
           // return this.getSubmitter(fabric_client, config);
         })
@@ -125,7 +130,7 @@ module.exports = function(config) {
               verify: false
             };
             var ca_client = new CaService(
-              "http://" + config.caServer,
+              (config.tlsEnabled ? "https://" : "http://") + config.caServer,
               tlsOptions,
               null
             );
