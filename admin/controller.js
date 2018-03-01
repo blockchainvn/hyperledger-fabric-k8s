@@ -209,11 +209,11 @@ module.exports = function(config) {
           return channel.queryByChaincode(request);
         })
         .then(query_responses => {
-          console.log(
-            "Query has completed on channel [" +
-              config.channelName +
-              "], checking results"
-          );
+          // console.log(
+          //   "Query has completed on channel [" +
+          //     config.channelName +
+          //     "], checking results"
+          // );
           // console.log(query_responses);
           // query_responses could have more than one  results if there multiple peers were used as targets
           if (query_responses && query_responses.length == 1) {

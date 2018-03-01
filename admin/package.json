@@ -4,12 +4,13 @@
     "description": "Hyperledger Fabric Sample Application",
     "main": "index.js",
     "scripts": {
-        "start": "node index.js",
+        "start": "pm2 start index.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
         "body-parser": "latest",
         "commander": "^2.11.0",
+        "pm2": "^2.10.1",
         "express": "latest",
         "fabric-ca-client": "^1.0.0",
         "fabric-client": "^1.0.0",

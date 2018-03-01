@@ -238,7 +238,7 @@ app.get("/query", function(req, res) {
       // res.json({ result: ret.toString() });
       const retStr = ret.toString();
       res.send(retStr);
-      // console.log(retStr);
+      console.log(retStr);
     })
     .catch(err => {
       res.status(500).send(err);

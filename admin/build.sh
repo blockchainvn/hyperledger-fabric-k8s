@@ -78,6 +78,7 @@ spec:
        - name: admin
          image: $IMAGE_NAME
          imagePullPolicy: $image_policy
+         tty: true
          env: 
          - name: PORT
            value: "9000"
