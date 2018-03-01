@@ -219,6 +219,10 @@ app.get("/viewca", function(req, res) {
   res.json(cert);
 });
 
+const queryController = controller_API(
+  Object.assign({}, config, { channelName: "mychannel" })
+);
+
 app.get("/query", function(req, res) {
   const request = {
     //targets : --- letting this default to the peers assigned to the channel
@@ -226,14 +230,15 @@ app.get("/query", function(req, res) {
     fcn: req.query.method,
     args: req.query.arguments
   };
-  const controller = controller_API(
-    Object.assign({}, config, { channelName: req.query.channel })
-  );
+
   // each method require different certificate of user
-  controller
+  queryController
     .query(req.query.user || config.user, request)
     .then(ret => {
-      res.json({ result: ret.toString() });
+      // res.json({ result: ret.toString() });
+      const retStr = ret.toString();
+      res.send(retStr);
+      // console.log(retStr);
     })
     .catch(err => {
       res.status(500).send(err);

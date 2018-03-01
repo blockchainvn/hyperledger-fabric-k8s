@@ -54,7 +54,7 @@ module.exports = function(config) {
 
   // var logFile = process.env.NAMESPACE + '.' + config.channelName + '.csv'
   // console.log('logFile', logFile)
-
+  let currentSubmitter = null;
   const instance = {
     viewca(user) {
       var obj = JSON.parse(fs.readFileSync(store_path + "/" + user, "utf8"));
@@ -63,6 +63,11 @@ module.exports = function(config) {
     },
 
     get_member_user(user) {
+      if (currentSubmitter) {
+        // console.log("has found");
+        return new Promise(resolve => resolve(currentSubmitter));
+      }
+
       Fabric_Utils.setConfigSetting(
         "key-value-store",
         "fabric-client/lib/impl/CouchDBKeyValueStore.js"
@@ -84,10 +89,17 @@ module.exports = function(config) {
           );
           crypto_suite.setCryptoKeyStore(crypto_store);
           fabric_client.setCryptoSuite(crypto_suite);
-          return this.getSubmitter(fabric_client, config);
+          // return this.getSubmitter(fabric_client, config);
+          return fabric_client
+            .loadUserFromStateStore(config.user)
+            .then(member => fabric_client.setUserContext(member, true));
+
+          // return this.getSubmitter(fabric_client, config);
         })
         .then(submitter => {
           if (submitter && submitter.isEnrolled()) {
+            // console.log(submitter);
+            currentSubmitter = submitter;
             return submitter;
           } else {
             throw new Error("failed");
@@ -100,8 +112,7 @@ module.exports = function(config) {
 
     getSubmitter(client, config) {
       var member;
-      console.log("[getSubmitter]", config.user);
-
+      console.log("[getSubmitter]");
       return client
         .getUserContext(config.user, true)
         .then(user => {
@@ -141,7 +152,7 @@ module.exports = function(config) {
               })
               .then(() => {
                 // Save Submitter Enrollment
-                return client.setUserContext(member);
+                return client.setUserContext(member, true);
               })
               .then(() => {
                 // Return Submitter Enrollment
