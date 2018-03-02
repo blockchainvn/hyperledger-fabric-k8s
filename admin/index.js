@@ -7,18 +7,21 @@ const express = require("express"); // call express
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const os = require("os");
+
+const controllerManager = require("./controller-mgr");
+const config = controllerManager.getConfig();
 // const moment = require("moment");
-var defaultConfig = require("./config");
-const controller_API = require("./controller");
+// var defaultConfig = require("./config");
+// const controller_API = require("./controller");
 
-const config = Object.assign({}, defaultConfig, {
-  anotherUser: "admin",
-  anotherUserSecret: "adminpw",
-  user: "admin",
-  MSP: defaultConfig.mspID
-});
+// const config = Object.assign({}, defaultConfig, {
+//   anotherUser: "admin",
+//   anotherUserSecret: "adminpw",
+//   user: "admin",
+//   MSP: defaultConfig.mspID
+// });
 
-console.log("Config:", config);
+// console.log("Config:", config);
 
 const app = express();
 
@@ -30,7 +33,8 @@ app.use(bodyParser.json());
 
 app.post("/send_all/:seq", function(req, res) {
   console.log("req.body:", req.body.message);
-  const controller = controller_API(config);
+  // const controller = controller_API(config);
+  const controller = controllerManager.getInstance("multichannel");
   const request = {
     chaincodeId: "multichanneldid",
     fcn: "writeBlock",
@@ -141,9 +145,10 @@ app.post("/send_idp/:seq", function(req, res) {
   }
 
   console.log("channelID:", channelID, chaincodeID);
-  const controller = controller_API(
-    Object.assign({}, config, { channelName: channelID })
-  );
+  // const controller = controller_API(
+  //   Object.assign({}, config, { channelName: channelID })
+  // );
+  const controller = controllerManager.getInstance(channelID);
 
   const request = {
     chaincodeId: chaincodeID,
@@ -212,16 +217,17 @@ app.post("/send_idp/:seq", function(req, res) {
 });
 
 app.get("/viewca", function(req, res) {
-  const controller = controller_API(
-    Object.assign({}, config, { channelName: req.query.channel })
-  );
+  // const controller = controller_API(
+  //   Object.assign({}, config, { channelName: req.query.channel })
+  // );
+  const controller = controllerManager.getInstance(req.query.channel);
   const cert = controller.viewca(req.query.user);
   res.json(cert);
 });
 
-const queryController = controller_API(
-  Object.assign({}, config, { channelName: "mychannel" })
-);
+// const queryController = controller_API(
+//   Object.assign({}, config, { channelName: "mychannel" })
+// );
 
 app.get("/query", function(req, res) {
   const request = {
@@ -231,8 +237,12 @@ app.get("/query", function(req, res) {
     args: req.query.arguments
   };
 
+  const controller = controllerManager.getInstance(
+    req.query.channel || "mychannel"
+  );
+
   // each method require different certificate of user
-  queryController
+  controller
     .query(req.query.user || config.user, request)
     .then(ret => {
       // res.json({ result: ret.toString() });
@@ -246,8 +256,11 @@ app.get("/query", function(req, res) {
 });
 
 app.get("/invoke", function(req, res) {
-  const controller = controller_API(
-    Object.assign({}, config, { channelName: req.query.channel })
+  // const controller = controller_API(
+  //   Object.assign({}, config, { channelName: req.query.channel })
+  // );
+  const controller = controllerManager.getInstance(
+    req.query.channel || "mychannel"
   );
   const request = {
     chaincodeId: req.query.chaincode,
