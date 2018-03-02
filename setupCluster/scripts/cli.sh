@@ -27,9 +27,11 @@ createChannel() {
   echo "Create channel $CHANNEL_NAME from cli"
 
   if [[ ! -z $ORDERER_CA ]];then
-    peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx --tls true --cafile $ORDERER_CA
+    peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx --tls --cafile $ORDERER_CA
+    echo "peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx --tls --cafile $ORDERER_CA"
   else 
     peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx
+    echo "peer channel create -o $ORDERER_ADDRESS -c $CHANNEL_NAME -f ./channel-artifacts/${CHANNEL_NAME}.tx"
   fi
 
   res=$?  
@@ -46,8 +48,10 @@ joinChannel() {
   # if we have PeerAdmin of channel we can use it to fetch again
   if [[ ! -z $ORDERER_CA ]];then
     peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME --tls --cafile $ORDERER_CA
+    echo "peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME --tls --cafile $ORDERER_CA"
   else 
     peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME
+    echo "peer channel fetch 0 ${CHANNEL_NAME}.block -o $ORDERER_ADDRESS -c $CHANNEL_NAME"
   fi
   
   # CORE_PEER_MSPCONFIGPATH=$CORE_PEER_MSPCONFIGPATH \
@@ -64,7 +68,7 @@ updateChaincode(){
 
   if [[ ! -z $ORDERER_CA ]];then
     peer chaincode $ACTION -o $ORDERER_ADDRESS -C $CHANNEL_NAME -n $CHAINCODE -v $VERSION --tls --cafile $ORDERER_CA -c "$ARGS" -P "$POLICY"
-    echo "peer chaincode $ACTION -o $ORDERER_ADDRESS -C $CHANNEL_NAME -n $CHAINCODE -v $VERSION --tls true --cafile $ORDERER_CA -c '$ARGS' -P '$POLICY'"
+    echo "peer chaincode $ACTION -o $ORDERER_ADDRESS -C $CHANNEL_NAME -n $CHAINCODE -v $VERSION --tls --cafile $ORDERER_CA -c '$ARGS' -P '$POLICY'"
   else 
     peer chaincode $ACTION -o $ORDERER_ADDRESS -C $CHANNEL_NAME -n $CHAINCODE -v $VERSION -c "$ARGS" -P "$POLICY"
     echo "peer chaincode $ACTION -o $ORDERER_ADDRESS -C $CHANNEL_NAME -n $CHAINCODE -v $VERSION -c '$ARGS' -P '$POLICY'"
