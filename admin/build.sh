@@ -77,6 +77,11 @@ spec:
       containers:
        - name: admin
          image: $IMAGE_NAME
+         # resources:
+         #  limits:
+         #    cpu: "4"          
+         #  requests:
+         #    cpu: "1"
          imagePullPolicy: $image_policy
          tty: true
          env: 
