@@ -45,6 +45,9 @@ EOF
   kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address $(ifconfig eth0 | grep 'inet addr'| cut -d':' -f2 | awk '{print $1}')
   read -n 1 -s -r -p "Note join command & Press any key to continue"
 
+  # you can use this script to generate token again
+  # kubeadm token create --print-join-command
+
   mkdir -p $HOME/.kube
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -68,4 +71,6 @@ EOF
 else 
   kubectl cluster-info
 fi
+
+
 
