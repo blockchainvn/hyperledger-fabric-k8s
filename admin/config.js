@@ -7,7 +7,7 @@ module.exports = {
     : process.env.CA_HOST || "localhost:7054",
   mspID: process.env.MSPID,
   anotherUserSecret: "adminpw",
-  user: "PeerAdmin",
+  user: "admin",
   // convert to boolean
   tlsEnabled: process.env.TLS_ENABLED == "true",
   // we use \r\n to put PEM string into process.env, so we have to replace it to newline
