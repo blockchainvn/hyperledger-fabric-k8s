@@ -60,6 +60,8 @@ metadata:
   name: admin
 spec:
   replicas: 1
+  # optional, how many revision to be kept for rolling back
+  revisionHistoryLimit: 0
   strategy: {}
   template:
     metadata:
