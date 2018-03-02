@@ -690,9 +690,16 @@ execChaincode() {
   fi  
   cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
   if [[ ! -z $cli_name ]];then
-    kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c "$ARGS" -C $CHANNEL_NAME
-    res=$?  
-    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c '$ARGS' -C $CHANNEL_NAME"  
+
+    if [[ $chaincode_method == "query" ]];then
+      kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c "$ARGS" -C $CHANNEL_NAME
+      printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c '$ARGS' -C $CHANNEL_NAME"  
+    else      
+      kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE
+      printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE"
+    fi
+
+    res=$?      
     verifyResult $res "$chaincode_method chaincode failed"
     echo "===================== $chaincode_method chaincode successfully ===================== "    
     echo

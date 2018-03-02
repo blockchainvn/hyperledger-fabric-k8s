@@ -80,6 +80,21 @@ updateChaincode(){
   echo
 }
 
+invokeChaincode(){
+  if [[ ! -z $ORDERER_CA ]];then
+    peer chaincode $ACTION -o $ORDERER_ADDRESS -C $CHANNEL_NAME -n $CHAINCODE -v $VERSION --tls --cafile $ORDERER_CA -c "$ARGS"
+    echo "peer chaincode $ACTION -o $ORDERER_ADDRESS -C $CHANNEL_NAME -n $CHAINCODE --tls --cafile $ORDERER_CA -c '$ARGS'"
+  else 
+    peer chaincode $ACTION -o $ORDERER_ADDRESS -C $CHANNEL_NAME -n $CHAINCODE -v $VERSION -c "$ARGS"
+    echo "peer chaincode $ACTION -o $ORDERER_ADDRESS -C $CHANNEL_NAME -n $CHAINCODE -c '$ARGS'"
+  fi
+
+  res=$?  
+  verifyResult $res "$ACTION chaincode failed"
+  echo "===================== $ACTION chaincode \"$CHAINCODE\" successfully ===================== "
+  echo
+}
+
 
 ACTION="$1"
 shift
@@ -121,6 +136,8 @@ fi
 
 if [[ $ACTION == 'instantiate' || $ACTION == 'upgrade' ]];then
   updateChaincode
+elif [[ $ACTION == 'invoke' ]];then
+  invokeChaincode
 else 
   if [[ $MODE == 'join' ]];then
     echo "Having $CORE_PEER_ADDRESS join the channel..."
