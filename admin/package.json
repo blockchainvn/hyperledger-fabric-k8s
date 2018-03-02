@@ -4,7 +4,7 @@
     "description": "Hyperledger Fabric Sample Application",
     "main": "index.js",
     "scripts": {
-        "start": "node enroll.js admin && pm2 start index.js",
+        "start": "node enroll.js && pm2 start index.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
