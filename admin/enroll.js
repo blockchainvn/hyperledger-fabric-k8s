@@ -32,6 +32,12 @@ program
   .version("0.1.0")
   .option("-u, --user []", "User id", "admin")
   .option("--host, --host []", "CA host", defaultConfig.caServer)
+  .option(
+    "--domain, --domain []",
+    "CA domain",
+    // process.env.NAMESPACE ? "ca." + process.env.NAMESPACE : null
+    defaultConfig.caDomain || defaultConfig.caServer.split(":")[0]
+  )
   .option("-p, --password []", "User password", "adminpw")
   .parse(process.argv);
 

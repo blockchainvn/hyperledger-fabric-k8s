@@ -25,7 +25,8 @@ module.exports = function(config) {
   const peerConfig = config.tlsEnabled
     ? {
         pem: config.peerPem,
-        "ssl-target-name-override": config.peerHost.split(":")[0]
+        "ssl-target-name-override":
+          config.peerDomain || config.peerHost.split(":")[0]
       }
     : null;
   const peer = fabric_client.newPeer(
@@ -36,7 +37,8 @@ module.exports = function(config) {
   const ordererConfig = config.tlsEnabled
     ? {
         pem: config.ordererPem,
-        "ssl-target-name-override": config.ordererHost.split(":")[0]
+        "ssl-target-name-override":
+          config.ordererDomain || config.ordererHost.split(":")[0]
       }
     : null;
 

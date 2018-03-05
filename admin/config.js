@@ -2,9 +2,13 @@ module.exports = {
   peerHost: process.env.PEER_HOST || "localhost:7051",
   eventHost: process.env.EVENT_HOST || "localhost:7053",
   ordererHost: process.env.ORDERER_HOST || "localhost:7050",
-  caServer: process.env.NAMESPACE
-    ? "ca." + process.env.NAMESPACE + ":7054"
-    : process.env.CA_HOST || "localhost:7054",
+  ordererDomain: process.env.ORDERER_DOMAIN,
+  peerDomain: process.env.PEER_DOMAIN,
+  caServer:
+    process.env.CA_HOST ||
+    (process.env.NAMESPACE
+      ? "ca." + process.env.NAMESPACE + ":7054"
+      : "localhost:7054"),
   mspID: process.env.MSPID,
   anotherUserSecret: "adminpw",
   user: "admin",

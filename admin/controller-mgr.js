@@ -8,7 +8,7 @@ const config = Object.assign({}, defaultConfig, {
   MSP: defaultConfig.mspID
 });
 
-console.log("Config:", config);
+// console.log("Config:", config);
 
 const controllerMap = new Map();
 
