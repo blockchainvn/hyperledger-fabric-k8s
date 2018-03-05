@@ -108,7 +108,7 @@ spec:
         - name: CORE_PEER_MSPCONFIGPATH
           value: /etc/hyperledger/fabric/msp
         - name: CORE_PEER_ADDRESSAUTODETECT
-          value: "true"
+          value: "$addressAutoDetect"
 
         workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
         ports:

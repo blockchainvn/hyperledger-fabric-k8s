@@ -198,7 +198,7 @@ def configPEERS(name, path, override, index): # name means peerid.
 	peerOffset = int((peerName.split("peer")[-1])) * 4
 	exposedPort1 = PORT_START_FROM + addressSegment + peerOffset + 1
 	exposedPort2 = PORT_START_FROM + addressSegment + peerOffset + 2
-	exposedPort3 = PORT_START_FROM + addressSegment + peerOffset + 3
+	exposedPort3 = PORT_START_FROM + addressSegment + peerOffset + 3  
 	
 	condRender(configTemplate, path + "/" + name + ".yaml", override,
 		namespace = orgName,
@@ -218,6 +218,8 @@ def configPEERS(name, path, override, index): # name means peerid.
 		nodePort3 = exposedPort3,
     pvName = orgName + "-pv",
     path = hostPath,
+    # version 1.0, 0.6 will not using address auto detect
+    addressAutoDetect = "false" if re.match(r"^(?:1\.0|0\.6)\.*", VERSION) else "true",
     peerCmd = "start --peer-chaincodedev=true" if ENV == "DEV" else "start"
 	)
 
