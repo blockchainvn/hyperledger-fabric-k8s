@@ -15,7 +15,9 @@ IMAGE_CHECK=$(docker images | grep $IMAGE_NAME)
 # use this for multi-node
 WORKING_PATH=$SHARE_FOLDER/admin
 # WORKING_PATH=$PWD
-image_policy=Never
+
+image_policy=$([[ $IMAGE_NAME != "node" ]] && echo "Never" || echo "IfNotPresent")
+
 if [[ -z $IMAGE_CHECK ]];then
   echo "Building admin image..."
   if [[ $IMAGE_NAME != "node" ]];then
@@ -24,7 +26,6 @@ if [[ -z $IMAGE_CHECK ]];then
     docker build -t $IMAGE_NAME .    
   else    
     docker pull $IMAGE_NAME
-    image_policy=IfNotPresent
   fi
 fi
 
