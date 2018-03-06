@@ -77,10 +77,10 @@ printHelp () {
     printBoldColor $BLUE  "          ./fn.sh invoke --namespace org1-v1 --channel mychannel --chaincode mycc --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
     echo
     printBoldColor $BROWN "      - 'assign' - assign org label to node"
-    printBoldColor $BLUE  "          ./fn.sh assign --node master --org org1"
+    printBoldColor $BLUE  "          ./fn.sh assign --node master --org ORG1"
     echo
     printBoldColor $BROWN "      - 'move' - move namespace to group labeled"
-    printBoldColor $BLUE  "          ./fn.sh move --namespace org1-v1 --org org1"
+    printBoldColor $BLUE  "          ./fn.sh move --namespace org1-v1 --org ORG1"
     echo
   fi
 
