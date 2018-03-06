@@ -206,9 +206,11 @@ def configPEERS(name, path, override, index): # name means peerid.
 		peerID  = peerName,
 		org = orgName, 
 		corePeerID = name,
+    # peerAddress and peerCCAddress are for chaincode container to connect
 		# peerAddress = name + ":7051",
     peerAddress = name + ":" + str(exposedPort1),
-		peerCCAddress = name + ":7052",
+		# peerCCAddress = name + ":7052",
+    peerCCAddress = name + ":" + str(exposedPort2),
 		peerGossip = name  + ":7051",
 		localMSPID = orgName.split('-')[0].capitalize()+"MSP",
 		mspPath = mspPathTemplate.format(name),
