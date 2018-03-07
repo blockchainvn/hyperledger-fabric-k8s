@@ -25,6 +25,9 @@ export FABRIC_CFG_PATH=$BASE_DIR/setupCluster
 export GOPATH=$GOPATH
 export GOBIN=$GOPATH/bin
 
+# import utils script
+. "$BASE_DIR/utils.sh"
+
 # Print the usage message
 printHelp () {
 
@@ -37,7 +40,7 @@ printHelp () {
     res=$(printHelp 0 | grep -A2 "\- '$2' \-")
     echo "$res"    
   else      
-    printBoldColor $BROWN "      - 'config' - generate channel-artifacts and crypto-config for the network${NC}${NORMAL}"
+    printBoldColor $BROWN "      - 'config' - generate channel-artifacts and crypto-config for the network"
     printBoldColor $BLUE  "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false --fabric-version 1.0.2 --share /opt/share]"    
     echo 
     printBoldColor $BROWN "      - 'scale' - scale a deployment of a namespace for the network"
@@ -91,25 +94,7 @@ printHelp () {
   exit ${1:-0}
 }
 
-# verify the result of the end-to-end test
-verifyResult() {  
-  if [ $1 -ne 0 ] ; then
-    echo "!!!!!!!!!!!!!!! "$2" !!!!!!!!!!!!!!!!"
-    echo "========= ERROR !!! FAILED to execute End-2-End Scenario ==========="
-    echo
-      exit 1
-  fi
-}
 
-printCommand(){
-  echo -e ""
-  printBoldColor $BROWN "Command:"
-  printBoldColor $BLUE "\t$1"  
-}
-
-printBoldColor(){
-  echo -e "$1${BOLD}$2${NC}${NORMAL}"
-}
 
 buildAdmin(){  
   cd admin
@@ -303,6 +288,8 @@ buildCryptoTools() {
   res=$?
   make cryptogen  
   ((res+=$?))
+  make configtxlator  
+  ((res+=$?))
   # check combind of 2 results
   verifyResult $res "Build crypto tools failed"
   echo "===================== Crypto tools built successfully ===================== "
@@ -312,6 +299,7 @@ buildCryptoTools() {
   mkdir -p ${BASE_DIR}/bin/
   cp ./build/bin/configtxgen ${BASE_DIR}/bin/
   cp ./build/bin/cryptogen ${BASE_DIR}/bin/
+  cp ./build/bin/configtxlator ${BASE_DIR}/bin/
 }
 
 setupNetwork() {
