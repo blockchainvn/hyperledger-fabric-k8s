@@ -3,12 +3,19 @@ package main
 import (
   "fmt"
   "github.com/hyperledger/fabric/core/chaincode/shim"
-  su "github.com/user/stringutil"
   "testing"
 )
 
+func StringArgsToBytesArgs(args []string) [][]byte {
+  a := make([][]byte, len(args))
+  for k, v := range args {
+    a[k] = []byte(v)
+  }
+  return a
+}
+
 func checkInit(t *testing.T, stub *shim.MockStub, args []string) {
-  res := stub.MockInit("1", su.StringArgsToBytesArgs(args))
+  res := stub.MockInit("1", StringArgsToBytesArgs(args))
   if res.Status != shim.OK {
     fmt.Println("Init failed", string(res.Message))
     t.FailNow()
@@ -28,7 +35,7 @@ func checkState(t *testing.T, stub *shim.MockStub, name string, value string) {
 }
 
 func checkQuery(t *testing.T, stub *shim.MockStub, names []string, value string) {
-  res := stub.MockInvoke("1", su.StringArgsToBytesArgs(append([]string{"get"}, names...)))
+  res := stub.MockInvoke("1", StringArgsToBytesArgs(append([]string{"get"}, names...)))
   if res.Status != shim.OK {
     fmt.Println("Query", names, "failed", string(res.Message))
     t.FailNow()
@@ -46,7 +53,7 @@ func checkQuery(t *testing.T, stub *shim.MockStub, names []string, value string)
 }
 
 func checkInvoke(t *testing.T, stub *shim.MockStub, args []string) {
-  res := stub.MockInvoke("1", su.StringArgsToBytesArgs(args))
+  res := stub.MockInvoke("1", StringArgsToBytesArgs(args))
   if res.Status != shim.OK {
     fmt.Println("Invoke", args, "failed", string(res.Message))
     t.FailNow()
@@ -84,9 +91,9 @@ func Test_Invoke(t *testing.T) {
 func Benchmark_Invoke(b *testing.B) {
   scc := new(SimpleAsset)
   stub := shim.NewMockStub("ex02", scc)
-  stub.MockInit("1", su.StringArgsToBytesArgs([]string{}))
+  stub.MockInit("1", StringArgsToBytesArgs([]string{}))
   for i := 0; i < b.N; i++ {
     args := []string{"set", "a", "100", "b", "123"}
-    stub.MockInvoke("1", su.StringArgsToBytesArgs(args))
+    stub.MockInvoke("1", StringArgsToBytesArgs(args))
   }
 }
