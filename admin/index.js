@@ -255,6 +255,79 @@ app.get("/query", function(req, res) {
     });
 });
 
+const Queue = [];
+const max = 200;
+var interval = 30;
+const controllerMychannel = controllerManager.getInstance("mychannel");
+function popout(){
+  clearTimeout(jobT);
+  
+  // let cnt = 0;  
+  // const resList = [];
+  // const keyList = [];
+  // const argumentList = ['a', 'b', 'c', 'd', 'e']
+  // while (Queue.length > 0 && cnt < max) {
+  //   var item = Queue.shift();        
+  //   // resList.push(item.res);
+  //   // keyList.push(item.argument);
+
+  //   keyList.push(item);
+
+  //   // keyList.push(argumentList[Math.floor(Math.random() * argumentList.length)])
+  //   // for invoke, keyList.push(item.req.arguments[0], item.req.arguments[1]);
+  //   // item.res.send({key: item.req.query.key});  
+  //   cnt++;
+  // }
+
+  const sliceQueue = Queue.splice(0, max);
+
+  if(sliceQueue.length){
+    const request = {
+      //targets : --- letting this default to the peers assigned to the channel
+      chaincodeId: 'mycc',
+      fcn: 'get',
+      args: sliceQueue.map(item=>item.argument)
+    };
+
+    controllerMychannel
+      .query('admin', request)
+      .then(ret => {
+        
+        const retList = ret.toString().split(",");      
+        sliceQueue.forEach((item,i)=>item.res.send(retList[i]))              
+        // console.log(retList.join(","));
+
+        // console.log(ret.toString());
+
+      })
+      .catch(err => {      
+        sliceQueue.forEach((item,i)=>item.res.status(500).send(err));     
+        // console.log(err); 
+      });
+  }
+  // then run again
+  jobT = setTimeout(function(){  
+    // console.log('This job was supposed to run each ' + interval + 'ms');
+    popout();
+  }, interval);
+}
+
+
+var jobT = setTimeout(popout, interval);
+
+
+app.get('/fastquery', function (req, res) {  
+    // res.end();
+    Queue.push({res:res,argument:req.query.argument});
+    // Queue.push(req.query.argument);
+    // console.log(Queue.length, max)
+    if(Queue.length > max) {
+      // console.log("should popout because of: " + max + " requests");
+      popout()      
+    }    
+
+});
+
 app.get("/invoke", function(req, res) {
   // const controller = controller_API(
   //   Object.assign({}, config, { channelName: req.query.channel })
