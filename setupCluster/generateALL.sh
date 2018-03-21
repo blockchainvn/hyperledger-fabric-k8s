@@ -45,12 +45,15 @@ function generateChannelArtifacts() {
 	
 	chmod -R 777 ./channel-artifacts && chmod -R 777 ./crypto-config
 
-	cp ./channel-artifacts/genesis.block ./crypto-config/ordererOrganizations/*
-	# echo "cp -r ./crypto-config $SHARE_FOLDER/ && cp -r ./channel-artifacts $SHARE_FOLDER/"
-	cp -r ./crypto-config $SHARE_FOLDER/ && cp -r ./channel-artifacts $SHARE_FOLDER/
-	# copy script for later use
-	cp -r ./scripts/* $SHARE_FOLDER/channel-artifacts/
-	#$SHARE_FOLDER mouts the remote $SHARE_FOLDER from nfs server
+  if [[ $OVERRIDE != "true" ]];then
+    # copy everything because this is the first time
+  	cp ./channel-artifacts/genesis.block ./crypto-config/ordererOrganizations/*
+  	# echo "cp -r ./crypto-config $SHARE_FOLDER/ && cp -r ./channel-artifacts $SHARE_FOLDER/"
+  	cp -r ./crypto-config $SHARE_FOLDER/ && cp -r ./channel-artifacts $SHARE_FOLDER/
+  	# copy script for later use
+  	cp -r ./scripts/* $SHARE_FOLDER/channel-artifacts/
+  	#$SHARE_FOLDER mouts the remote $SHARE_FOLDER from nfs server
+  fi
 }
 
 function generateK8sYaml (){
@@ -94,6 +97,7 @@ while getopts "c:p:s:t:o:v:e:f:" opt; do
     e)  ENV=$OPTARG
     ;;
     f)  SHARE_FOLDER=$OPTARG
+    ;;
   esac
 done
 

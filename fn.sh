@@ -284,11 +284,11 @@ buildCryptoTools() {
   assertPipInstall
     
   cd $GOPATH/src/github.com/hyperledger/fabric/
-  make configtxgen
+  CGO_LDFLAGS_ALLOW="-I.*" make configtxgen
   res=$?
-  make cryptogen  
+  CGO_LDFLAGS_ALLOW="-I.*" make cryptogen  
   ((res+=$?))
-  make configtxlator  
+  CGO_LDFLAGS_ALLOW="-I.*" make configtxlator  
   ((res+=$?))
   # check combind of 2 results
   verifyResult $res "Build crypto tools failed"
