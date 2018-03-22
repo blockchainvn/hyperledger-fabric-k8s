@@ -11,11 +11,18 @@ export FABRIC_CFG_PATH=$PWD
 ## Generates Org certs
 function generateCerts (){
 	CRYPTOGEN=$TOOLS/cryptogen
-
+  # create new material for current config
 	$PYTHON transform/assignTenant.py $1
 
-	$CRYPTOGEN generate --config=./crypto-config.yaml	
-	
+ #  if [[ $OVERRIDE == "true" ]]; then
+ #  	# extend material
+ #  	$CRYPTOGEN extend --config=./crypto-config.yaml	
+ #  else
+	# 	$CRYPTOGEN generate --config=./crypto-config.yaml	
+	# fi
+
+	# new version support extend, but we use old one for sure
+	$CRYPTOGEN generate --config=./crypto-config.yaml
 	
 	rm crypto-config.yaml
 

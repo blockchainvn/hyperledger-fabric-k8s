@@ -92,6 +92,7 @@ type Conf struct {
   Tenant      string        `yaml:"Tenant"`
   OrdererOrgs []*OrdererOrg `yaml:"OrdererOrgs"`
   PeerOrgs    []*PeerOrg    `yaml:"PeerOrgs"`
+  Channels    []*Channel    `yaml:"Channels"`
 }
 
 type PeerOrg struct {
@@ -99,6 +100,11 @@ type PeerOrg struct {
   Domain   string   `yaml:"Domain"`
   Template Template `yaml:"Template"`
   Users    Template `yaml:"Users"`
+}
+
+type Channel struct {
+  Name    string   `yaml:"Name"`
+  Domains []string `yaml:"Domains"`
 }
 
 type OrdererOrg struct {
@@ -118,9 +124,12 @@ func GenConfigtx(conf Conf, genesisProfile string) (TopLevel, error) {
   orderer, _ = GenOrderer(conf)
 
   var orgs []*Organization
+  // map types are reference types, so must init it
+  orgsMap := make(map[string]*Organization)
   for _, org := range conf.PeerOrgs {
     temporg, _ := GenOrg(org, conf.Tenant)
     orgs = append(orgs, &temporg)
+    orgsMap[org.Domain] = &temporg
   }
 
   conList := make(map[string]*Consortium, 1)
@@ -143,7 +152,31 @@ func GenConfigtx(conf Conf, genesisProfile string) (TopLevel, error) {
   topProfile := make(map[string]*Profile, 2)
   topProfile[genesisProfile] = &profGenesis
   // by default, there is a multi-channel for all
-  topProfile["MultiOrgsChannel"] = &profChannel
+  if len(conf.Channels) == 0 {
+    // default channel is MultiOrgsChannel
+    topProfile["MultiOrgsChannel"] = &profChannel
+  } else {
+    // create multiple channel
+    for _, channel := range conf.Channels {
+
+      var channelOrgs []*Organization
+
+      for _, domain := range channel.Domains {
+        if org := orgsMap[domain]; org != nil {
+          channelOrgs = append(channelOrgs, org)
+        }
+      }
+
+      // add new channel
+      topProfile[channel.Name] = &Profile{
+        Consortium: "SampleConsortium",
+        Application: &Application{
+          Organizations: channelOrgs,
+        },
+      }
+
+    }
+  }
 
   domainName := conf.OrdererOrgs[0].Domain + conf.Tenant
   topOrg := make([]*Organization, len(orgs)+1)
