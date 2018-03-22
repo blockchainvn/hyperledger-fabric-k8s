@@ -21,6 +21,18 @@ Profiles:
         AnchorPeers:
         - Host: peer0.org3-v1
           Port: 7051
+      - Name: Org4MSP
+        ID: Org4MSP
+        MSPDir: crypto-config/peerOrganizations/org4-v1/msp
+        AnchorPeers:
+        - Host: peer0.org4-v1
+          Port: 7051
+      - Name: Org5MSP
+        ID: Org5MSP
+        MSPDir: crypto-config/peerOrganizations/org5-v1/msp
+        AnchorPeers:
+        - Host: peer0.org5-v1
+          Port: 7051
   MultiOrgsOrdererGenesis:
     Orderer:
       OrdererType: solo
@@ -55,22 +67,18 @@ Profiles:
           AnchorPeers:
           - Host: peer0.org3-v1
             Port: 7051
-  Org1Org2Channel:
-    Consortium: SampleConsortium
-    Application:
-      Organizations:
-      - Name: Org1MSP
-        ID: Org1MSP
-        MSPDir: crypto-config/peerOrganizations/org1-v1/msp
-        AnchorPeers:
-        - Host: peer0.org1-v1
-          Port: 7051
-      - Name: Org2MSP
-        ID: Org2MSP
-        MSPDir: crypto-config/peerOrganizations/org2-v1/msp
-        AnchorPeers:
-        - Host: peer0.org2-v1
-          Port: 7051
+        - Name: Org4MSP
+          ID: Org4MSP
+          MSPDir: crypto-config/peerOrganizations/org4-v1/msp
+          AnchorPeers:
+          - Host: peer0.org4-v1
+            Port: 7051
+        - Name: Org5MSP
+          ID: Org5MSP
+          MSPDir: crypto-config/peerOrganizations/org5-v1/msp
+          AnchorPeers:
+          - Host: peer0.org5-v1
+            Port: 7051
 Organizations:
 - Name: OrdererOrg
   ID: Orderer0MSP
@@ -92,6 +100,18 @@ Organizations:
   MSPDir: crypto-config/peerOrganizations/org3-v1/msp
   AnchorPeers:
   - Host: peer0.org3-v1
+    Port: 7051
+- Name: Org4MSP
+  ID: Org4MSP
+  MSPDir: crypto-config/peerOrganizations/org4-v1/msp
+  AnchorPeers:
+  - Host: peer0.org4-v1
+    Port: 7051
+- Name: Org5MSP
+  ID: Org5MSP
+  MSPDir: crypto-config/peerOrganizations/org5-v1/msp
+  AnchorPeers:
+  - Host: peer0.org5-v1
     Port: 7051
 Orderer:
   OrdererType: solo

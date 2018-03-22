@@ -23,19 +23,40 @@ PeerOrgs:
     Template:
       Count: 1
     Users:
-      Count: 0
+      Count: 0      
 
-Channels:
-  - Name: MultiOrgsChannel
-    Domains: 
-      - org1
-      - org2
-      - org3
+  - Name: Org4
+    Domain: org4
+    Template:
+      Count: 1
+    Users:
+      Count: 0    
 
-  - Name: Org1Org2Channel
-    Domains: 
-      - org1
-      - org2
+  - Name: Org5
+    Domain: org5
+    Template:
+      Count: 1
+    Users:
+      Count: 0    
+
+  # - Name: Org3
+  #   Domain: org3
+  #   Template:
+  #     Count: 1
+  #   Users:
+  #     Count: 0
+
+# Channels:
+#   - Name: MultiOrgsChannel
+#     Domains: 
+#       - org1
+#       - org2
+      # - org3
+
+  # - Name: Org1Org2Channel
+  #   Domains: 
+  #     - org1
+  #     - org2
       
 # Tenant: v1
 

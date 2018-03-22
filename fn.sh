@@ -332,6 +332,76 @@ setupNetwork() {
   fi
 }
 
+signConfigBlock() {
+  # let's assumes config envelope is fixed
+  local cli_name=$(kubectl get pod -n $1 | awk '$1~/cli/{print $1}' | head -1)
+  if [[ -z $cli_name ]];then
+    echo -e "Cli pod not found, you must run ${BOLD}./fn network --namespace $1${NORMAL} first!"
+    exit 1
+  fi
+  kubectl exec -it $cli_name -n $1 -- peer channel signconfigtx -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS
+  printCommand "kubectl exec -it $cli_name -n $1 -- peer channel signconfigtx -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS"
+}
+
+addOrganization() {
+  # get org name space
+  local ORG_NAMESPACE=${args[0]}
+  local MSPID=$(echo ${ORG_NAMESPACE%%-*} | awk '{for(i=1;i<=NF;i++){ $i=toupper(substr($i,1,1)) substr($i,2) }}1')MSP
+  local pid=$(ps ax | grep configtxlator | grep -v grep | awk '{print $1}')
+  if [[ -z $pid ]];then
+    ${BASE_DIR}/bin/configtxlator start &
+    pid=$!
+  fi
+  
+  local port=$(lsof -Pan -p $pid -i | grep -o '*:[0-9]\+' | cut -d':' -f 2)
+  local configtxlator_base="http://127.0.0.1:$port"
+
+  cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
+  if [[ ! -z $cli_name ]];then   
+    # go to channel-artifacts folder
+    cd $SHARE_FOLDER/channel-artifacts
+    # check jq program regradless os
+    checkJQProgram
+    # Step1: fetch config block
+    kubectl exec -it $cli_name -n $NAMESPACE -- peer channel fetch config config_block.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer channel fetch config config_block.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME"
+    # Step2: move config block to share folder
+    kubectl exec -it $cli_name -n $NAMESPACE -- mv config_block.pb channel-artifacts/
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- mv config_block.pb channel-artifacts/"
+    # Step3: calculate changes
+    # already export FABRIC_CFG_PATH in current session
+    ${BASE_DIR}/bin/configtxgen -printOrg $MSPID > ${MSPID}.json    
+    curl -X POST --data-binary @config_block.pb $configtxlator_base/protolator/decode/common.Block > config_block.json
+    jq .data.data[0].payload.data.config config_block.json > config.json
+    jq -s '.[0] * {"channel_group":{"groups":{"Application":{"groups": {"'$MSPID'":.[1]}}}}}' config.json ${MSPID}.json > updated_config.json
+    curl -X POST --data-binary @config.json $configtxlator_base/protolator/encode/common.Config > config.pb
+    curl -X POST --data-binary @updated_config.json $configtxlator_base/protolator/encode/common.Config > updated_config.pb
+    curl -X POST -F original=@config.pb -F updated=@updated_config.pb $configtxlator_base/configtxlator/compute/update-from-configs -F channel=$CHANNEL_NAME > config_update.pb
+    curl -X POST --data-binary @config_update.pb $configtxlator_base/protolator/decode/common.ConfigUpdate > config_update.json
+    echo '{"payload":{"header":{"channel_header":{"channel_id":"'$CHANNEL_NAME'", "type":2}},"data":{"config_update":'$(cat config_update.json)'}}}' > config_update_as_envelope.json
+    curl -X POST --data-binary @config_update_as_envelope.json $configtxlator_base/protolator/encode/common.Envelope > config_update_as_envelope.pb
+
+    # Step3: sign new config
+    # we need to get all msp in the write_set config then do the signing
+    mspids=($(jq '.payload.data.config_update.write_set.groups.Application.groups' config_update_as_envelope.json  | jq 'keys[]'))
+    for i in "${mspids[@]}";do
+      # include quote last character    
+      signConfigBlock $(echo ${i:1:${#i}-5} | tr A-Z a-z)-${NAMESPACE#*-}    
+    done 
+
+    # Step3: update new config
+    kubectl exec -it $cli_name -n $NAMESPACE -- peer channel update -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer channel update -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME"
+
+    res=$?  
+    verifyResult $res "Add organization failed"
+    echo "===================== Add organization successfully ===================== "
+    echo
+  else
+    echo "Cli pod not found" 1>&2
+  fi
+}
+
 # this one is for development phrase
 createChaincodeDeploymentDev() {
   # DEV mode can instantiate until peer success 
@@ -866,6 +936,9 @@ case "${METHOD}" in
   ;;
   network)
     setupNetwork
+  ;;
+  addOrg)
+    addOrganization
   ;;
   instantiate)
     updateChaincode instantiate
