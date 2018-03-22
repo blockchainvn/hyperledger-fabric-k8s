@@ -56,7 +56,7 @@ printHelp () {
     printBoldColor $BLUE  "          ./fn.sh admin --namespace org1-v1 --port 30009 [--mode=up|down]"
     echo
     printBoldColor $BROWN "      - 'network' - setup the network with kubernetes"
-    printBoldColor $BLUE  "          ./fn.sh network [apply|down]"
+    printBoldColor $BLUE  "          ./fn.sh network [apply|down|delete|up] [--namespace org1-v1]"
     echo 
     printBoldColor $BROWN "      - 'bash' - go inside bash environment of a container matching selector"
     printBoldColor $BLUE  "          ./fn.sh bash cli 'peer channel list' --namespace org1-v1"
@@ -304,7 +304,8 @@ buildCryptoTools() {
 
 setupNetwork() {
   cd setupCluster
-  if [[ $MODE == 'down' ]];then
+
+  if [[ $MODE == 'down' ]];then    
     python transform/delete.py
 
     echo "Cleaning chaincode images and container..."
@@ -325,7 +326,8 @@ setupNetwork() {
     rm -rf /data/ca/* /data/peer/* /data/orderer/* /data/couchdb/* /data/kafka/*
     echo 
   else
-    python transform/run.py $MODE
+    # can run up, delete an organization
+    python transform/run.py $MODE $NAMESPACE
   fi
 }
 
@@ -822,7 +824,7 @@ esac
 ENV=$(getArgument "env" PROD)
 SHARE_FOLDER=$(getArgument "share" /opt/share)
 CHANNEL_NAME=$(getArgument "channel" mychannel)
-NAMESPACE=$(getArgument "namespace" idp1-v1)
+NAMESPACE=$(getArgument "namespace")
 PEER_ADDRESS=$(getArgument "peer" peer0.${NAMESPACE}:7051) 
 # by default get ternant by deleting the leading string of namespace
 ORDERER_ADDRESS=$(getArgument "orderer" orderer0.orgorderer-${NAMESPACE#*-}:7050)

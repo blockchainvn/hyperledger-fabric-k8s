@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
 	# if we run for 1 organization, in adding mode
 	# using convert indentation to tab to avoid indent error
-	if len(sys.argv) > 2:
+	if len(sys.argv) > 2 and sys.argv[2]:
 		namespace = sys.argv[2]
 		orgPath = os.path.join(tc.PEER, namespace)
 		runPeer(orgPath, namespace)
