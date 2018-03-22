@@ -328,6 +328,7 @@ setupNetwork() {
   else
     # can run up, delete an organization
     python transform/run.py $MODE $NAMESPACE
+    printCommand "python transform/run.py $MODE $NAMESPACE"
   fi
 }
 
