@@ -350,14 +350,13 @@ addOrganization() {
   # get org name space
   local ORG_NAMESPACE=${args[0]}
   local MSPID=$(echo ${ORG_NAMESPACE%%-*} | awk '{for(i=1;i<=NF;i++){ $i=toupper(substr($i,1,1)) substr($i,2) }}1')MSP
-  
+  local pid=$(ps ax | grep configtxlator | grep -v grep | awk '{print $1}')
   # if not have configtxlator then start it and wait 3 seconds
   if [[ -z $pid ]];then
     ${BASE_DIR}/bin/configtxlator start &
     sleep 3
+    pid=$(ps ax | grep configtxlator | grep -v grep | awk '{print $1}')
   fi
-
-  local pid=$(ps ax | grep configtxlator | grep -v grep | awk '{print $1}')
   
   local port=$(lsof -Pan -p $pid -i | grep -o '*:[0-9]\+' | cut -d':' -f 2)
   local configtxlator_base="http://127.0.0.1:$port"
