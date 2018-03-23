@@ -82,6 +82,9 @@ printHelp () {
     printBoldColor $BROWN "      - 'assign' - assign org label to node"
     printBoldColor $BLUE  "          ./fn.sh assign --node master --org ORG1"
     echo
+    printBoldColor $BROWN "      - 'addOrg' - add org to channel"
+    printBoldColor $BLUE  "          ./fn.sh addOrg org3-v1 --namespace org1-v1 --channel mychannel"
+    echo
     printBoldColor $BROWN "      - 'move' - move namespace to group labeled"
     printBoldColor $BLUE  "          ./fn.sh move --namespace org1-v1 --org ORG1"
     echo
@@ -355,7 +358,7 @@ addOrganization() {
   
   local port=$(lsof -Pan -p $pid -i | grep -o '*:[0-9]\+' | cut -d':' -f 2)
   local configtxlator_base="http://127.0.0.1:$port"
-
+    
   cli_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/cli/{print $1}' | head -1)
   if [[ ! -z $cli_name ]];then   
     # go to channel-artifacts folder
