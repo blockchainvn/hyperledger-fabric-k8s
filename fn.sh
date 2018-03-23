@@ -355,6 +355,7 @@ addOrganization() {
   if [[ -z $pid ]];then
     ${BASE_DIR}/bin/configtxlator start &
     sleep 3
+    # no need to run [while loop], 3 seconds are good enough, if not then the second time will be success as well
     pid=$(ps ax | grep configtxlator | grep -v grep | awk '{print $1}')
   fi
   
