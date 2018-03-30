@@ -25,6 +25,13 @@ PeerOrgs:
     Users:
       Count: 0      
 
+  - Name: Org4
+    Domain: org4
+    Template:
+      Count: 1
+    Users:
+      Count: 0    
+
   # - Name: Org4
   #   Domain: org4
   #   Template:
