@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright KBank Corp All Rights Reserved
+# Copyright agiletech.vn All Rights Reserved
 #
 # SPDX-License-Identifier: Apache-2.0
 #
