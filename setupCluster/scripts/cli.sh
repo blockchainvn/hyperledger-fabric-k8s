@@ -116,6 +116,7 @@ while getopts "o:C:n:v:c:d:P:m:" opt; do
     P)  POLICY=$OPTARG
     ;;
     m)  MODE=$OPTARG
+    ;;
   esac
 done
 
