@@ -100,7 +100,9 @@ cp -r ./chaincode /opt/share/channel-artifacts/
 
 ```sh
 # run ./fn.sh help admin for more information
-./fn.sh admin --port 31999
+./fn.sh admin --port 30009 --mode apply
+# benchmark the api
+wrk -t12 -c5000 -d10s http://localhost:30009/fastquery?chaincode=mycc&channel=mychannel&user=PeerAdmin&method=query&argument=a
 ```
 
 **Step9: Scaling**

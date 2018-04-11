@@ -11,26 +11,19 @@ PeerOrgs:
       Count: 1
     Users:
       Count: 0
-  - Name: Org2
-    Domain: org2
-    Template:
-      Count: 1
-    Users:
-      Count: 0
+  # - Name: Org2
+  #   Domain: org2
+  #   Template:
+  #     Count: 1
+  #   Users:
+  #     Count: 0
 
-  - Name: Org3
-    Domain: org3
-    Template:
-      Count: 1
-    Users:
-      Count: 0      
-
-  - Name: Org4
-    Domain: org4
-    Template:
-      Count: 1
-    Users:
-      Count: 0    
+  # - Name: Org3
+  #   Domain: org3
+  #   Template:
+  #     Count: 1
+  #   Users:
+  #     Count: 0   
 
   # - Name: Org4
   #   Domain: org4

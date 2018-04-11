@@ -71,7 +71,8 @@ spec:
         # - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
         #   value: cbr0
         - name: CORE_LEDGER_STATE_STATEDATABASE
-          value: "CouchDB"
+          # value: "CouchDB"
+          value: "LevelDB"
         - name: CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS
           value: "localhost:5984"
           # value: "$peerID-couchdb.$namespace:5984"

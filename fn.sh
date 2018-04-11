@@ -148,7 +148,7 @@ setupConfig() {
   #   go get gopkg.in/yaml.v2
   #   # glide install    
   # fi
-  echo $BASE_DIR
+  # echo $BASE_DIR
   # run command
   go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml -Profile $profile
   printCommand "go run genConfig.go -In ${BASE_DIR}/$filePath -Out ../configtx.yaml -Profile $profile"
