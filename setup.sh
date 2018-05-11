@@ -37,20 +37,21 @@ fi
 
 # kubenetes
 if [ ! `command -v kubectl` ];then
-  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -  
+  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add 
 #   cat <<EOF > /etc/apt/sources.list.d/kubernetes.list  
 # deb http://apt.kubernetes.io/ kubernetes-xenial main  
 # EOF
-  cat <<EOF > /etc/apt/sources.list.d/kubernetes.list  
-deb https://packages.cloud.google.com/apt/ kubernetes-xenial main  
-EOF
+#   cat <<EOF > /etc/apt/sources.list.d/kubernetes.list  
+# deb https://packages.cloud.google.com/apt/ kubernetes-xenial main  
+# EOF
 
+  sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
   sudo apt-get update
   sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
 
   init kube
   swapoff -a
-  kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address $(ifconfig eth0 | grep 'inet addr'| cut -d':' -f2 | awk '{print $1}')
+  kubeadm init --pod-network-cidr 10.244.0.0/16 # --apiserver-advertise-address $(ifconfig eth0 | grep 'inet addr'| cut -d':' -f2 | awk '{print $1}')
   read -n 1 -s -r -p "Note join command & Press any key to continue"
 
   # you can use this script to generate token again
