@@ -899,7 +899,7 @@ esac
 
 # process methods and arguments, by default first is channel and next is org_id
 ENV=$(getArgument "env" PROD)
-SHARE_FOLDER=$(getArgument "share" /opt/share)
+SHARE_FOLDER=$(getArgument "share" /private/share)
 CHANNEL_NAME=$(getArgument "channel" mychannel)
 NAMESPACE=$(getArgument "namespace")
 PEER_ADDRESS=$(getArgument "peer" peer0.${NAMESPACE}:7051) 

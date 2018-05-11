@@ -4,3 +4,4 @@ bin/
 admin/hfc-key-store/
 node_modules
 **/*.pyc
+setupCluster/configtx.yaml
