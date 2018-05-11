@@ -6,7 +6,7 @@ export LC_TYPE=en_US.UTF-8
 
 # docker ce
 if [ ! `command -v docker` ];then
-  sudo apt-get install \
+  sudo apt-get install -y \
       apt-transport-https \
       ca-certificates \
       curl \
@@ -16,14 +16,19 @@ if [ ! `command -v docker` ];then
 
   sudo apt-key fingerprint 0EBFCD88
 
+  docker_version=stable
+  if [ `lsb_release -a 2>&1 | grep 'Release' | awk '$2~/18/{print $2}'` != '' ];then 
+    docker_version=test
+  fi
+
   sudo add-apt-repository \
      "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
      $(lsb_release -cs) \
-     stable"
+     $docker_version"
 
   sudo apt-get update
 
-  sudo apt-get install docker-ce
+  sudo apt-get install -y docker-ce
 
   read -n 1 -s -r -p "Press any key to continue"
 else
