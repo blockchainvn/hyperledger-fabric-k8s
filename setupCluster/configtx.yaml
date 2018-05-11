@@ -9,6 +9,12 @@ Profiles:
         AnchorPeers:
         - Host: peer0.org1-v1
           Port: 7051
+      - Name: Org2MSP
+        ID: Org2MSP
+        MSPDir: crypto-config/peerOrganizations/org2-v1/msp
+        AnchorPeers:
+        - Host: peer0.org2-v1
+          Port: 7051
   MultiOrgsOrdererGenesis:
     Orderer:
       OrdererType: solo
@@ -16,6 +22,7 @@ Profiles:
       - orderer0.orgorderer-v1:7050
       BatchTimeout: 2s
       BatchSize:
+        MaxMessageCount: 1000
         AbsoluteMaxBytes: 103809024
         PreferredMaxBytes: 524288
       Organizations:
@@ -31,6 +38,12 @@ Profiles:
           AnchorPeers:
           - Host: peer0.org1-v1
             Port: 7051
+        - Name: Org2MSP
+          ID: Org2MSP
+          MSPDir: crypto-config/peerOrganizations/org2-v1/msp
+          AnchorPeers:
+          - Host: peer0.org2-v1
+            Port: 7051
 Organizations:
 - Name: OrdererOrg
   ID: Orderer0MSP
@@ -41,12 +54,19 @@ Organizations:
   AnchorPeers:
   - Host: peer0.org1-v1
     Port: 7051
+- Name: Org2MSP
+  ID: Org2MSP
+  MSPDir: crypto-config/peerOrganizations/org2-v1/msp
+  AnchorPeers:
+  - Host: peer0.org2-v1
+    Port: 7051
 Orderer:
   OrdererType: solo
   Addresses:
   - orderer0.orgorderer-v1:7050
   BatchTimeout: 2s
   BatchSize:
+    MaxMessageCount: 1000
     AbsoluteMaxBytes: 103809024
     PreferredMaxBytes: 524288
   Organizations:

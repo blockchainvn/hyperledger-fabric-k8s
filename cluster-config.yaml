@@ -2,6 +2,7 @@ Tenant: v1
 OrdererOrgs:
   - Name: Orderer
     Domain: orgorderer 
+    MaxMessageCount: 1000
     Template:
       Count: 1
 PeerOrgs:
@@ -11,12 +12,12 @@ PeerOrgs:
       Count: 1
     Users:
       Count: 0
-  # - Name: Org2
-  #   Domain: org2
-  #   Template:
-  #     Count: 1
-  #   Users:
-  #     Count: 0
+  - Name: Org2
+    Domain: org2
+    Template:
+      Count: 1
+    Users:
+      Count: 0
 
   # - Name: Org3
   #   Domain: org3
@@ -53,12 +54,11 @@ PeerOrgs:
   #   Users:
   #     Count: 0
 
-# Channels:
-#   - Name: MultiOrgsChannel
-#     Domains: 
-#       - org1
-#       - org2
-#       - org3
+Channels:
+  - Name: MultiOrgsChannel
+    Domains: 
+      - org1
+      - org2
 
 #   - Name: Org1Org2Channel
 #     Domains: 
