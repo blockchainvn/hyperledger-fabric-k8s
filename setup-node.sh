@@ -52,7 +52,7 @@ if [ ! `command -v kubectl` ];then
   
   sudo apt-get update  
   sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
-
+  swapoff -a
 else 
   kubectl cluster-info
 fi
