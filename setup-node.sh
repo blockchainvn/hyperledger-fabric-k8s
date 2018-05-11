@@ -6,8 +6,9 @@ export LC_TYPE=en_US.UTF-8
 
 # docker ce
 if [ ! `command -v docker` ];then
-  apt install docker.io
-  systemctl enable docker
+  sudo apt install docker.io
+  sudo systemctl start docker
+  sudo systemctl enable docker
   # sudo apt-get install \
   #     apt-transport-https \
   #     ca-certificates \

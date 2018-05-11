@@ -6,29 +6,33 @@ export LC_TYPE=en_US.UTF-8
 
 # docker ce
 if [ ! `command -v docker` ];then
-  sudo apt-get install -y \
-      apt-transport-https \
-      ca-certificates \
-      curl \
-      software-properties-common
+  sudo apt install docker.io
+  sudo systemctl start docker
+  sudo systemctl enable docker
+  
+  # sudo apt-get install -y \
+  #     apt-transport-https \
+  #     ca-certificates \
+  #     curl \
+  #     software-properties-common
 
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  # curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
-  sudo apt-key fingerprint 0EBFCD88
+  # sudo apt-key fingerprint 0EBFCD88
 
-  docker_version=stable
-  if [ `lsb_release -a 2>&1 | grep 'Release' | awk '$2~/18/{print $2}'` != '' ];then 
-    docker_version=test
-  fi
+  # docker_version=stable
+  # if [ `lsb_release -a 2>&1 | grep 'Release' | awk '$2~/18/{print $2}'` != '' ];then 
+  #   docker_version=test
+  # fi
 
-  sudo add-apt-repository \
-     "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-     $(lsb_release -cs) \
-     $docker_version"
+  # sudo add-apt-repository \
+  #    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+  #    $(lsb_release -cs) \
+  #    $docker_version"
 
-  sudo apt-get update
+  # sudo apt-get update
 
-  sudo apt-get install -y docker-ce
+  # sudo apt-get install -y docker-ce
 
   read -n 1 -s -r -p "Press any key to continue"
 else
