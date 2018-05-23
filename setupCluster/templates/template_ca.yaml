@@ -39,7 +39,7 @@ spec:
          command: ["sh"]
          args:  ["-c", ${command}]
          volumeMounts:
-          {% if nsfServer|length > 0 %} 
+          {% if nfsServer|length > 0 %} 
           - mountPath: /etc/hyperledger/fabric-ca-server-config/ca
             name: certificate
             subPath: ${caPath}
@@ -50,7 +50,7 @@ spec:
           # - mountPath: /etc/hyperledger/fabric-ca-server
           #   name: data
       volumes:
-        {% if nsfServer|length > 0 %}  
+        {% if nfsServer|length > 0 %}  
         - name: certificate
           persistentVolumeClaim:
             claimName: ${pvName}

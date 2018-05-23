@@ -10,7 +10,7 @@ PORT_START_FROM = 30500
 ZOOKEEPER_PORT_START_FROM = 32750
 KAFKA_PORT_START_FROM = 32730
 GAP = 100  #interval for worker's port
-NSF_SERVER = '192.168.99.1'
+NFS_SERVER = '192.168.99.1'
 VERSION = '1.0.2'
 TLS_ENABLED = 'false'
 ENV = 'DEV'
@@ -32,7 +32,7 @@ def render(src, dest, **kw):
 		version = VERSION, 
 		tlsEnabled = TLS_ENABLED, 
 		shareFolder = SHARE_FOLDER, 
-		nsfServer = NSF_SERVER,
+		nfsServer = NFS_SERVER,
 		**kw)    
 	with open(dest, 'w') as f:
 		f.write(t.render(**options))

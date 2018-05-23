@@ -1,4 +1,4 @@
-{% if nsfServer|length > 0 %}
+{% if nfsServer|length > 0 %}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -13,7 +13,7 @@ spec:
     #   path: ${shareFolder}/channel-artifacts
     nfs: 
       path: ${shareFolder}/channel-artifacts
-      server: ${nsfServer}
+      server: ${nfsServer}
       # server: 192.168.43.141 # change to your nfs server ip here.
 ---
 
@@ -42,7 +42,7 @@ spec:
        - ReadWriteMany
     nfs:
       path: ${shareFolder}/crypto-config/ordererOrganizations/${orderer0}/msp/tlscacerts
-      server: ${nsfServer}
+      server: ${nfsServer}
 ---
 
 apiVersion: v1
@@ -112,7 +112,7 @@ spec:
           volumeMounts:
             - mountPath: /host/var/run/
               name: run
-            {% if nsfServer|length > 0 %}
+            {% if nfsServer|length > 0 %}
             - mountPath: /etc/hyperledger/fabric/msp
               name: certificate
               subPath: ${mspPath}
@@ -131,7 +131,7 @@ spec:
               name: artifacts
       volumes:                
 
-        {% if nsfServer|length > 0 %}
+        {% if nfsServer|length > 0 %}
         - name: orderercertificate
           persistentVolumeClaim:
               claimName: ${orderer0pv}

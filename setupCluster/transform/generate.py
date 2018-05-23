@@ -69,8 +69,8 @@ def allInOne(override, file):
 
 def processArguments():
 	parser = argparse.ArgumentParser(description='Generate network artifacts.')	
-	parser.add_argument('--nfs-server', dest='NSF_SERVER', type=str,
-	                    help='NSF_SERVER IP (default: ' + tc.NSF_SERVER + ')')
+	parser.add_argument('--nfs-server', dest='NFS_SERVER', type=str,
+	                    help='NFS_SERVER IP (default: ' + tc.NFS_SERVER + ')')
 	parser.add_argument('--version', dest='VERSION', type=str,
 	                    help='Fabric version (default: ' + tc.VERSION + ')')
 	parser.add_argument('--tls-enabled', dest='TLS_ENABLED', type=str,
@@ -91,14 +91,16 @@ def processArguments():
 
 	args = parser.parse_args()	
 
-	tc.NSF_SERVER = args.NSF_SERVER or tc.NSF_SERVER
+	tc.NFS_SERVER = args.NFS_SERVER or tc.NFS_SERVER
+	if tc.NFS_SERVER == 'false':
+		tc.NFS_SERVER = ''
 	tc.VERSION = args.VERSION or tc.VERSION
 	tc.TLS_ENABLED = args.TLS_ENABLED or tc.TLS_ENABLED
 	tc.ENV = args.ENV or tc.ENV
 	tc.SHARE_FOLDER = args.SHARE_FOLDER or tc.SHARE_FOLDER
 
-	print('Setup network NSF_SERVER:{0}, VERSION:{1}, TLS_ENABLED:{2}, OVERRIDE:{3}'
-		.format(tc.NSF_SERVER, tc.VERSION, tc.TLS_ENABLED, args.OVERRIDE))	
+	print('Setup network NFS_SERVER:{0}, VERSION:{1}, TLS_ENABLED:{2}, OVERRIDE:{3}'
+		.format(tc.NFS_SERVER, tc.VERSION, tc.TLS_ENABLED, args.OVERRIDE))	
 	
 	return args
 

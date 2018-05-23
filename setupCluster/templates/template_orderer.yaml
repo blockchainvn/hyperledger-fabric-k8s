@@ -53,7 +53,7 @@ spec:
          - containerPort: 7050
         command: ["orderer"]
         volumeMounts:
-          {% if nsfServer|length > 0 %}
+          {% if nfsServer|length > 0 %}
           - mountPath: /var/hyperledger/orderer/msp 
             name: certificate
             subPath: ${mspPath}
@@ -78,7 +78,7 @@ spec:
           #   name: data
           {% endif %}
       volumes:
-        {% if nsfServer|length > 0 %}
+        {% if nfsServer|length > 0 %}
         - name: certificate
           persistentVolumeClaim:
             claimName: ${pvName}

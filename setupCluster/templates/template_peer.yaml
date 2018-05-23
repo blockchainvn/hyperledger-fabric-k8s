@@ -126,7 +126,7 @@ spec:
         # args: ["sleep 5; peer node start"]
         args: ["sleep 5; peer node ${peerCmd}"] 
         volumeMounts:
-          {% if nsfServer|length > 0 %}   
+          {% if nfsServer|length > 0 %}   
           - mountPath: /etc/hyperledger/fabric/msp      
             name: certificate
             subPath: ${mspPath}
@@ -149,7 +149,7 @@ spec:
           - mountPath: /host/var/run/
             name: run
       volumes:
-        {% if nsfServer|length > 0 %}
+        {% if nfsServer|length > 0 %}
         - name: certificate
           persistentVolumeClaim:
             claimName: ${pvName}        

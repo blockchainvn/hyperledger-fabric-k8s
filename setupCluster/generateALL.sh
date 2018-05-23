@@ -93,7 +93,7 @@ while getopts "c:p:s:t:o:v:e:f:" opt; do
     ;;
     p)  PROFILE=$OPTARG
     ;;
-    s)  NSF_SERVER=$OPTARG
+    s)  NFS_SERVER=$OPTARG
     ;;
     t)  TLS_ENABLED=$OPTARG
     ;;
@@ -113,12 +113,12 @@ done
 # PROFILE=$2
 : ${PROFILE:=MultiOrgsOrdererGenesis}
 
-# NSF_SERVER=$3
-NSF_DEFAULT_SERVER=$(ifconfig | awk '/inet /{print $2}' | grep -v 127.0.0.1 | tail -1)
-: ${NSF_SERVER:=$NSF_DEFAULT_SERVER}
+# NFS_SERVER=$3
+NFS_DEFAULT_SERVER=$(ifconfig | awk '/inet /{print $2}' | grep -v 127.0.0.1 | tail -1)
+: ${NFS_SERVER:=$NFS_DEFAULT_SERVER}
 
 
-# echo "NSF SERVER: $NSF_SERVER, TLS_ENABLED: $TLS_ENABLED"
+# echo "NFS SERVER: $NFS_SERVER, TLS_ENABLED: $TLS_ENABLED"
 # echo
 
 clean
@@ -126,5 +126,5 @@ generateCerts $CONFIG_FILE
 sleep 1
 generateChannelArtifacts
 generateKafkaDir
-generateK8sYaml $NSF_SERVER $TLS_ENABLED
+generateK8sYaml $NFS_SERVER $TLS_ENABLED
 extend
