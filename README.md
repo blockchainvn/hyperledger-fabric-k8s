@@ -37,7 +37,7 @@ cp -r ./chaincode /opt/share/channel-artifacts/
 
 ==============
 
-**Step1: Build configtx.yaml, kubernetes files for the network**
+**Step1: Build configtx.yaml, kubernetes files for the network**  
 you need to setup nfs server if using --nfs-server option
 
 ```sh
