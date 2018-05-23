@@ -1,4 +1,5 @@
-from string import Template
+# from string import Template
+from jinja2 import Environment as Template
 #from pathlib import Path
 import re
 import string
@@ -21,10 +22,21 @@ PEER = os.path.join(BASEDIR, "../crypto-config/peerOrganizations")
 KAFKA = os.path.join(BASEDIR, "../crypto-config/kafka")
 
 def render(src, dest, **kw):
-	t = Template(open(src, 'r').read())	
-	options = dict(version = VERSION, tlsEnabled = TLS_ENABLED, shareFolder = SHARE_FOLDER, **kw)    
+	# t = Template(open(src, 'r').read())	
+	t = Template(
+    line_statement_prefix='%',
+    variable_start_string="${",
+    variable_end_string="}"
+	).from_string(open(src, 'r').read())	
+	options = dict(
+		version = VERSION, 
+		tlsEnabled = TLS_ENABLED, 
+		shareFolder = SHARE_FOLDER, 
+		nsfServer = NSF_SERVER,
+		**kw)    
 	with open(dest, 'w') as f:
-		f.write(t.substitute(**options))
+		f.write(t.render(**options))
+		# f.write(t.substitute(**options))
 
 	##### For testing ########################
 	##testDest = dest.split("/")[-1]	##
@@ -111,8 +123,7 @@ def configORGS(name, path, orderer0, override, index): # name means if of org, p
 
 	condRender(namespaceTemplate, path + "/" + name + "-namespace.yaml", override,
 		org = name,
-		pvName = name + "-pv",
-		nsfServer = NSF_SERVER,
+		pvName = name + "-pv",		
 		path = hostPath
 	)
 
@@ -123,18 +134,19 @@ def configORGS(name, path, orderer0, override, index): # name means if of org, p
 		
 		mspPathTemplate = 'users/Admin@{}/msp'
 		tlsPathTemplate =  'users/Admin@{}/tls'		
-
+		
+		orderer0pv = orderer0 + "-" + name + "-pv"
 
 		condRender(cliTemplate, path + "/" + name + "-cli.yaml", override,
 			name = "cli",
 			namespace = name,
 			mspPath = mspPathTemplate.format(name),
 			tlsPath = tlsPathTemplate.format(name),
-			pvName = name + "-pv",
-			nsfServer = NSF_SERVER,
+			pvName = name + "-pv",			
       artifactsName = name + "-artifacts-pv",
 			peerAddress = "peer0." + name + ":7051",
 			mspid = name.split('-')[0].capitalize()+"MSP",
+			orderer0pv = orderer0pv,
 			orderer0 = orderer0,
 			path = hostPath
 		)

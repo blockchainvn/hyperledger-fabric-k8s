@@ -41,7 +41,7 @@ printHelp () {
     echo "$res"    
   else      
     printBoldColor $BROWN "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    printBoldColor $BLUE  "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--override true --tls-enabled false --fabric-version 1.0.2 --share /opt/share]"    
+    printBoldColor $BLUE  "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--env [DEV|PROD] --override true --tls-enabled false --fabric-version latest --share /opt/share]"    
     echo 
     printBoldColor $BROWN "      - 'scale' - scale a deployment of a namespace for the network"
     printBoldColor $BLUE  "          ./fn.sh scale --deployment=orderer0-orgorderer-v1 --min=2 --max=10"    
@@ -132,7 +132,7 @@ setupConfig() {
   local filePath=$(getArgument "file" cluster-config.yaml)
   local tlsEnabled=$(getArgument "tls_enabled" false)
   local override=$(getArgument "override" false)
-  local fabric_version=$(getArgument "fabric_version" 1.0.2)
+  local fabric_version=$(getArgument "fabric_version" latest)
 
   cd setupCluster/genConfig
 
@@ -241,8 +241,6 @@ assertGoInstall(){
       fi  
       apt install libtool libltdl-dev -y
     fi  
-
-    apt install libtool libltdl-dev
     mkdir -p $GOPATH/src    
     cd $GOPATH/src
     # update GOPATH
@@ -277,7 +275,8 @@ assertPipInstall(){
       sudo apt-get install python-setuptools -y   
     fi
     sudo easy_install pip
-    pip install pyyaml
+    # pip install pyyaml
+    pip install -r $BASE_DIR/setupCluster/transform/requirements.txt 
   fi
 }
 

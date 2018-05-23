@@ -9,6 +9,11 @@ if [ ! `command -v docker` ];then
   sudo apt install docker.io
   sudo systemctl start docker
   sudo systemctl enable docker
+
+  # # latest version that is stable: 17.05
+  # curl -O https://download.docker.com/linux/ubuntu/dists/xenial/pool/edge/amd64/docker-ce_17.05.0~ce-0~ubuntu-xenial_amd64.deb
+  # sudo dpkg -i docker-ce_17.05.0~ce-0~ubuntu-xenial_amd64.deb
+
   # sudo apt-get install \
   #     apt-transport-https \
   #     ca-certificates \

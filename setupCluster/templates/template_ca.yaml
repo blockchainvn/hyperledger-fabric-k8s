@@ -1,66 +1,80 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: $namespace
+  namespace: ${namespace}
   name: ca
 spec:
+  selector:
+    matchLabels:
+      app: hyperledger
+      role: ca
+      org: ${namespace}
+      name: ca
   replicas: 1
   strategy: {}
   template:
     metadata:
       labels:
-       app: hyperledger
-       role: ca
-       org: $namespace
-       name: ca
+        app: hyperledger
+        role: ca
+        org: ${namespace}
+        name: ca
     spec:
       containers:
        - name: ca
-         image: hyperledger/fabric-ca:x86_64-$version
+         image: hyperledger/fabric-ca:${version}
          env: 
          - name:  FABRIC_CA_HOME
            value: /etc/hyperledger/fabric-ca-server
          - name:  FABRIC_CA_SERVER_CA_NAME
            value: ca
          - name:  FABRIC_CA_SERVER_TLS_ENABLED
-           value: "$tlsEnabled"
+           value: "${tlsEnabled}"
          - name:  FABRIC_CA_SERVER_TLS_CERTFILE
-           value: $tlsCert
+           value: ${tlsCert}
          - name:  FABRIC_CA_SERVER_TLS_KEYFILE
-           value: $tlsKey
+           value: ${tlsKey}
          ports:
           - containerPort: 7054
          command: ["sh"]
-         args:  ["-c", $command]
+         args:  ["-c", ${command}]
          volumeMounts:
+          {% if nsfServer|length > 0 %} 
+          - mountPath: /etc/hyperledger/fabric-ca-server-config/ca
+            name: certificate
+            subPath: ${caPath}
+          {% else %}
           - mountPath: /etc/hyperledger/fabric-ca-server-config
             name: certificate
-            # subPath: $caPath
+          {% endif %}            
           # - mountPath: /etc/hyperledger/fabric-ca-server
           #   name: data
       volumes:
-         - name: certificate
-           hostPath:
-             path: $path/$caPath
-
-         - name: data
-           hostPath:
-             # path: $shareFolder/ca/$namespace
-             path: /data/ca/$namespace
-           # persistentVolumeClaim:
-               # claimName: $pvName 
+        {% if nsfServer|length > 0 %}  
+        - name: certificate
+          persistentVolumeClaim:
+            claimName: ${pvName}
+        {% else %}
+        - name: certificate
+          hostPath:
+            path: ${path}/${caPath}
+        {% endif %}
+        #  - name: data
+          #  hostPath:
+             # path: ${shareFolder}/ca/${namespace}
+            #  path: /data/ca/${namespace}
 
 --- 
 apiVersion: v1
 kind: Service
 metadata:
-   namespace: $namespace
+   namespace: ${namespace}
    name: ca
 spec:
  selector:
    app: hyperledger
    role: ca
-   org: $namespace
+   org: ${namespace}
    name: ca
  type: NodePort
  # type: ClusterIP
@@ -69,4 +83,4 @@ spec:
      protocol: TCP
      port: 7054
      targetPort: 7054
-     nodePort: $nodePort
+     nodePort: ${nodePort}

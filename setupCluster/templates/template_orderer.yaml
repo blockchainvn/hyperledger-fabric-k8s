@@ -1,11 +1,17 @@
 ###channel-artifacts is no room to place, however bind it to the orderer is an good idea
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: $namespace
-  name: $podName
+  namespace: ${namespace}
+  name: ${podName}
 spec:
+  selector:
+    matchLabels:
+      app: hyperledger
+      role: orderer
+      org: ${namespace}
+      orderer-id: ${ordererID}
   replicas: 1
   strategy: {}
   template:
@@ -13,12 +19,12 @@ spec:
       labels:
         app: hyperledger
         role: orderer
-        org: $namespace
-        orderer-id: $ordererID
+        org: ${namespace}
+        orderer-id: ${ordererID}
     spec:      
       containers:
-      - name: $podName
-        image: hyperledger/fabric-orderer:x86_64-$version
+      - name: ${podName}
+        image: hyperledger/fabric-orderer:${version}
         env:
         # - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
         #   value: cbr0
@@ -31,11 +37,11 @@ spec:
         - name: ORDERER_GENERAL_GENESISFILE
           value: /var/hyperledger/orderer/orderer.genesis.block
         - name: ORDERER_GENERAL_LOCALMSPID
-          value: $localMSPID
+          value: ${localMSPID}
         - name: ORDERER_GENERAL_LOCALMSPDIR
           value: /var/hyperledger/orderer/msp
         - name: ORDERER_GENERAL_TLS_ENABLED
-          value: "$tlsEnabled"
+          value: "${tlsEnabled}"
         - name: ORDERER_GENERAL_TLS_PRIVATEKEY
           value: /var/hyperledger/orderer/tls/server.key
         - name: ORDERER_GENERAL_TLS_CERTIFICATE
@@ -47,52 +53,66 @@ spec:
          - containerPort: 7050
         command: ["orderer"]
         volumeMounts:
-         - mountPath: /var/hyperledger/orderer/msp 
-           name: certificate
-           #subPath: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp
-           # subPath: $mspPath
-         - mountPath: /var/hyperledger/orderer/tls
-           name: tlscertificate
-           #subPath: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/
-           # subPath: $tlsPath
-         - mountPath: /var/hyperledger/orderer/orderer.genesis.block
-           name: genesis
-           # subPath: genesis.block
-         # - mountPath: /var/hyperledger/production/orderer
-         #   name: data
+          {% if nsfServer|length > 0 %}
+          - mountPath: /var/hyperledger/orderer/msp 
+            name: certificate
+            subPath: ${mspPath}
+            {% if tlsEnabled %}
+          - mountPath: /var/hyperledger/orderer/tls
+            name: certificate                      
+            subPath: ${tlsPath}
+            {% endif %}
+          - mountPath: /var/hyperledger/orderer/orderer.genesis.block            
+            name: certificate
+            subPath: genesis.block
+          {% else %}
+          - mountPath: /var/hyperledger/orderer/msp 
+            name: certificate            
+            {% if tlsEnabled %}
+          - mountPath: /var/hyperledger/orderer/tls
+            name: tlscertificate
+            {% endif %}
+          - mountPath: /var/hyperledger/orderer/orderer.genesis.block                        
+            name: genesis            
+          # - mountPath: /var/hyperledger/production/orderer
+          #   name: data
+          {% endif %}
       volumes:
+        {% if nsfServer|length > 0 %}
         - name: certificate
-          hostPath:
-            path: $path/msp
-        - name: tlscertificate
-          hostPath:
-            path: $path/tls
-        - name: genesis
-          hostPath:
-            path: $genesis/genesis.block
-        - name: data
-          hostPath:
-            # path: $shareFolder/orderer/$namespace/$ordererID
-            path: /data/orderer/$namespace/$ordererID
-         # persistentVolumeClaim:
-             # claimName: $pvName
-           #path: $shareFolder
+          persistentVolumeClaim:
+            claimName: ${pvName}
+          #path: ${shareFolder}
          #persistentVolumeClaim:
          #  claimName: nfs
-
+        {% else %}
+        - name: certificate
+          hostPath:
+            path: ${path}/msp
+        - name: tlscertificate
+          hostPath:
+            path: ${path}/tls
+        - name: genesis
+          hostPath:
+            path: ${genesis}/genesis.block
+        # - name: data
+        #   hostPath:
+        #     path: ${shareFolder}/orderer/${namespace}/${ordererID}
+            # path: /data/orderer/${namespace}/${ordererID}                  
+        {% endif %}
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: $ordererID
-  namespace: $namespace
+  name: ${ordererID}
+  namespace: ${namespace}
 spec:
  selector:
    app: hyperledger
    role: orderer
-   orderer-id: $ordererID
-   org: $namespace
+   orderer-id: ${ordererID}
+   org: ${namespace}
  type: NodePort
  # type: ClusterIP
  ports:
@@ -100,4 +120,4 @@ spec:
      protocol: TCP
      port: 7050
      targetPort: 7050
-     nodePort: $nodePort
+     nodePort: ${nodePort}

@@ -1,8 +1,8 @@
 # apiVersion: extensions/v1beta1
 # kind: Deployment
 # metadata:
-#   namespace: $namespace
-#   name: $podName-couchdb
+#   namespace: ${namespace}
+#   name: ${podName}-couchdb
 # spec:
 #   replicas: 1
 #   strategy: {}
@@ -12,14 +12,14 @@
 #       labels:
 #        app: hyperledger
 #        role: couchdb
-#        org: $namespace
+#        org: ${namespace}
 #     spec:
 #       # nodeSelector:
 #       #   # assume all org node can access to docker
-#       #   org: $namespace
+#       #   org: ${namespace}
 #       containers:
 #       - name: couchdb
-#         image: hyperledger/fabric-couchdb:x86_64-$version
+#         image: hyperledger/fabric-couchdb:${version}
 #         ports:
 #          - containerPort: 5984
 
@@ -30,34 +30,40 @@
 #       volumes:
 #        - name: db
 #          hostPath:
-#            path: $shareFolder/couchdb/$namespace/$peerID
+#            path: ${shareFolder}/couchdb/${namespace}/${peerID}
 
 # ---
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: $namespace
-  name:	$podName
+  namespace: ${namespace}
+  name:	${podName}
 spec:
+  selector:
+    matchLabels:
+      app: hyperledger
+      role: peer
+      peer-id: ${peerID}
+      org: ${namespace}
   replicas: 1
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-       app: hyperledger
-       role: peer
-       peer-id: $peerID
-       org: $namespace
+        app: hyperledger
+        role: peer
+        peer-id: ${peerID}
+        org: ${namespace}
     spec:
       # nodeSelector:
       #   # assume all org node can access to docker
-      #   org: $namespace
+      #   org: ${namespace}
       containers:
 
       - name: couchdb
-        image: hyperledger/fabric-couchdb:x86_64-$version
+        image: hyperledger/fabric-couchdb:${version}
         ports:
          - containerPort: 5984
 
@@ -65,8 +71,8 @@ spec:
         #  - mountPath: /opt/couchdb/data
         #    name: db
 
-      - name: $podName 
-        image: hyperledger/fabric-peer:x86_64-$version
+      - name: ${podName}
+        image: hyperledger/fabric-peer:${version}
         env:
         # - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
         #   value: cbr0
@@ -75,13 +81,13 @@ spec:
           value: "LevelDB"
         - name: CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS
           value: "localhost:5984"
-          # value: "$peerID-couchdb.$namespace:5984"
+          # value: "${peerID}-couchdb.${namespace}:5984"
         - name: CORE_VM_ENDPOINT
           value: "unix:///host/var/run/docker.sock"
         - name: CORE_LOGGING_LEVEL
           value: "DEBUG"
         - name: CORE_PEER_TLS_ENABLED
-          value: "$tlsEnabled"
+          value: "${tlsEnabled}"
         - name: CORE_PEER_GOSSIP_USELEADERELECTION
           value: "true"
         - name: CORE_PEER_GOSSIP_ORGLEADER
@@ -95,21 +101,21 @@ spec:
         - name: CORE_PEER_TLS_ROOTCERT_FILE
           value: "/etc/hyperledger/fabric/tls/ca.crt"
         - name: CORE_PEER_ID
-          value: $corePeerID
+          value: ${corePeerID}
         - name: CORE_PEER_TLS_SERVERHOSTOVERRIDE
-          value: $corePeerID
+          value: ${corePeerID}
         - name: CORE_PEER_ADDRESS
-          value: $peerAddress
+          value: ${peerAddress}
         # - name: CORE_PEER_CHAINCODELISTENADDRESS
-          # value: $peerCCAddress
+          # value: ${peerCCAddress}
         - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
-          value: $peerGossip
+          value: ${peerGossip}
         - name: CORE_PEER_LOCALMSPID
-          value: $localMSPID
+          value: ${localMSPID}
         - name: CORE_PEER_MSPCONFIGPATH
           value: /etc/hyperledger/fabric/msp
         - name: CORE_PEER_ADDRESSAUTODETECT
-          value: "$addressAutoDetect"
+          value: "${addressAutoDetect}"
 
         workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
         ports:
@@ -118,62 +124,69 @@ spec:
          - containerPort: 7053
         command: ["/bin/bash", "-c", "--"]
         # args: ["sleep 5; peer node start"]
-        args: ["sleep 5; peer node $peerCmd"] 
+        args: ["sleep 5; peer node ${peerCmd}"] 
         volumeMounts:
-         #- mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts 
-         #  name: certificate
-         #  subPath: channel-artifacts
-         - mountPath: /etc/hyperledger/fabric/msp 
-           name: certificate
+          {% if nsfServer|length > 0 %}   
+          - mountPath: /etc/hyperledger/fabric/msp      
+            name: certificate
+            subPath: ${mspPath}
+            {% if tlsEnabled %}
+          - mountPath: /etc/hyperledger/fabric/tls
+            name: certificate
+            subPath: ${tlsPath}
+            {% endif %}
+          {% else %}         
+          - mountPath: /etc/hyperledger/fabric/msp 
+            name: certificate
 
          # - mountPath: /var/hyperledger/production
-         #   name: data
-           #subPath: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp
-           # subPath: $mspPath
-         - mountPath: /etc/hyperledger/fabric/tls
-           name: tlscertificate
-         #   #subPath: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/
-         #   subPath: $tlsPath
-         - mountPath: /host/var/run/
-           name: run
+         #   name: data           
+            {% if tlsEnabled %}
+          - mountPath: /etc/hyperledger/fabric/tls
+            name: tlscertificate                  
+            {% endif %}
+          {% endif %}
+          - mountPath: /host/var/run/
+            name: run
       volumes:
-       - name: certificate
-         hostPath:
-           path: $path/msp
-         # persistentVolumeClaim:
-         #     claimName: $pvName
-       - name: tlscertificate
-         hostPath:
-           path: $path/tls
+        {% if nsfServer|length > 0 %}
+        - name: certificate
+          persistentVolumeClaim:
+            claimName: ${pvName}        
+        {% else %}
+        - name: certificate
+          hostPath:
+            path: ${path}/msp
+        - name: tlscertificate
+          hostPath:
+            path: ${path}/tls        
+        {% endif %}
+        - name: run
+          hostPath:
+            path: /var/run
 
-       - name: data
-         hostPath:
-           # path: $shareFolder/peer/$namespace/$peerID
-           # persistent in its own node
-           path: /data/peer/$namespace/$peerID
-
-       - name: run
-         hostPath:
-           path: /var/run
+        # - name: data
+          # hostPath:
+            # path: ${shareFolder}/peer/${namespace}/${peerID}
+            # persistent in its own node
+            # path: /data/peer/${namespace}/${peerID}
+        # - name: db
+          # hostPath:
+            # path: ${shareFolder}/couchdb/${namespace}/${peerID}
+            # path: /data/couchdb/${namespace}/${peerID}
        
-       - name: db
-         hostPath:
-           # path: $shareFolder/couchdb/$namespace/$peerID
-           path: /data/couchdb/$namespace/$peerID
-       
-
 # ---
 # apiVersion: v1
 # kind: Service
 # metadata:
-#    namespace: $namespace
-#    name: $peerID
+#    namespace: ${namespace}
+#    name: ${peerID}
 # spec:
 #  selector:
 #    app: hyperledger
 #    role: peer
-#    peer-id: $peerID
-#    org: $namespace
+#    peer-id: ${peerID}
+#    org: ${namespace}
 #  clusterIP: None
 #  ports:
 #    - name: listen-endpoint
@@ -187,20 +200,19 @@ spec:
 #    - name: event-listen
 #      protocol: TCP
 #      port: 7053
-
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-   namespace: $namespace
-   name: $peerID
+   namespace: ${namespace}
+   name: ${peerID}
 spec:
  selector:
    app: hyperledger
    role: peer
-   peer-id: $peerID
-   org: $namespace
+   peer-id: ${peerID}
+   org: ${namespace}
  type: NodePort
  # type: ClusterIP
  ports:
@@ -208,19 +220,19 @@ spec:
      protocol: TCP
      port: 7051
      targetPort: 7051
-     nodePort: $nodePort1
+     nodePort: ${nodePort1}
 
    - name: chaincode-listen
      protocol: TCP
      port: 7052
      targetPort: 7052
-     nodePort: $nodePort2
+     nodePort: ${nodePort2}
 
    - name: listen
      protocol: TCP
      port: 7053
      targetPort: 7053
-     nodePort: $nodePort3
+     nodePort: ${nodePort3}
 
 
 
@@ -228,13 +240,13 @@ spec:
 # apiVersion: v1
 # kind: Service
 # metadata:
-#    namespace: $namespace
-#    name: $peerID-couchdb
+#    namespace: ${namespace}
+#    name: ${peerID}-couchdb
 # spec:
 #  selector:
 #    app: hyperledger
 #    role: couchdb
-#    org: $namespace
+#    org: ${namespace}
 #  # type: NodePort
 #  type: ClusterIP
 #  ports:
@@ -243,6 +255,6 @@ spec:
 #      protocol: TCP
 #      port: 5984
 #      targetPort: 5984
-#      # nodePort: $nodePort3
+#      # nodePort: ${nodePort3}
 
 # ---

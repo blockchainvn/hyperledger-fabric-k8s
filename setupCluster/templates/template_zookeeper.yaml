@@ -1,30 +1,90 @@
+{% if nsfServer|length > 0 %}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ${zookeeperID}-log
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:     
+    path: ${shareFolder}/kafka/zk_log/${zookeeperID}
+    server: ${nsfServer}
+---
 
-apiVersion: extensions/v1beta1
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ${zookeeperID}-data
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  nfs: 
+    path: ${shareFolder}/kafka/zk_data/${zookeeperID}
+    server: ${nsfServer}
+    
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ namespace: kafka
+ name: ${zookeeperID}-log
+spec:
+ accessModes:
+   - ReadWriteMany
+ resources:
+   requests:
+     storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ namespace: kafka
+ name: ${zookeeperID}-data
+spec:
+ accessModes:
+   - ReadWriteMany
+ resources:
+   requests:
+     storage: 20Gi
+---
+{% endif %}
+
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: kafka
-  name: $zkPodName
+  name: ${zkPodName}
 spec:
+  selector:
+    matchLabels:
+      app: hyperledger
+      role: zookeeper
+      zookeeper-id: ${zookeeperID}
+      ns: kafka
   replicas: 1
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-       app: hyperledger
-       role: zookeeper
-       zookeeper-id: $zookeeperID
-       ns: kafka
+        app: hyperledger
+        role: zookeeper
+        zookeeper-id: ${zookeeperID}
+        ns: kafka
     spec:      
       terminationGracePeriodSeconds: 120
       containers:
-        - name: $zkPodName
-          image: hyperledger/fabric-zookeeper:x86_64-$version
+        - name: ${zkPodName}
+          image: hyperledger/fabric-zookeeper:${version}
           env:
             - name: ZOO_MY_ID
-              value: "$seq"
+              value: "${seq}"
             - name: ZOO_SERVERS
-              value: "$zooServers"
+              value: "${zooServers}"
             - name: ZOO_TICK_TIME
               value: "2000"
             - name: ZOO_INIT_LIMIT
@@ -42,25 +102,34 @@ spec:
                 # SIGTERM triggers a quick exit; gracefully terminate instead
                 command: ["zkServer.sh", "stop"]
       volumes:
+        {% if nsfServer|length > 0 %}
+        - name: datalog
+          persistentVolumeClaim:
+              claimName: ${zookeeperID}-log
+        - name: data
+          persistentVolumeClaim:
+              claimName: ${zookeeperID}-data
+        {% else %}
         - name: datalog
           hostPath:
-              # path: $shareFolder/kafka/zk_log/$zookeeperID
-              path: /data/kafka/zk_log/$zookeeperID
+              # path: ${shareFolder}/kafka/zk_log/${zookeeperID}
+              path: /data/kafka/zk_log/${zookeeperID}
         - name: data
           hostPath:
-              # path: $shareFolder/kafka/zk_data/$zookeeperID
-              path: /data/kafka/zk_data/$zookeeperID
+              # path: ${shareFolder}/kafka/zk_data/${zookeeperID}
+              path: /data/kafka/zk_data/${zookeeperID}
+        {% endif %}
 ---
 apiVersion: v1
 kind: Service
 metadata:
    namespace: kafka
-   name: $zookeeperID
+   name: ${zookeeperID}
 spec:
  selector:
    app: hyperledger
    role: zookeeper
-   zookeeper-id: $zookeeperID
+   zookeeper-id: ${zookeeperID}
    ns: kafka
  clusterIP: None
 
@@ -68,15 +137,15 @@ spec:
    - name: zookeeper-port1
      protocol: TCP
      port: 2888
-     # nodePort: $nodePort1
+     # nodePort: ${nodePort1}
 
    - name: zookeeper-port2
      protocol: TCP
      port: 3888
-     # nodePort: $nodePort2
+     # nodePort: ${nodePort2}
 
    - name: zookeeper-port3
      protocol: TCP
      port: 2181
-     # nodePort: $nodePort3
+     # nodePort: ${nodePort3}
 ---

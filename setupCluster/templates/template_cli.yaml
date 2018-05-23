@@ -1,42 +1,73 @@
-# apiVersion: v1
-# kind: PersistentVolume
-# metadata:
-#     name: $artifactsName
-# spec:
-#     capacity:
-#        storage: 500Mi
-#     accessModes:
-#        - ReadWriteMany
-#     # storageClassName: standard
-#     # hostPath:
-#     #   path: $shareFolder/channel-artifacts
-#     nfs: 
-#       path: $shareFolder/channel-artifacts
-#       server: $nsfServer
-#       # server: 192.168.43.141 # change to your nfs server ip here.
-# ---
+{% if nsfServer|length > 0 %}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: ${artifactsName}
+spec:
+    capacity:
+       storage: 500Mi
+    accessModes:
+       - ReadWriteMany
+    # storageClassName: standard
+    # hostPath:
+    #   path: ${shareFolder}/channel-artifacts
+    nfs: 
+      path: ${shareFolder}/channel-artifacts
+      server: ${nsfServer}
+      # server: 192.168.43.141 # change to your nfs server ip here.
+---
 
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#     namespace: $namespace
-#     name: $artifactsName
-# spec:
-#   accessModes:
-#      - ReadWriteMany
-#   # storageClassName: standard
-#   resources:
-#       requests:
-#         storage: 10Mi
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    namespace: ${namespace}
+    name: ${artifactsName}
+spec:
+  accessModes:
+     - ReadWriteMany
+  # storageClassName: standard
+  resources:
+      requests:
+        storage: 10Mi
 
-# ---
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: ${orderer0pv}
+spec:
+    capacity:
+       storage: 500Mi
+    accessModes:
+       - ReadWriteMany
+    nfs:
+      path: ${shareFolder}/crypto-config/ordererOrganizations/${orderer0}/msp/tlscacerts
+      server: ${nsfServer}
+---
 
-apiVersion: extensions/v1beta1
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    namespace: ${namespace}
+    name: ${orderer0pv}
+spec:
+   accessModes:
+     - ReadWriteMany
+   resources:
+      requests:
+        storage: 10Mi
+---
+{% endif %}
+
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-   namespace: $namespace
-   name: $name
+   namespace: ${namespace}
+   name: ${name}
 spec:
+  selector:
+    matchLabels:
+      app: cli
   replicas: 1
   strategy: {}
   template:
@@ -46,15 +77,15 @@ spec:
     spec:
       # nodeSelector:
       #   # assume all org node can access to docker
-      #   org: $namespace
+      #   org: ${namespace}
       containers:
-        - name: $name
-          image:  hyperledger/fabric-tools:x86_64-$version
+        - name: ${name}
+          image:  hyperledger/fabric-tools:${version}
           env:
           # - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
           #   value: cbr0
           - name: CORE_PEER_TLS_ENABLED
-            value: "$tlsEnabled"
+            value: "${tlsEnabled}"
           - name: CORE_PEER_TLS_CERT_FILE
             value: "/etc/hyperledger/fabric/tls/server.crt"
           - name: CORE_PEER_TLS_KEY_FILE
@@ -68,53 +99,63 @@ spec:
           - name: CORE_LOGGING_LEVEL
             value: DEBUG
           - name: CORE_PEER_ID
-            value: $name
+            value: ${name}
           - name: CORE_PEER_ADDRESS
-            value: $peerAddress
+            value: ${peerAddress}
           - name: CORE_PEER_LOCALMSPID
-            value: $mspid
+            value: ${mspid}
           - name: CORE_PEER_MSPCONFIGPATH
             value: /etc/hyperledger/fabric/msp
           workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
           command: [ "/bin/bash", "-c", "--" ]
           args: [ "while true; do sleep 30; done;" ]
           volumeMounts:
-           - mountPath: /host/var/run/
-             name: run
-          # - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/go
-          #   name: certificate
-          #   subPath: chaincode
-           - mountPath: /etc/hyperledger/fabric/msp
-             name: certificate
-
-           - mountPath: /etc/hyperledger/fabric/tls
-             name: tlscertificate
-             # subPath: $mspPath
-           - mountPath: /etc/hyperledger/fabric/orderertls
-             name: orderercertificate
-
-           - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
-             name: artifacts
+            - mountPath: /host/var/run/
+              name: run
+            {% if nsfServer|length > 0 %}
+            - mountPath: /etc/hyperledger/fabric/msp
+              name: certificate
+              subPath: ${mspPath}
+            - mountPath: /etc/hyperledger/fabric/tls
+              name: certificate
+              subPath: ${tlsPath}
+            {% else %}          
+            - mountPath: /etc/hyperledger/fabric/msp
+              name: certificate
+            - mountPath: /etc/hyperledger/fabric/tls
+              name: tlscertificate            
+            {% endif %}
+            - mountPath: /etc/hyperledger/fabric/orderertls
+              name: orderercertificate
+            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+              name: artifacts
       volumes:                
+
+        {% if nsfServer|length > 0 %}
+        - name: orderercertificate
+          persistentVolumeClaim:
+              claimName: ${orderer0pv}
         - name: certificate
-          hostPath:
-            path: $path/$mspPath
-
-        - name: tlscertificate
-          hostPath:
-            path: $path/$tlsPath
-
+          persistentVolumeClaim:
+              claimName: ${pvName}
+        - name: artifacts
+          persistentVolumeClaim:
+              claimName: ${artifactsName}
+        {% else %}
         - name: orderercertificate
           hostPath:
-            path: $shareFolder/crypto-config/ordererOrganizations/$orderer0/msp/tlscacerts
-
-          # persistentVolumeClaim:
-          #     claimName: $pvName
+            path: ${shareFolder}/crypto-config/ordererOrganizations/${orderer0}/msp/tlscacerts
+        - name: certificate
+          hostPath:
+            path: ${path}/${mspPath}
+        - name: tlscertificate
+          hostPath:
+            path: ${path}/${tlsPath} 
         - name: artifacts
           hostPath:
-            path: $shareFolder/channel-artifacts
-          # persistentVolumeClaim:
-              # claimName: $artifactsName
+            path: ${shareFolder}/channel-artifacts
+        {% endif %}
+
         - name: run
           hostPath:
             path: /var/run

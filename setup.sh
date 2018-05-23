@@ -10,6 +10,10 @@ if [ ! `command -v docker` ];then
   sudo systemctl start docker
   sudo systemctl enable docker
   
+  # # latest version that is stable: 17.05
+  # curl -O https://download.docker.com/linux/ubuntu/dists/xenial/pool/edge/amd64/docker-ce_17.05.0~ce-0~ubuntu-xenial_amd64.deb
+  # sudo dpkg -i docker-ce_17.05.0~ce-0~ubuntu-xenial_amd64.deb
+  
   # sudo apt-get install -y \
   #     apt-transport-https \
   #     ca-certificates \
@@ -53,7 +57,7 @@ if [ ! `command -v kubectl` ];then
   sudo apt-get update
   sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
 
-  init kube
+  # init kube
   swapoff -a
   kubeadm init --pod-network-cidr 10.244.0.0/16 # --apiserver-advertise-address $(ifconfig eth0 | grep 'inet addr'| cut -d':' -f2 | awk '{print $1}')
   read -n 1 -s -r -p "Note join command & Press any key to continue"
