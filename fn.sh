@@ -41,7 +41,7 @@ printHelp () {
     echo "$res"    
   else      
     printBoldColor $BROWN "      - 'config' - generate channel-artifacts and crypto-config for the network"
-    printBoldColor $BLUE  "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--env [DEV|PROD] --override true --tls-enabled false --fabric-version latest --share /opt/share]"    
+    printBoldColor $BLUE  "          ./fn.sh config --profile MultiOrgsOrdererGenesis --file cluster-config.yaml [--env [DEV|PROD] --nfs false --override true --tls-enabled false --fabric-version latest --share /opt/share]"    
     echo 
     printBoldColor $BROWN "      - 'scale' - scale a deployment of a namespace for the network"
     printBoldColor $BLUE  "          ./fn.sh scale --deployment=orderer0-orgorderer-v1 --min=2 --max=10"    
@@ -454,10 +454,12 @@ createChaincodeDeploymentDev() {
             # inline is more readable            
             command: [ "/bin/bash", "-c", "--" ]            
             args: [ "cp -r /home/$CHAINCODE/* ./ && go build -i && ./$CHAINCODE" ]
-            workingDir: $GOPATH/src/$CHAINCODE
+            workingDir: /opt/gopath/src/$CHAINCODE
             volumeMounts:
               - mountPath: /host/var/run/
                 name: run
+              - mountPath: /opt/gopath 
+                name: gopath
               - mountPath: /home/$CHAINCODE
                 name: chaincode
             env:
@@ -477,6 +479,9 @@ createChaincodeDeploymentDev() {
          - name: run
            hostPath:
              path: /var/run
+         - name: gopath
+           hostPath:
+             path: $GOPATH
          - name: chaincode
            hostPath:
              path: $chaincode_shared_path
@@ -896,9 +901,7 @@ case "$METHOD" in
   ;; 
 esac
 
-# process methods and arguments, by default first is channel and next is org_id
-ENV=$(getArgument "env" PROD)
-SHARE_FOLDER=$(getArgument "share" /private/share)
+SHARE_FOLDER=$(getArgument "share" /Users/Shared)
 CHANNEL_NAME=$(getArgument "channel" mychannel)
 NAMESPACE=$(getArgument "namespace")
 PEER_ADDRESS=$(getArgument "peer" peer0.${NAMESPACE}:7051) 
@@ -911,6 +914,22 @@ POLICY=$(getArgument "policy")
 VERSION=$(getArgument "version" v1)
 MODE=$(getArgument "mode" ${args[0]:-up})
 TIMEOUT=$(getArgument "timeout" 120)
+
+if [[ $METHOD == "config" ]];then
+  # override env when run config method
+  ENV=$(getArgument "env" PROD)
+elif [[ ! -z $NAMESPACE ]];then
+  # Check if we are running in dev mode
+  pod_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/peer/{print $1}' | head -1)
+  CHECK_DEV=$(kubectl describe pods $pod_name -n $NAMESPACE | grep chaincodedev | awk '{print $6}')
+  if [[ $CHECK_DEV == "--peer-chaincodedev=true" ]]; then
+    ENV="DEV"
+  else
+    ENV="PROD"
+  fi
+else
+  ENV="PROD"
+fi
 
 # for convenient
 # echo "args: "$(getArgument "query" "select * from")
@@ -936,7 +955,7 @@ case "${METHOD}" in
   token)
     getToken
   ;;
-  config)
+  config)    
     setupConfig
   ;;
   network)
