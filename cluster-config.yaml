@@ -54,11 +54,11 @@ PeerOrgs:
   #   Users:
   #     Count: 0
 
-Channels:
-  - Name: MultiOrgsChannel
-    Domains: 
-      - org1
-      - org2
+# Channels:
+#   - Name: MultiOrgsChannel
+#     Domains: 
+#       - org1
+#       - org2
 
 #   - Name: Org1Org2Channel
 #     Domains: 

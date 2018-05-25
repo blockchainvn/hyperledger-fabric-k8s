@@ -65,7 +65,7 @@ printHelp () {
     printBoldColor $BLUE  "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050 [--mode=create|join|up]"
     echo
     printBoldColor $BROWN "      - 'install' - install chaincode"
-    printBoldColor $BLUE  "          ./fn.sh install --channel mychannel --namespace org1-v1 --chaincode mycc -v v1 [--no-pod true --path chaincodepath]"
+    printBoldColor $BLUE  "          ./fn.sh install --channel mychannel --namespace org1-v1 --chaincode mycc -v v1 [--no-pod true --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/mycc]"
     echo    
     printBoldColor $BROWN "      - 'instantiate' - instantiate chaincode"
     printBoldColor $BLUE  "          ./fn.sh instantiate --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
