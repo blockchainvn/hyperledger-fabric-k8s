@@ -241,16 +241,21 @@ assertGoInstall(){
       fi  
       apt install libtool libltdl-dev -y
     fi  
-    mkdir -p $GOPATH/src    
-    cd $GOPATH/src
+    mkdir -p $GOPATH/src        
     # update GOPATH
     echo "export GOPATH=/opt/gopath" | tee ~/.bashrc
-    source ~/.bashrc
-    mkdir -p github.com/hyperledger
-    cd github.com/hyperledger
-    git clone https://github.com/hyperledger/fabric.git
+    source ~/.bashrc    
     # finally install yaml.v2
     go get gopkg.in/yaml.v2
+  fi
+
+  # check fabric sdk
+  if [[ ! -d $GOPATH/src/github.com/hyperledger ]];then
+    cd $GOPATH/src
+    mkdir -p github.com/hyperledger
+    cd github.com/hyperledger
+    # may change version by appending -b release-1.1
+    git clone https://github.com/hyperledger/fabric.git
   fi
 }
 
