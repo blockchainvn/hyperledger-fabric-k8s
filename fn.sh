@@ -274,6 +274,7 @@ assertPipInstall(){
   # assert python
   assertPythonInstall
   # install pip
+  # newer version > 16.0 apt install python-pip 
   if [ ! `command -v pip` ];then
     ARCH=`uname -s | grep Darwin`
     if [ "$ARCH" != "Darwin" ]; then
