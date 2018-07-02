@@ -1,6 +1,6 @@
 # we can override process env
 
-$NODE=node:9.11
+NODE=node:9.11
 
 : ${IMAGE_NAME:=$NODE}
 : ${ORDERER_HOST:='orderer0.orgorderer-v1:7050'}
