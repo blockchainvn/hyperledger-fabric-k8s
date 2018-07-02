@@ -1,6 +1,8 @@
 # we can override process env
 
-: ${IMAGE_NAME:='node:9.11'}
+$NODE=node:9.11
+
+: ${IMAGE_NAME:=$NODE}
 : ${ORDERER_HOST:='orderer0.orgorderer-v1:7050'}
 : ${KEY_STORE_PATH:='/hfc-key-store'}
 
@@ -16,11 +18,11 @@ IMAGE_CHECK=$(docker images | grep $IMAGE_NAME)
 WORKING_PATH=$SHARE_FOLDER/admin
 # WORKING_PATH=$PWD
 
-image_policy=$([[ $IMAGE_NAME != "node" ]] && echo "Never" || echo "IfNotPresent")
+image_policy=$([[ $IMAGE_NAME != "$NODE" ]] && echo "Never" || echo "IfNotPresent")
 
 if [[ -z $IMAGE_CHECK ]];then
   echo "Building admin image..."
-  if [[ $IMAGE_NAME != "node" ]];then
+  if [[ $IMAGE_NAME != "$NODE" ]];then
     echo "Building image $IMAGE_NAME ..."
     echo
     docker build -t $IMAGE_NAME .    
