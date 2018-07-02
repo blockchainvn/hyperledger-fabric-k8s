@@ -1,6 +1,6 @@
 # we can override process env
 
-: ${IMAGE_NAME:='node'}
+: ${IMAGE_NAME:='node:9.11'}
 : ${ORDERER_HOST:='orderer0.orgorderer-v1:7050'}
 : ${KEY_STORE_PATH:='/hfc-key-store'}
 
