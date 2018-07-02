@@ -4,7 +4,7 @@
 
 Run
 
-```sh
+```
 # on master nodes just run
 ./setupt.sh
 ./fn.sh help [method]
@@ -12,6 +12,29 @@ Run
 ./setup-node.sh
 # then run
 kubeadm join --token d326cf.05fa043803407f75 128.199.72.209:6443 --discovery-token-ca-cert-hash
+```
+
+## NFS setup
+
+**Server**
+
+```
+sudo apt-get update
+sudo apt-get install nfs-kernel-server -y
+sudo mkdir -p /opt/share
+chown nobody:nogroup /opt/share
+echo "/opt/share    *(rw,sync,no_subtree_check)" | sudo tee -a /etc/exports
+exportfs -a
+service nfs-kernel-server start
+```
+
+**Client**
+
+```
+sudo apt-get update
+sudo apt-get install nfs-common -y
+sudo mkdir -p /opt/share
+mount -t nfs 10.0.0.4:/opt/share /opt/share
 ```
 
 Run fn from ssh mode from sshfn and expectfn
