@@ -606,9 +606,10 @@ bashContainer () {
       container="-c ${args[1]} "
     fi    
     if [[ ! -z $QUERY ]]; then      
-      kubectl exec -it $pod_name -n $NAMESPACE $container -- $QUERY
-      printCommand "kubectl exec -it $pod_name -n $NAMESPACE $container-- $QUERY"
+      printCommand "kubectl exec -it $pod_name -n $NAMESPACE $container -- $QUERY"
+      kubectl exec -it $pod_name -n $NAMESPACE $container -- $QUERY      
     else
+      printCommand "kubectl exec -it $pod_name -n $NAMESPACE $container bash"
       kubectl exec -it $pod_name -n $NAMESPACE $container bash
     fi
   else
