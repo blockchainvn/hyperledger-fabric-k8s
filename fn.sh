@@ -854,8 +854,8 @@ fi
 # use [[ ]] we dont have to quote string
 args=()
 case "$METHOD" in
-  bash|config)        
-    while [[ $# -gt 0 ]] ; do            
+  bash)        
+    while [[ ! -z $2 ]];do         
       if [[ ${1:0:2} == '--' ]]; then
         KEY=${1/--/}            
         if [[ $KEY =~ ^([a-zA-Z_-]+)=(.+) ]]; then                
@@ -869,7 +869,23 @@ case "$METHOD" in
       fi
       shift
     done
-    QUERY="$@"    
+    QUERY="$@"            
+  ;;
+  config)        
+    while [[ $# -gt 0 ]] ; do            
+      if [[ ${1:0:2} == '--' ]]; then
+        KEY=${1/--/}            
+        if [[ $KEY =~ ^([a-zA-Z_-]+)=(.+) ]]; then                
+          declare "args_${BASH_REMATCH[1]/-/_}=${BASH_REMATCH[2]}"
+        else          
+          declare "args_${KEY/-/_}=$2" 
+          shift
+        fi    
+      else 
+        args+=($1)
+      fi
+      shift
+    done     
   ;;
   *) 
     # normal processing
