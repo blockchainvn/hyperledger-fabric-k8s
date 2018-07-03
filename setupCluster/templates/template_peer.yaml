@@ -63,7 +63,10 @@ spec:
       containers:
 
       - name: couchdb
-        image: hyperledger/fabric-couchdb:${version}
+        # image: hyperledger/fabric-couchdb:${version}
+        # now couchdb should use latest version because newer hyperledger fabric, 
+        # couchdb does not have the same version as others
+        image: hyperledger/fabric-couchdb:latest
         ports:
          - containerPort: 5984
 
