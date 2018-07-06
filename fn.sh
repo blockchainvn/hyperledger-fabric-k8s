@@ -236,10 +236,10 @@ assertGoInstall(){
         brew install go
       fi
     else
-      if [ ! `command -v go` ]; then        
-        apt install golang-go -y
+      if [ ! `command -v go` ]; then    
+        [ -n "$(command -v apt)" ] && apt install golang-go -y || yum install golang -y        
       fi  
-      apt install libtool libltdl-dev -y
+      [ -n "$(command -v apt)" ] && apt install libtool libltdl-dev -y  || yum install libtool-ltdl libtool-ltdl-devel
     fi  
     mkdir -p $GOPATH/src        
     # update GOPATH
@@ -265,7 +265,7 @@ assertPythonInstall(){
     if [ "$ARCH" == "Darwin" ]; then
       brew install python
     else
-      sudo apt-get install python
+      [ -n "$(command -v apt)" ] && sudo apt-get install python
     fi  
   fi
 }
@@ -278,7 +278,7 @@ assertPipInstall(){
   if [ ! `command -v pip` ];then
     ARCH=`uname -s | grep Darwin`
     if [ "$ARCH" != "Darwin" ]; then
-      sudo apt-get install python-setuptools -y   
+      [ -n "$(command -v apt)" ] && sudo apt-get install python-setuptools -y || sudo yum install python-setuptools -y
     fi
     sudo easy_install pip
     # pip install pyyaml
