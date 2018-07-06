@@ -53,7 +53,7 @@ printHelp () {
     printBoldColor $BLUE  "          ./fn.sh token"
     echo
     printBoldColor $BROWN "      - 'admin' - build admin with namespace and port"
-    printBoldColor $BLUE  "          ./fn.sh admin --namespace org1-v1 --port 30009 [--mode=up|down]"
+    printBoldColor $BLUE  "          ./fn.sh admin --namespace org1-v1 --port 30009 [--mode=up|down] [--share /opt/share]"
     echo
     printBoldColor $BROWN "      - 'network' - setup the network with kubernetes"
     printBoldColor $BLUE  "          ./fn.sh network [apply|down|delete|up] [--namespace org1-v1]"
@@ -62,7 +62,7 @@ printHelp () {
     printBoldColor $BLUE  "          ./fn.sh bash cli 'peer channel list' --namespace org1-v1"
     echo
     printBoldColor $BROWN "      - 'channel' - setup channel"
-    printBoldColor $BLUE  "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050 [--mode=create|join|up]"
+    printBoldColor $BLUE  "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050 [--mode=create|join|up] [--share /opt/share]"
     echo
     printBoldColor $BROWN "      - 'install' - install chaincode"
     printBoldColor $BLUE  "          ./fn.sh install --channel mychannel --namespace org1-v1 --chaincode mycc -v v1 [--no-pod true --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/mycc]"
