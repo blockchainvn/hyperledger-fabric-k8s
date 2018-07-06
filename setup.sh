@@ -6,6 +6,7 @@ export LC_TYPE=en_US.UTF-8
 
 # docker ce
 if [ ! `command -v docker` ];then
+  echo 'Install docker...'
   sudo apt install docker.io
   sudo systemctl start docker
   sudo systemctl enable docker
