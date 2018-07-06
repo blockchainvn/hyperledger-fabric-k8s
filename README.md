@@ -38,6 +38,8 @@ kubeadm join --token d326cf.05fa043803407f75 128.199.72.209:6443 --discovery-tok
 ```
 /etc/sysconfig/kubelet
 KUBELET_EXTRA_ARGS=--node-ip=192.168.56.101
+systemctl daemon-reload
+systemctl restart kubelet
 ```
 
 ## NFS setup
