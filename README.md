@@ -65,6 +65,15 @@ sudo mkdir -p /opt/share
 mount -t nfs 10.0.0.4:/opt/share /opt/share
 ```
 
+_If using firewall_
+
+```
+firewall-cmd --permanent --zone=public --add-service=nfs --permanent
+firewall-cmd --permanent --zone=public --add-service=mountd --permanent
+firewall-cmd --permanent --zone=public --add-service=rpc-bind --permanent
+firewall-cmd --reload
+```
+
 Run fn from ssh mode from sshfn and expectfn
 
 ```sh
