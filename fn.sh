@@ -362,6 +362,7 @@ addOrganization() {
     pid=$(ps ax | grep configtxlator | grep -v grep | awk '{print $1}')
   fi
   
+  # on centos you might add -e /run/user/1000/gvfs
   local port=$(lsof -Pan -p $pid -i | grep -o '*:[0-9]\+' | cut -d':' -f 2)
   local configtxlator_base="http://127.0.0.1:$port"
     
