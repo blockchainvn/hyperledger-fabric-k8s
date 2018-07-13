@@ -329,7 +329,7 @@ setupNetwork() {
 
     echo "Cleaning persistent volumes, including share and data folders"
     rm -rf $SHARE_FOLDER/ca/* $SHARE_FOLDER/peer/* $SHARE_FOLDER/orderer/* $SHARE_FOLDER/couchdb/* $SHARE_FOLDER/kafka/*
-    rm -rf /data/ca/* /data/peer/* /data/orderer/* /data/couchdb/* /data/kafka/*
+    # rm -rf /data/ca/* /data/peer/* /data/orderer/* /data/couchdb/* /data/kafka/*
     echo 
   else
     # can run up, delete an organization
