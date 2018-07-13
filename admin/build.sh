@@ -10,7 +10,8 @@ NAMESPACE=$1
 PORT=$2
 METHOD=$3
 SHARE_FOLDER=$4
-org=${5:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
+PEER=${5:-peer0}
+ORG=${6:-$(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z])}
 
 COMMAND=$([[ $METHOD == "create" ]] && echo "yarn && yarn start" || echo "yarn start")
 IMAGE_CHECK=$(docker images | grep $IMAGE_NAME)
@@ -47,7 +48,7 @@ if [[ $pod_name ]]; then
 fi    
 
 if [[ $TLS_ENABLED == "true" ]];then
-  PEER_PEM=$(getFileContentString "$SHARE_FOLDER/crypto-config/peerOrganizations/$NAMESPACE/peers/peer0.${NAMESPACE}/tls/ca.crt")
+  PEER_PEM=$(getFileContentString "$SHARE_FOLDER/crypto-config/peerOrganizations/$NAMESPACE/peers/${PEER}.${NAMESPACE}/tls/ca.crt")
   ORDERER_PEM=$(getFileContentString "$SHARE_FOLDER/crypto-config/ordererOrganizations/$ORDERER_NAMESPACE/orderers/orderer0.${ORDERER_NAMESPACE}/tls/ca.crt")
 fi
 
@@ -78,7 +79,7 @@ spec:
       #   # assume all org node can access to docker
       #   # because we map source code folder to this image so we have to select it
       #   # otherwise we copy it to container and update the images
-        org: $org
+        org: $ORG
       containers:
        - name: admin
          image: $IMAGE_NAME
@@ -101,9 +102,9 @@ spec:
          - name: MSPID
            value: "$MSPID"
          - name: EVENT_HOST
-           value: "peer0.${NAMESPACE}:7053"
+           value: "${PEER}.${NAMESPACE}:7053"
          - name: PEER_HOST
-           value: "peer0.${NAMESPACE}:7051"
+           value: "${PEER}.${NAMESPACE}:7051"
          - name: ORDERER_HOST
            value: "$ORDERER_HOST"
          - name: TLS_ENABLED

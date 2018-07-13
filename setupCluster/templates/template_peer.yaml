@@ -70,9 +70,9 @@ spec:
         ports:
          - containerPort: 5984
 
-        # volumeMounts:
-        #  - mountPath: /opt/couchdb/data
-        #    name: db
+        volumeMounts:
+         - mountPath: /opt/couchdb/data
+           name: db
 
       - name: ${podName}
         image: hyperledger/fabric-peer:${version}
@@ -142,8 +142,9 @@ spec:
           - mountPath: /etc/hyperledger/fabric/msp 
             name: certificate
 
-         # - mountPath: /var/hyperledger/production
-         #   name: data           
+          - mountPath: /var/hyperledger/production
+            name: data           
+            
             {% if tlsEnabled %}
           - mountPath: /etc/hyperledger/fabric/tls
             name: tlscertificate                  
@@ -168,14 +169,14 @@ spec:
           hostPath:
             path: /var/run
 
-        # - name: data
-          # hostPath:
-            # path: ${shareFolder}/peer/${namespace}/${peerID}
+        - name: data
+          hostPath:
+            path: ${shareFolder}/peer/${namespace}/${peerID}
             # persistent in its own node
             # path: /data/peer/${namespace}/${peerID}
-        # - name: db
-          # hostPath:
-            # path: ${shareFolder}/couchdb/${namespace}/${peerID}
+        - name: db
+          hostPath:
+            path: ${shareFolder}/couchdb/${namespace}/${peerID}
             # path: /data/couchdb/${namespace}/${peerID}
        
 # ---

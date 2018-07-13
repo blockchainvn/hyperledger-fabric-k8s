@@ -73,9 +73,11 @@ spec:
             name: tlscertificate
             {% endif %}
           - mountPath: /var/hyperledger/orderer/orderer.genesis.block                        
-            name: genesis            
-          # - mountPath: /var/hyperledger/production/orderer
-          #   name: data
+            name: genesis          
+              
+          - mountPath: /var/hyperledger/production/orderer
+            name: data
+
           {% endif %}
       volumes:
         {% if nfsServer|length > 0 %}
@@ -95,9 +97,9 @@ spec:
         - name: genesis
           hostPath:
             path: ${genesis}/genesis.block
-        # - name: data
-        #   hostPath:
-        #     path: ${shareFolder}/orderer/${namespace}/${ordererID}
+        - name: data
+          hostPath:
+            path: ${shareFolder}/orderer/${namespace}/${ordererID}
             # path: /data/orderer/${namespace}/${ordererID}                  
         {% endif %}
 

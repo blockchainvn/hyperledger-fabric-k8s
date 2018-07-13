@@ -92,10 +92,10 @@ spec:
             - name: ZOO_SYNC_LIMIT
               value: "2"
           volumeMounts:
-            # - mountPath: /datalog
-            #   name: datalog
-            # - mountPath: /data
-            #   name: data
+            - mountPath: /datalog
+              name: datalog
+            - mountPath: /data
+              name: data
           lifecycle:
             preStop:
               exec:
@@ -112,12 +112,12 @@ spec:
         {% else %}
         - name: datalog
           hostPath:
-              # path: ${shareFolder}/kafka/zk_log/${zookeeperID}
-              path: /data/kafka/zk_log/${zookeeperID}
+              path: ${shareFolder}/kafka/zk_log/${zookeeperID}
+              # path: /data/kafka/zk_log/${zookeeperID}
         - name: data
           hostPath:
-              # path: ${shareFolder}/kafka/zk_data/${zookeeperID}
-              path: /data/kafka/zk_data/${zookeeperID}
+              path: ${shareFolder}/kafka/zk_data/${zookeeperID}
+              # path: /data/kafka/zk_data/${zookeeperID}
         {% endif %}
 ---
 apiVersion: v1

@@ -53,7 +53,7 @@ printHelp () {
     printBoldColor $BLUE  "          ./fn.sh token"
     echo
     printBoldColor $BROWN "      - 'admin' - build admin with namespace and port"
-    printBoldColor $BLUE  "          ./fn.sh admin --namespace org1-v1 --port 30009 [--mode=up|down] [--share /opt/share]"
+    printBoldColor $BLUE  "          ./fn.sh admin --namespace org1-v1 --port 30009 [--mode=up|down] [--share /opt/share] [--peer peer0] [--org ORG1]"
     echo
     printBoldColor $BROWN "      - 'network' - setup the network with kubernetes"
     printBoldColor $BLUE  "          ./fn.sh network [apply|down|delete|up] [--namespace org1-v1]"
@@ -62,31 +62,31 @@ printHelp () {
     printBoldColor $BLUE  "          ./fn.sh bash cli 'peer channel list' --namespace org1-v1"
     echo
     printBoldColor $BROWN "      - 'channel' - setup channel"
-    printBoldColor $BLUE  "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050 [--mode=create|join|up] [--share /opt/share]"
+    printBoldColor $BLUE  "          ./fn.sh channel --profile MultiOrgsChannel --channel mychannel --namespace org1-v1 --orderer orderer0.orgorderer-v1:7050 [--mode=create|join|up] [--share /opt/share] [--peer peer0]"
     echo
     printBoldColor $BROWN "      - 'install' - install chaincode"
-    printBoldColor $BLUE  "          ./fn.sh install --channel mychannel --namespace org1-v1 --chaincode mycc -v v1 [--no-pod true --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/mycc]"
+    printBoldColor $BLUE  "          ./fn.sh install --channel mychannel --namespace org1-v1 --chaincode mycc -v v1 [--no-pod true --path github.com/hyperledger/fabric/peer/channel-artifacts/chaincode/mycc] [--peer peer0]"
     echo    
     printBoldColor $BROWN "      - 'instantiate' - instantiate chaincode"
-    printBoldColor $BLUE  "          ./fn.sh instantiate --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)'"
+    printBoldColor $BLUE  "          ./fn.sh instantiate --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v1 --policy='OR (Org1.member, Org2.member)' [--peer peer0]"
     echo
     printBoldColor $BROWN "      - 'upgrade' - upgrade chaincode"
-    printBoldColor $BLUE  "          ./fn.sh upgrade --orderer orderer0.orgorderer-v1:7050 --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v2 --policy='OR (Org1.member, Org2.member)'"
+    printBoldColor $BLUE  "          ./fn.sh upgrade --orderer orderer0.orgorderer-v1:7050 --channel mychannel --namespace org1-v1 --chaincode mycc --args='{\"Args\":[\"a\",\"10\"]}' -v v2 --policy='OR (Org1.member, Org2.member)' [--peer peer0]"
     echo
     printBoldColor $BROWN "      - 'query' - query chaincode"    
-    printBoldColor $BLUE  "          ./fn.sh query --namespace org1-v1 --channel mychannel --chaincode mycc --args='{\"Args\":[\"query\",\"a\"]}'"
+    printBoldColor $BLUE  "          ./fn.sh query --namespace org1-v1 --channel mychannel --chaincode mycc --args='{\"Args\":[\"query\",\"a\"]}' [--peer peer0]"
     echo
     printBoldColor $BROWN "      - 'invoke' - invoke chaincode"    
-    printBoldColor $BLUE  "          ./fn.sh invoke --namespace org1-v1 --channel mychannel --chaincode mycc --args='{\"Args\":[\"set\",\"a\",\"20\"]}'"
+    printBoldColor $BLUE  "          ./fn.sh invoke --namespace org1-v1 --channel mychannel --chaincode mycc --args='{\"Args\":[\"set\",\"a\",\"20\"]}' [--peer peer0]"
     echo
     printBoldColor $BROWN "      - 'assign' - assign org label to node"
-    printBoldColor $BLUE  "          ./fn.sh assign --node master --org ORG1"
+    printBoldColor $BLUE  "          ./fn.sh assign --node node1 [--org ORG1 | --namespace org1-v1]"
     echo
     printBoldColor $BROWN "      - 'addOrg' - add org to channel"
-    printBoldColor $BLUE  "          ./fn.sh addOrg org3-v1 --namespace org1-v1 --channel mychannel"
+    printBoldColor $BLUE  "          ./fn.sh addOrg org3-v1 --namespace org1-v1 --channel mychannel [--peer peer0]"
     echo
     printBoldColor $BROWN "      - 'move' - move namespace to group labeled"
-    printBoldColor $BLUE  "          ./fn.sh move --namespace org1-v1 --org ORG1"
+    printBoldColor $BLUE  "          ./fn.sh move --namespace org1-v1 [--org ORG1]"
     echo
   fi
 
@@ -117,7 +117,7 @@ buildAdmin(){
   echo "Update admin source code"
   rsync -av --progress ./ $SHARE_FOLDER/admin --exclude node_modules
   
-  ./build.sh $NAMESPACE $port $method $SHARE_FOLDER # $tlsEnabled
+  ./build.sh $NAMESPACE $port $method $SHARE_FOLDER $PEER $ORG
   printCommand "./build.sh $NAMESPACE $port $method"
   echo  
 }
@@ -171,24 +171,22 @@ setupConfig() {
 
 assignNode(){
   local node=$(getArgument "node")
-  local org=$(getArgument "org")
-  if [[ -z $node || -z $org ]];then
+  if [[ -z $node || -z $ORG ]];then
     echo "Please enter --node and --org params"
     exit 1
   fi
-  kubectl label nodes $node org=$org --overwrite=true
-  printCommand "kubectl label nodes $node org=$org --overwrite=true"
+  kubectl label nodes $node org=$ORG --overwrite=true
+  printCommand "kubectl label nodes $node org=$ORG --overwrite=true"
 }
 
-moveToNode(){  
-  local org=$(getArgument "org")
-  if [[ -z $NAMESPACE || -z $org ]];then
+moveToNode(){    
+  if [[ -z $NAMESPACE || -z $ORG ]];then
     echo "Please enter --namespace and --org params"
     exit 1
   fi
   local deployments=$(kubectl get deployment -n $NAMESPACE | awk 'NR>1{print $1}')
-  kubectl patch deployment $deployments -n $NAMESPACE -p '{"spec":{"template":{"spec":{"nodeSelector":{"org":"'$org'"}}}}}'  
-  printCommand "kubectl patch deployment $deployments -n $NAMESPACE -p '{\"spec\":{\"template\":{\"spec\":{\"nodeSelector\":{\"org\":\"$org\"}}}}}'"
+  kubectl patch deployment $deployments -n $NAMESPACE -p '{"spec":{"template":{"spec":{"nodeSelector":{"org":"'$ORG'"}}}}}'  
+  printCommand "kubectl patch deployment $deployments -n $NAMESPACE -p '{\"spec\":{\"template\":{\"spec\":{\"nodeSelector\":{\"org\":\"$ORG\"}}}}}'"
 }
 
 scalePod() {
@@ -347,8 +345,8 @@ signConfigBlock() {
     echo -e "Cli pod not found, you must run ${BOLD}./fn network --namespace $1${NORMAL} first!"
     exit 1
   fi
-  kubectl exec -it $cli_name -n $1 -- peer channel signconfigtx -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS
-  printCommand "kubectl exec -it $cli_name -n $1 -- peer channel signconfigtx -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS"
+  kubectl exec -it $cli_name -n $1 -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS peer channel signconfigtx -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS
+  printCommand "kubectl exec -it $cli_name -n $1 -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS peer channel signconfigtx -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS"
 }
 
 addOrganization() {
@@ -374,8 +372,8 @@ addOrganization() {
     # check jq program regradless os
     checkJQProgram
     # Step1: fetch config block
-    kubectl exec -it $cli_name -n $NAMESPACE -- peer channel fetch config config_block.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME
-    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer channel fetch config config_block.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME"
+    kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS peer channel fetch config config_block.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS peer channel fetch config config_block.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME"
     # Step2: move config block to share folder
     kubectl exec -it $cli_name -n $NAMESPACE -- mv config_block.pb channel-artifacts/
     printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- mv config_block.pb channel-artifacts/"
@@ -401,8 +399,8 @@ addOrganization() {
     done 
 
     # Step3: update new config
-    kubectl exec -it $cli_name -n $NAMESPACE -- peer channel update -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME
-    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer channel update -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME"
+    kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS peer channel update -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS peer channel update -f channel-artifacts/config_update_as_envelope.pb -o $ORDERER_ADDRESS -c $CHANNEL_NAME"
 
     res=$?  
     verifyResult $res "Add organization failed"
@@ -434,7 +432,7 @@ createChaincodeDeploymentDev() {
   local chaincode_shared_path=${CHAINCODE_PATH/github.com\/hyperledger\/fabric\/peer/$SHARE_FOLDER}
   echo "Chaincode shared path: $chaincode_shared_path"
   echo
-  local org=$(getArgument "org" $(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z]))
+
   cat <<EOF | kubectl create -f -
   apiVersion: extensions/v1beta1
   kind: Deployment
@@ -453,7 +451,7 @@ createChaincodeDeploymentDev() {
         nodeSelector:
           # assume all org node can access to docker
           # org: $NAMESPACE
-          org: $org
+          org: $ORG
         containers:
           - name: $CHAINCODE
             image: $docker_image
@@ -472,7 +470,7 @@ createChaincodeDeploymentDev() {
               - name: CORE_PEER_ID
                 value: $CHAINCODE
               - name: CORE_PEER_ADDRESS
-                value: $PEER_ADDRESS
+                value: $CORE_PEER_ADDRESS
               - name: CORE_CHAINCODE_ID_NAME
                 value: ${CHAINCODE}:${VERSION}    
               - name: GOPATH
@@ -522,8 +520,7 @@ createChaincodeDeployment() {
     done
   fi
 
-  local docker_image=$(docker images | grep "${CHAINCODE}-${VERSION}" | awk '{print $1}' | head -1)
-  local org=$(getArgument "org" $(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z]))
+  local docker_image=$(docker images | grep "${CHAINCODE}-${VERSION}" | awk '{print $1}' | head -1)  
   cat <<EOF | kubectl create -f -
   apiVersion: extensions/v1beta1
   kind: Deployment
@@ -542,13 +539,13 @@ createChaincodeDeployment() {
           # assume all org node can access to docker
           # org: $NAMESPACE
           # deploy at current node that run the script
-          org: $org
+          org: $ORG
         containers:
           - name: $CHAINCODE
             # tty: true
             image: $docker_image
             # inline is more readable            
-            command: [ "chaincode -peer.address=$PEER_ADDRESS" ]            
+            command: [ "chaincode -peer.address=$CORE_PEER_ADDRESS" ]            
             env:
               - name: CORE_CHAINCODE_ID_NAME
                 value: ${CHAINCODE}:${VERSION}
@@ -638,8 +635,8 @@ setupChannel() {
     # kubectl exec -it $cli_name -n $NAMESPACE -- peer channel join -b ${CHANNEL_NAME}.block
     # printCommand "${GREEN}kubectl exec -it $cli_name -n $NAMESPACE -- peer channel join -b ${CHANNEL_NAME}.block"
 
-    kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh channel -C $CHANNEL_NAME -o $ORDERER_ADDRESS -m $MODE
-    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh channel -C $CHANNEL_NAME -o $ORDERER_ADDRESS -m $MODE"
+    kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS ./channel-artifacts/cli.sh channel -C $CHANNEL_NAME -o $ORDERER_ADDRESS -m $MODE
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS ./channel-artifacts/cli.sh channel -C $CHANNEL_NAME -o $ORDERER_ADDRESS -m $MODE"
 
     res=$?  
     verifyResult $res "Setup channel failed"
@@ -664,8 +661,8 @@ installChaincode() {
       fi
     fi
 
-    kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode install -n $CHAINCODE -v $VERSION -p $CHAINCODE_PATH
-    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode install -n $CHAINCODE -v $VERSION -p $CHAINCODE_PATH"
+    kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS peer chaincode install -n $CHAINCODE -v $VERSION -p $CHAINCODE_PATH
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS peer chaincode install -n $CHAINCODE -v $VERSION -p $CHAINCODE_PATH"
     res=$?  
     verifyResult $res "Install chaincode failed"
     echo "===================== Install chaincode successfully ===================== "
@@ -735,12 +732,12 @@ updateChaincode(){
       # sleep 3
       # kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c "$ARGS" -C $CHANNEL_NAME $SUFFIX_ARG
 
-      kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P "$POLICY"
+      kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P "$POLICY"
       
 
     else
       # kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -c "$ARGS" -C $CHANNEL_NAME $SUFFIX_ARG &        
-      kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P "$POLICY" 
+      kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P "$POLICY" 
       # createChaincodeDeployment $METHOD
       # untilPod
     fi
@@ -749,9 +746,9 @@ updateChaincode(){
     # execute first pod is good enough, for api, we get from service
     # chaincode_name=$(kubectl get pod -n $NAMESPACE | awk '$1~/'$CHAINCODE'-/{print $1}' | head -1)    
     # we can use nohup maybe better
-    # kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$PEER_ADDRESS > /dev/null 2>&1 &
+    # kubectl exec -it $chaincode_name -n $NAMESPACE -- nohup chaincode -peer.address=$CORE_PEER_ADDRESS > /dev/null 2>&1 &
     res=$?  
-    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c '$ARGS' -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P '$POLICY'"
+    printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS ./channel-artifacts/cli.sh $chaincode_method -c '$ARGS' -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE -v $VERSION -P '$POLICY'"
     verifyResult $res "$chaincode_method chaincode failed"
     echo "===================== $chaincode_method chaincode successfully ===================== "    
     echo
@@ -770,11 +767,11 @@ execChaincode() {
   if [[ ! -z $cli_name ]];then
 
     if [[ $chaincode_method == "query" ]];then
-      kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c "$ARGS" -C $CHANNEL_NAME
-      printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- peer chaincode $chaincode_method -n $CHAINCODE -c '$ARGS' -C $CHANNEL_NAME"  
+      kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS peer chaincode $chaincode_method -n $CHAINCODE -c "$ARGS" -C $CHANNEL_NAME
+      printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS peer chaincode $chaincode_method -n $CHAINCODE -c '$ARGS' -C $CHANNEL_NAME"  
     else      
-      kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE
-      printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE"
+      kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE
+      printCommand "kubectl exec -it $cli_name -n $NAMESPACE -- CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS ./channel-artifacts/cli.sh $chaincode_method -c "$ARGS" -C $CHANNEL_NAME -o $ORDERER_ADDRESS -n $CHAINCODE"
     fi
 
     res=$?      
@@ -927,7 +924,9 @@ esac
 SHARE_FOLDER=$(getArgument "share" /Users/Shared)
 CHANNEL_NAME=$(getArgument "channel" mychannel)
 NAMESPACE=$(getArgument "namespace")
-PEER_ADDRESS=$(getArgument "peer" peer0.${NAMESPACE}:7051) 
+PEER=$(getArgument "peer" peer0)
+ORG=$(getArgument "org" $(echo ${NAMESPACE%%-*} | tr [a-z] [A-Z]))
+CORE_PEER_ADDRESS="${PEER}.${NAMESPACE}:7051"
 # by default get ternant by deleting the leading string of namespace
 ORDERER_ADDRESS=$(getArgument "orderer" orderer0.orgorderer-${NAMESPACE#*-}:7050)
 CHAINCODE=$(getArgument "chaincode" mycc)

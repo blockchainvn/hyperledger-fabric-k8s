@@ -47,8 +47,8 @@ spec:
           - mountPath: /etc/hyperledger/fabric-ca-server-config
             name: certificate
           {% endif %}            
-          # - mountPath: /etc/hyperledger/fabric-ca-server
-          #   name: data
+          - mountPath: /etc/hyperledger/fabric-ca-server
+            name: data
       volumes:
         {% if nfsServer|length > 0 %}  
         - name: certificate
@@ -59,9 +59,10 @@ spec:
           hostPath:
             path: ${path}/${caPath}
         {% endif %}
-        #  - name: data
-          #  hostPath:
-             # path: ${shareFolder}/ca/${namespace}
+
+        - name: data
+          hostPath:
+            path: ${shareFolder}/ca/${namespace}
             #  path: /data/ca/${namespace}
 
 --- 
