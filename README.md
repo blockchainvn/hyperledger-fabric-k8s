@@ -6,7 +6,7 @@ Run
 
 ```
 # on master nodes just run
-./setupt.sh
+./setup.sh
 ./fn.sh help [method]
 # on worker nodes just run
 ./setup-node.sh
